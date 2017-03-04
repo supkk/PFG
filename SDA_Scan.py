@@ -13,18 +13,30 @@ def parametros():
     group = parser.add_mutually_exclusive_group()
     group.add_argument("-i", "--ip"  )
     group.add_argument("-r", "--red"  )
+    parser.add_argument("-p","--Pantalla",action="store_true")
+    parser.add_argument("-b","--bbdd",help="Cadena de conexion a BBDD")
     args = parser.parse_args()  
     return args;
 
-def inicio(param):
-    nm = nmap.PortScanner()
-    if (param.ip.len()>0) :
-       result = nm.scan(param.ip)
+def scan_NMAP(param):
+    print ("Intentando el descubrimiento por nmap")
+    try:
+        
+        nm = nmap.PortScanner()         # instantiate nmap.PortScanner object
+    except nmap.PortScannerError:
+        print('Nmap not found')
+        return ""
+    except:
+        print("Unexpected error:")
+        return ""
+    if type(param.ip)== str :
+        result = nm.scan(param.ip, arguments='-O')
     else:
-       result = nm.scan(param.red)
-    print result
+        result = nm.scan(param.red)
+    print ("Descubrimiento NMAP terminado")
     return result
 
 if __name__ == '__main__':
+    ls=[]
     cmd_param=parametros()
-    inicio(cmd_param)
+    scan_NMAP(cmd_param)
