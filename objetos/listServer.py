@@ -53,18 +53,8 @@ class listServer(object):
         c = bbdd()
         c.insertaAll(self.ls)
         c.cierraDB()
-        return       
-if __name__ == '__main__':
-    import random
-    import time
-
-    ls=listServer([])
-    for se in range(300):
-        ip=str(random.randint(1, 254))+"."+str(random.randint(1, 244))+"."+str(random.randint(1, 244))+"."+str(random.randint(1, 244))
-        s=ObjDispositivo(ip,time.strftime("%c"),'NMAP','','')
-        ls.insert_or_update(s)
-    ls.grabarBBDD()
-
+        return   
+        
 
         
             

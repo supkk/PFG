@@ -3,8 +3,11 @@ Created on 1 mar. 2017
 
 @author: jose
 '''
-import nmap;
-import argparse;
+import nmap
+import argparse
+import time
+from objetos.listServer import listServer
+from objetos.objDispositivo import ObjDispositivo
 
 
 def parametros():
@@ -18,6 +21,18 @@ def parametros():
     args = parser.parse_args()  
     return args;
 
+def obtener_dispositivo(d):
+    
+    os="NO DESCUBIERTO"
+    if 'tcp' in d.keys():
+        if 22 in d['tcp'].keys():
+            os="LINUX"
+        elif 135 in d['tcp'].keys():
+            os="WINDOWS"
+              
+    s=ObjDispositivo(d['addresses']['ipv4'],time.strftime("%c"),'NMAP',d['hostnames'][0]['name'][:25],os)   
+    return s
+
 def scan_NMAP(param):
     print ("Intentando el descubrimiento por nmap")
     try:
@@ -30,13 +45,22 @@ def scan_NMAP(param):
         print("Unexpected error:")
         return ""
     if type(param.ip)== str :
-        result = nm.scan(param.ip, arguments='-O')
+        result = nm.scan(param.ip)
     else:
         result = nm.scan(param.red)
     print ("Descubrimiento NMAP terminado")
-    return result
+    
+    for s in result['scan']  :
+        disp = obtener_dispositivo(result['scan'][s])
+        ls.insert_or_update(disp)
+    return ls
 
 if __name__ == '__main__':
-    ls=[]
+    ls=listServer([])
     cmd_param=parametros()
-    scan_NMAP(cmd_param)
+    ls=scan_NMAP(cmd_param)
+    ls.grabarBBDD()
+    
+    
+    
+    

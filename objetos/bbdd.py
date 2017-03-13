@@ -51,17 +51,25 @@ class bbdd(object):
             code_id =["ND"]
         return code_id[0]
     
+    def existeIp(self,IP):
+        cur=self.conn.cursor()
+        cur.execute("select ip from TB_Dispositivos where ip ='"+IP+"'")
+        code_id = cur.fetchone()
+        cur.close()
+        
+        return code_id<>None
+    
     def insertaDisp(self,s):
         idDes=self.retIdDesc(s.td)
         idSO=self.retIdSO(s.os)
         data=(s.ip,s.fd,idDes,s.nombre,idSO,"N")
-        
-        try :
-            self.cur.execute("INSERT INTO TB_Dispositivos(ip,fecdes,id_td,nombre,id_so,proc) VALUES (%s,%s,%s,%s,%s,%s)",data)
-        except  psycopg2.DatabaseError as error:
-            print error
-            print ("la IP "+s.ip+" ya existe")
-        return
+        if not self.existeIp(s.ip) :
+            try :
+                self.cur.execute("INSERT INTO TB_Dispositivos(ip,fecdes,id_td,nombre,id_so,proc) VALUES (%s,%s,%s,%s,%s,%s)",data)
+            except Exception, error :
+                print error
+                print ("la IP "+s.ip+" ya existe")
+            return
     
     def insertaAll(self,ls):
         
@@ -74,10 +82,4 @@ class bbdd(object):
         return
     def cierraDB(self):
         self.conn.close()
-    
-if __name__ == '__main__': 
-    c = bbdd()
-    c.consulta("select * from tb_so")
-
-    
     
