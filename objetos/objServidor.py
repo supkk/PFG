@@ -32,5 +32,6 @@ class objServidor(object):
     def anade_SW(self,soft):
         self.sw.append(soft)
         return
+    
     def grabarBBDD(self):
         return
