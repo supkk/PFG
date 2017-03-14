@@ -36,7 +36,7 @@ CREATE TABLE TB_net(
 );
 
 CREATE TABLE TB_Servidor(
-   id_serv     int NOT NULL,
+   id_serv     serial NOT NULL,
    nombre      varchar NOT NULL,
    id_so       CHARACTER(2) NOT NULL,
    ram         bigint NOT NULL,
@@ -57,17 +57,16 @@ CREATE TABLE TB_IP(
 );
 
 CREATE TABLE TB_FS(
-   id_fs       int NOT NULL,
    id_serv     int NOT NULL,
    montaje     varchar NOT NULL,
    size        bigint,
    tipo        varchar,
-   CONSTRAINT pk_tb_fs PRIMARY KEY(id_fs),
+   CONSTRAINT pk_tb_fs PRIMARY KEY(id_serv,montaje),
    CONSTRAINT fk_TB_FS_Servidor FOREIGN KEY(id_serv) REFERENCES TB_Servidor(id_serv)
 );
 
 CREATE TABLE TB_INV_SOFTWARE(
-   id_sw       int NOT NULL,
+   id_sw       serial NOT NULL,
    Descripcion varchar NOT NULL,
    CONSTRAINT pk_tb_inv_software PRIMARY KEY(id_sw)
 );

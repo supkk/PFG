@@ -10,19 +10,21 @@ class objServidor(object):
     '''
 
     
-    def __init__(self, nombre,so,ram,sf,ips,sw):
+    def __init__(self, nombre,so,ram,sf,ips,sw,cpu,ncpu):
         '''
         Constructor
         '''
         self.nombre=nombre
         self.so = so
         self.ram = ram
-        self.sf = []
+        self.cpu = cpu
+        self.ncpu = ncpu
+        self.sfs = []
         self.ips = []
-        self.sw = []
+        self.sws = []
         
     def anade_FS(self,fs):
-        self.sf.append(fs)
+        self.sfs.append(fs)
         return
         
     def anade_IP(self,ip):
@@ -30,8 +32,22 @@ class objServidor(object):
         return
     
     def anade_SW(self,soft):
-        self.sw.append(soft)
+        self.sws.append(soft)
         return
     
-    def grabarBBDD(self):
+    def grabaBBDD(self,conn):
+
+        try :
+            id_serv=conn.grabaServidor(self)
+            for sf in self.sfs :
+                sf.grabaBBDD(conn,id_serv)
+            for ip in self.ips:
+                ip.grabaBBDD(conn,id_serv)
+            for sw in self.sws :
+                sw.grabaBBDD(conn,id_serv)
+            conn.commit()
+        except Exception, error :
+            print (error)
+            conn.rollback()
+        
         return
