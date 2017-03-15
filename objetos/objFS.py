@@ -3,7 +3,6 @@ Created on 14 mar. 2017
 
 @author: jose
 '''
-from objetos import bbdd
 
 class objFS(object):
     '''
@@ -11,7 +10,7 @@ class objFS(object):
     '''
 
 
-    def __init__(self, ids, montaje, size, tipo):
+    def __init__(self, montaje, size, tipo):
         '''
         Constructor
         '''

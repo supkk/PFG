@@ -3,7 +3,6 @@ Created on 14 mar. 2017
 
 @author: jose
 '''
-from objetos import bbdd
 
 
 class objIp(object):
@@ -23,6 +22,6 @@ class objIp(object):
         self.enlace = enlace
         self.broadcast = broadcast
         
-    def grabarBBDD(self,conn,id_serv):
-        conn.grabaIPS()
+    def grabaBBDD(self,conn,id_serv):
+        conn.grabaIPS(self,id_serv)
         return

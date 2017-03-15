@@ -4,9 +4,8 @@ Created on 8 mar. 2017
 @author: jose
 '''
 import psycopg2
-from libxml2 import XML_DTD_ID_REDEFINED
  
-class bbdd(object):
+class bbdd():
     '''
     classdocs
     '''
@@ -21,6 +20,14 @@ class bbdd(object):
         except :
             print ("Error de acceso a BBDD")  
         return   
+    
+    def confirma(self):
+        self.conn.commit()   
+        return
+    
+    def deshace(self):
+        self.conn.rollback()
+        return
     
     def consulta (self,con):
         
@@ -51,13 +58,13 @@ class bbdd(object):
             code_id =["ND"]
         return code_id[0]
     
-    def existeIp(self,IP):
+    def existeIP(self,id_serv):
         cur=self.conn.cursor()
-        cur.execute("select ip from TB_Dispositivos where ip ='"+IP+"'")
+        cur.execute("select id_serv from TB_ip where id_serv =" + str(id_serv))
         code_id = cur.fetchone()
         cur.close()
         
-        return code_id<>None
+        return code_id
     
     def existeServer(self,nombre):
         
@@ -75,7 +82,30 @@ class bbdd(object):
         id_red = cur.fetchone()
         cur.close()
 
-        return id_red 
+        return id_red
+    
+    def existeFS(self,id_serv):
+        
+        cur=self.conn.cursor()
+        cur.execute("select id_serv from TB_fs where id_serv =" + str(id_serv))
+        result = cur.fetchone()
+        cur.close()
+        
+        return result
+    
+    def borraIP(self,id_serv):
+        if self.cur == None:
+            self.cur = self.conn.cursor()
+
+        self.cur.execute('DELETE FROM TB_IP WHERE id_serv = ' + str(id_serv))
+        return
+    
+    def borraFS(self,id_serv):
+        if self.cur == None:
+            self.cur = self.conn.cursor()
+
+        self.cur.execute('DELETE FROM TB_FS WHERE id_serv = ' + str(id_serv))
+        return
     
     def insertaDisp(self,s):
         
@@ -93,26 +123,27 @@ class bbdd(object):
         
     def grabaServidor(self,s):
         
-        idSO=self.retIdSO(s.os)
+        idSO=self.retIdSO(s.so)
         
         code_serv = self.existeServer(s.nombre)
         if code_serv == None :
             data=(s.nombre,idSO,s.ram,s.cpu,s.ncpu)
-            sql= "INSERT INTO TB_Servidor (nombre,id_so,ram,tipo_cpu,ncpu) VALUES (%s,%s,%s,%s,%s)"
+            sql= "INSERT INTO TB_Servidor (nombre,id_so,ram,tipo_cpu,n_cpu) VALUES (%s,%s,%s,%s,%s)"
         else :
             data=(s.nombre,idSO,s.ram,s.cpu,s.ncpu,code_serv)
-            sql="UPDATE TB_Servidor SET nombre =%s ,id_so =%s ,ram =%s ,tipo_cpu =%s ,ncpu =%s WHERE id_serv = %s"
-        if self.cur <> None :
-            try :
-                self.cur.execute(sql,data)
-                if code_serv == None :
-                    self.cur.execute("select currval('tb_servidor_id_serv_seq')")
-                    code_serv=self.cur.fechone()
-            except Exception, error :
-                print error
+            sql="UPDATE TB_Servidor SET nombre =%s ,id_so =%s ,ram =%s ,tipo_cpu =%s ,n_cpu =%s WHERE id_serv = %s"
+        if self.cur == None :
+            self.cur=self.conn.cursor()
+        try :
+            self.cur.execute(sql,data)
+            if code_serv == None :
+                self.cur.execute("select currval('tb_servidor_id_serv_seq')")
+                code_serv=self.cur.fetchone()
+        except Exception, error :
+            print error
         
             
-        return code_serv
+        return code_serv[0]
     
 
     
@@ -120,13 +151,8 @@ class bbdd(object):
         
         idNet=self.existeNet(ip.red)
         if  idNet <> None :
-            dirIp=self.existeIP(ip.ip) 
-            if dirIp == None:
-                data = (ip.ip,ip.mac,id_serv,idNet)
-                sql = "INSERT INTO TB_IP (ip, mac, id_serv, id_net) VALUES (%s,%s,%s,%s)"
-            else:
-                data = (ip.mac,id_serv,idNet,ip.ip)
-                sql = "UPDATE TB_IP SET  mac =%s, id_serv =%s, id_net =%s WHERE ip =%s"
+            data = (ip.ip,ip.mac,id_serv,idNet)
+            sql = "INSERT INTO TB_IP (ip, mac, id_serv, id_net) VALUES (%s,%s,%s,%s)"
             if self.cur <> None :
                 try :
                     self.cur.execute(sql,data)
@@ -137,12 +163,8 @@ class bbdd(object):
 
     def grabaFS(self,fs,id_serv):
         
-        if  self.existeFS(fs.montaje,id_serv) == False :
-            data = (id_serv,fs.montaje,fs.size,fs.tipo)
-            sql = "INSERT INTO TB_FS (id_serv, montaje, size, tipo) VALUES (%s,%s,%s,%s)"
-        else:
-            data = (fs.size,fs.tipo,fs.montaje,id_serv)
-            sql = "UPDATE TB_FS SET size= %s, tipo = %s WHERE montaje = %s and id_serv = %s"
+        data = (id_serv,fs.montaje,fs.size,fs.tipo)
+        sql = "INSERT INTO TB_FS (id_serv, montaje, size, tipo) VALUES (%s,%s,%s,%s)"
         if self.cur <> None :
             try :
                 self.cur.execute(sql,data)
