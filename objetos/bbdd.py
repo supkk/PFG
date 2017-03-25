@@ -41,7 +41,7 @@ class bbdd():
     def retIdDesc(self,desc):
         
         cur=self.conn.cursor()
-        cur.execute("select code from TB_TipoDesc where descripcion ='"+desc+"'")
+        cur.execute("select code from tb_lkp_Desc where descripcion ='"+desc+"'")
         code_id = cur.fetchone()
         cur.close()
         if code_id == None :
@@ -51,7 +51,7 @@ class bbdd():
     def retIdSO(self,desc):
         
         cur=self.conn.cursor()
-        cur.execute("select code from TB_so where descripcion ='"+desc+"'")
+        cur.execute("select code from tb_lkp_so where descripcion ='"+desc+"'")
         code_id = cur.fetchone()
         cur.close()
         if code_id == None :

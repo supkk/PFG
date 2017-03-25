@@ -1,88 +1,161 @@
-#Crear antes la BBDD sda_db y conectarte a ella
+/*   Crear antes la BBDD sda_db y conectarte a ella  */
 
-#CREATE DATABASE SDA_DB;
 
-CREATE TABLE TB_so(
+CREATE  TABLE tb_lkp_so(
   code  character(2) NOT NULL,
   descripcion  character(20) NOT NULL,
-  CONSTRAINT pk_tb_so PRIMARY KEY(code)
+  CONSTRAINT pk_tb_lkp_so PRIMARY KEY(code)
 );
 
-CREATE TABLE TB_TipoDesc(
+CREATE  TABLE tb_lkp_Desc(
   code  character(2) NOT NULL,
   descripcion  character(20) NOT NULL,
-  CONSTRAINT pk_tb_TipoDesc PRIMARY KEY(code)
+  CONSTRAINT pk_tb_lkp_Desc PRIMARY KEY(code)
 );
 
-CREATE TABLE TB_Dispositivos(
+CREATE  TABLE tb_lkp_InterFace(
+  code  character(5) NOT NULL,
+  descripcion  character(20) NOT NULL,
+  CONSTRAINT pk_tb_lkp_Interface PRIMARY KEY(code)
+);
+
+CREATE  TABLE tb_lkp_FS(
+  code  character(4) NOT NULL,   
+  descripcion  character(20) NOT NULL,
+  CONSTRAINT pk_tb_lkp_FS PRIMARY KEY(code)
+);
+
+CREATE  TABLE tb_lkp_Almacenamiento(
+  code  character(3) NOT NULL,
+  descripcion  character(20) NOT NULL,
+  CONSTRAINT pk_tb_lkp_Almcenamiento PRIMARY KEY(code)
+);
+
+CREATE  TABLE TB_net(
+ _Id     integer,
+ id_net      serial NOT NULL,
+ class_code  varchar(100) NOT NULL,
+ nombre      varchar(20) NOT NULL,
+ IPBase      inet NOT NULL,
+ mascara     inet NOT NULL,
+ CONSTRAINT pk_tb_net PRIMARY KEY(id_net)
+ 
+);
+
+CREATE  TABLE TB_Dispositivos(
   IP      character(15) NOT NULL,
   fecDes  DATE NOT NULL,
-  id_td      character(2) NOT NULL,
+  id_td   character(2) NOT NULL,
   nombre  CHARACTER(25),
   id_so   CHARACTER(2), 
   Proc    CHARACTER(1) NOT NULL,
   fecProc DATE,
   CONSTRAINT pk_tb_Dispositivos PRIMARY KEY(IP),
-  CONSTRAINT fk_TB_Dispositivos_so FOREIGN KEY(id_so) REFERENCES TB_so(code),
-  CONSTRAINT fk_TB_Dispositivos_td FOREIGN KEY(id_td) REFERENCES TB_TipoDesc(code)
+  CONSTRAINT fk_TB_Dispositivos_so FOREIGN KEY(id_so) REFERENCES tb_lkp_so(code),
+  CONSTRAINT fk_TB_Dispositivos_td FOREIGN KEY(id_td) REFERENCES tb_lkp_Desc(code)
 );
 
-CREATE TABLE TB_net(
-   id_net      inet NOT NULL,
-   masc        inet NOT NULL,
-   broadcast   inet NOT NULL,
-   enlace      inet NOT NULL,
-   CONSTRAINT pk_tb_net PRIMARY KEY(id_net)  
-);
+CREATE  TABLE TB_Disp(
+   id_disp     serial NOT NULL,
+   sn          varchar(20),
+   nombre      varchar(20) NOT NULL,
+   gw          inet, 
+   CONSTRAINT pk_tb_Disp PRIMARY KEY(id_disp)
+   );
 
-CREATE TABLE TB_Servidor(
-   id_serv     serial NOT NULL,
-   nombre      varchar NOT NULL,
-   id_so       CHARACTER(2) NOT NULL,
-   ram         bigint NOT NULL,
-   Tipo_cpu    varchar NOT NULL,
+CREATE  TABLE TB_Servidor(
+   id_serv     serial 	not NULL,
+   _id         integer,
+   class_code  varchar(100) NOT NULL,
+   id_so       varchar(2) NOT NULL,
+   version_os  varchar(40),
+   ram         integer NOT NULL,
+   Tipo_cpu    varchar(10) NOT NULL,
    n_cpu       int NOT NULL,
+   n_cores     int NOT NULL,
    CONSTRAINT pk_tb_Servidor PRIMARY KEY(id_serv),
-   CONSTRAINT fk_TB_Servidor_SO FOREIGN KEY(id_so) REFERENCES TB_so(code) 
-);
+   CONSTRAINT fk_TB_Servidor_SO FOREIGN KEY(id_so) REFERENCES tb_lkp_so(code) 
+) INHERITS (TB_Disp);
 
-CREATE TABLE TB_IP(
+CREATE  TABLE TB_Router(
+   id_router   serial 	not NULL,
+   _id         integer,
+   class_code  varchar(100) NOT NULL,
+   dhcp        boolean,
+   dns         inet,
+   puertos     integer,
+   CONSTRAINT pk_tb_Router PRIMARY KEY(id_router)
+) INHERITS (TB_Disp);
+
+CREATE  TABLE TB_Interface(
+   _id         integer,
+   class_code  varchar(100) NOT NULL,
+   id_Int      varchar(4),
+   id_net      integer,
    ip          inet NOT NULL,
-   mac         varchar,
-   id_serv     int NOT NULL,
-   id_net      inet NOT NULL,
-   CONSTRAINT pk_tb_ip PRIMARY KEY(ip),
-   CONSTRAINT fk_TB_IP_net FOREIGN KEY(id_net) REFERENCES TB_net(id_net),
-   CONSTRAINT fk_TB_IP_Servidor FOREIGN KEY(id_serv) REFERENCES TB_Servidor(id_serv)
+   mascara     inet NOT NULL,
+   mac         varchar(20),
+   nombre      varchar(10),
+   id_disp     int NOT NULL,
+   CONSTRAINT pk_tb_Interface PRIMARY KEY(ip),
+   CONSTRAINT fk_TB_Int_Disp FOREIGN KEY(id_disp) REFERENCES TB_Disp(id_disp),
+   CONSTRAINT fk_TB_Int_Net FOREIGN KEY(id_net) REFERENCES tb_net(id_net),
+   CONSTRAINT fk_TB_Int_TipoInt FOREIGN KEY(id_Int) REFERENCES tb_lkp_Interface(code)
 );
 
-CREATE TABLE TB_FS(
+CREATE  TABLE TB_FS(
+   _id         integer,
+   class_code  varchar(100) NOT NULL,
    id_serv     int NOT NULL,
    montaje     varchar NOT NULL,
    size        bigint,
-   tipo        varchar,
+   id_tipoFS   varchar(5),
+   id_tipoAl   varchar(5),
    CONSTRAINT pk_tb_fs PRIMARY KEY(id_serv,montaje),
-   CONSTRAINT fk_TB_FS_Servidor FOREIGN KEY(id_serv) REFERENCES TB_Servidor(id_serv)
+   CONSTRAINT fk_TB_FS_Servidor FOREIGN KEY(id_serv) REFERENCES TB_Servidor(id_serv),
+   CONSTRAINT fk_TB_FS_TipoFS FOREIGN KEY(id_tipoFS) REFERENCES tb_lkp_FS(code),
+   CONSTRAINT fk_TB_FS_TipoAlmacenamiento FOREIGN KEY(id_tipoAl) REFERENCES tb_lkp_Almacenamiento(code)
 );
 
-CREATE TABLE TB_INV_SOFTWARE(
+CREATE  TABLE TB_INV_SOFTWARE(
    id_sw       serial NOT NULL,
    Descripcion varchar NOT NULL,
    CONSTRAINT pk_tb_inv_software PRIMARY KEY(id_sw)
 );
 
-CREATE TABLE TB_SOFT_RUNNING(
+CREATE  TABLE tb_lkp_SOFT_RUNNING(
    id_sw       int NOT NULL,
    id_serv     int NOT NULL,
-   CONSTRAINT pk_tb_SOFT_RUNNING PRIMARY KEY(id_sw,id_serv),
-   CONSTRAINT fk_TB_SOFT_Servidor FOREIGN KEY(id_serv) REFERENCES TB_Servidor(id_serv),
-   CONSTRAINT fk_TB_SOFT_INVT FOREIGN KEY(id_sw) REFERENCES TB_INV_SOFTWARE(id_SW)  
+   CONSTRAINT pk_tb_lkp_SOFT_RUNNING PRIMARY KEY(id_sw,id_serv),
+   CONSTRAINT fk_tb_lkp_SOFT_Servidor FOREIGN KEY(id_serv) REFERENCES TB_Servidor(id_serv),
+   CONSTRAINT fk_tb_lkp_SOFT_INVT FOREIGN KEY(id_sw) REFERENCES TB_INV_SOFTWARE(id_SW)  
 );
 
-INSERT INTO TB_so VALUES ('LX','LINUX');
-INSERT INTO TB_so VALUES ('WS','WINDOWS');
-INSERT INTO TB_so VALUES ('ND','NO DESC');
+INSERT INTO tb_lkp_so VALUES ('LX','LINUX');
+INSERT INTO tb_lkp_so VALUES ('WS','WINDOWS');
+INSERT INTO tb_lkp_so VALUES ('ND','NO DESC');
+INSERT INTO tb_lkp_so VALUES ('OL','OT LINUX');
 
-INSERT INTO TB_TipoDesc VALUES ('NM','NMAP');
+INSERT INTO tb_lkp_Desc VALUES ('NM','NMAP');
 
-INSERT INTO TB_net VALUES('192.168.1.0','255.255.255.0','192.168.1.255','192.168.1.1')
+
+INSERT INTO TB_LKP_INTERFACE VALUES('ETH-V','Ethernet Virtual');
+INSERT INTO TB_LKP_INTERFACE VALUES('ETH-C','Ethernet Cable');
+INSERT INTO TB_LKP_INTERFACE VALUES('ETH-W','Ethernet WIFI');
+
+INSERT INTO TB_LKP_FS VALUES('NTF','NTFS');
+INSERT INTO TB_LKP_FS VALUES('EX4','EXT4');
+INSERT INTO TB_LKP_FS VALUES('F32','FAT32');
+INSERT INTO TB_LKP_FS VALUES('BRF','BRFS');
+INSERT INTO TB_LKP_FS VALUES('OTR','OTRO FS');
+
+INSERT INTO TB_LKP_ALMACENAMIENTO VALUES('NFS','NFS');
+INSERT INTO TB_LKP_ALMACENAMIENTO VALUES('SMB','SMB');
+INSERT INTO TB_LKP_ALMACENAMIENTO VALUES('SCS','ISCSI');
+INSERT INTO TB_LKP_ALMACENAMIENTO VALUES('INT','INTERNO');
+
+
+ 
+
+
+

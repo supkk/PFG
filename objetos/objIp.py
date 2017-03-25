@@ -11,17 +11,19 @@ class objIp(object):
     '''
 
 
-    def __init__(self, ip,mac,red,mascara,enlace,broadcast):
+    def __init__(self, ip,mac,mascara,nombre):
         '''
         Constructor
         '''
+        self._id=0
+        self.class_code = ''
+        self.nombre = nombre
         self.ip = ip
         self.mac = mac
-        self.red = red
         self.mascara = mascara 
-        self.enlace = enlace
-        self.broadcast = broadcast
-        
+        self.TipoRed = ''
+        self.net = 0
+
     def grabaBBDD(self,conn,id_serv):
         conn.grabaIPS(self,id_serv)
         return
