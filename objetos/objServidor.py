@@ -10,15 +10,21 @@ class objServidor(object):
     '''
 
     
-    def __init__(self, nombre,so,ram,cpu,ncpu):
+    def __init__(self, nombre,so,ram,cpu,ncpu,cores,sn,gw,v_os):
         '''
         Constructor
         '''
-        self.nombre=nombre
+        self.id_serv = 0
+        self.id_disp = 0 
+        self.nombre = nombre
         self.so = so
         self.ram = ram
         self.cpu = cpu
         self.ncpu = ncpu
+        self.cores = cores
+        self.sn = sn
+        self.gw = gw
+        self.v_os = v_os
         self.sfs = []
         self.ips = []
         self.sws = []
@@ -38,17 +44,17 @@ class objServidor(object):
     def grabaBBDD(self,conn):
 
         try :
-            id_serv=conn.grabaServidor(self)
-            if conn.existeFS(id_serv):
-                conn.borraFS(id_serv)
+            self.id_disp, self.id_serv = conn.grabaServidor(self)
+            if conn.existeFS(self.id_serv):
+                conn.borraFS(self.id_serv)
             for sf in self.sfs :
-                sf.grabaBBDD(conn,id_serv)
-            if conn.existeIP(id_serv):
-                conn.borraIP(id_serv)
+                sf.grabaBBDD(conn,self.id_serv)
+            if conn.existeInterface(self.id_disp)<> None:
+                conn.borraInterfaces(self.id_disp)
             for ip in self.ips:
-                ip.grabaBBDD(conn,id_serv)
+                ip.grabaBBDD(conn,self.id_disp)
             for sw in self.sws :
-                sw.grabaBBDD(conn,id_serv)
+                sw.grabaBBDD(conn,self.id_serv)
             conn.confirma()
         except Exception, error :
             print (error)

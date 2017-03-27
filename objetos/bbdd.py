@@ -4,6 +4,7 @@ Created on 8 mar. 2017
 @author: jose
 '''
 import psycopg2
+import ipcalc
  
 class bbdd():
     '''
@@ -16,7 +17,7 @@ class bbdd():
         '''
         self.cur = None
         try :
-            self.conn = psycopg2.connect(database="sda_db", user="postgres", password="postgres", host="192.168.1.47", port="5432")
+            self.conn = psycopg2.connect(database="sda_db", user="postgres", password="postgres", host="192.168.1.46", port="5432")
         except :
             print ("Error de acceso a BBDD")  
         return   
@@ -38,51 +39,93 @@ class bbdd():
         
         return rows
     
+    def retIdTipoFS(self,desc):
+        cur=self.conn.cursor()
+        cur.execute("select code from tb_lkp_fs where descripcion ='"+desc.upper()+"'")
+        code_id = cur.fetchone()
+        cur.close()
+        if code_id == None :
+            code_retorno = 'OTR'
+        else :
+            code_retorno = code_id[0]
+        return code_retorno
+    
+    def retIdTipoAl(self,desc):
+        cur=self.conn.cursor()
+        cur.execute("select code from tb_lkp_Almacenamiento where descripcion ='"+desc.upper()+"'")
+        code_id = cur.fetchone()
+        cur.close()
+        if code_id == None :
+            code_retorno = 'OTR'
+        else :
+            code_retorno = code_id[0]
+        return code_retorno
+    
     def retIdDesc(self,desc):
         
         cur=self.conn.cursor()
-        cur.execute("select code from tb_lkp_Desc where descripcion ='"+desc+"'")
+        cur.execute("select code from tb_lkp_Desc where descripcion ='"+desc.upper()+"'")
         code_id = cur.fetchone()
         cur.close()
         if code_id == None :
             code_id =["OT"]
         return code_id[0]
     
+    def retIdDisp(self,idServ):
+        
+        cur=self.conn.cursor()
+        cur.execute("select id_disp from tb_Servidor where id_serv ="+str(idServ))
+        code_id = cur.fetchone()
+        cur.close()
+        return code_id[0]
+    
     def retIdSO(self,desc):
         
         cur=self.conn.cursor()
-        cur.execute("select code from tb_lkp_so where descripcion ='"+desc+"'")
+        cur.execute("select code from tb_lkp_so where descripcion ='"+desc.upper()+"'")
         code_id = cur.fetchone()
         cur.close()
         if code_id == None :
             code_id =["ND"]
         return code_id[0]
     
-    def existeIP(self,id_serv):
+    def retIdNet(self,desc):
+        
         cur=self.conn.cursor()
-        cur.execute("select id_serv from TB_ip where id_serv =" + str(id_serv))
+        cur.execute("select code from tb_lkp_Interface where descripcion ='"+desc.upper()+"'")
         code_id = cur.fetchone()
         cur.close()
-        
-        return code_id
+            
+        return code_id[0]
     
     def existeServer(self,nombre):
         
         cur=self.conn.cursor()
-        cur.execute("select id_serv from TB_Servidor where nombre ='"+nombre+"'")
+        cur.execute("select s.id_disp, s.id_serv from TB_Disp d, TB_Servidor s where d.nombre ='"+nombre+"'")
         code_id = cur.fetchone()
         cur.close()
         
         return code_id
     
-    def existeNet(self,red):
-        
+    def existeNet(self,ip, mascara):
+             
+        address = ipcalc.Network(ip,mascara)  
+        red = address.network().dq
         cur=self.conn.cursor()
-        cur.execute("select id_net from TB_net where id_net ='" + red + "'")
+        cur.execute("select id_net from TB_net where ipBase ='" + red + "' and mascara = '" +mascara + "'")
         id_red = cur.fetchone()
         cur.close()
 
-        return id_red
+        return id_red[0]
+    
+    def existeInterface(self,id_disp):
+        
+        cur=self.conn.cursor()
+        cur.execute("select id_disp from TB_Interface where id_disp =" + str(id_disp))
+        result = cur.fetchone()
+        cur.close()
+        
+        return result
     
     def existeFS(self,id_serv):
         
@@ -93,11 +136,11 @@ class bbdd():
         
         return result
     
-    def borraIP(self,id_serv):
+    def borraInterfaces(self,id_disp):
         if self.cur == None:
             self.cur = self.conn.cursor()
 
-        self.cur.execute('DELETE FROM TB_IP WHERE id_serv = ' + str(id_serv))
+        self.cur.execute('DELETE FROM TB_Interface WHERE id_disp = ' + str(id_disp))
         return
     
     def borraFS(self,id_serv):
@@ -112,12 +155,11 @@ class bbdd():
         idDes=self.retIdDesc(s.td)
         idSO=self.retIdSO(s.os)
         data=(s.ip,s.fd,idDes,s.nombre,idSO,"N")
-        if not self.existeIp(s.ip) :
-            try :
-                self.cur.execute("INSERT INTO TB_Dispositivos(ip,fecdes,id_td,nombre,id_so,proc) VALUES (%s,%s,%s,%s,%s,%s)",data)
-            except Exception, error :
-                print error
-                print ("la IP "+s.ip+" ya existe")
+        try :
+            self.cur.execute("INSERT INTO TB_Dispositivos(ip,fecdes,id_td,nombre,id_so,proc) VALUES (%s,%s,%s,%s,%s,%s)",data)
+        except Exception, error :
+            print error
+            print ("la IP "+s.ip+" ya existe")
         
         return
         
@@ -125,34 +167,49 @@ class bbdd():
         
         idSO=self.retIdSO(s.so)
         
-        code_serv = self.existeServer(s.nombre)
-        if code_serv == None :
-            data=(s.nombre,idSO,s.ram,s.cpu,s.ncpu)
-            sql= "INSERT INTO TB_Servidor (nombre,id_so,ram,tipo_cpu,n_cpu) VALUES (%s,%s,%s,%s,%s)"
+        code = self.existeServer(s.nombre)
+        if code == None :
+            data_disp=(s.sn,s.nombre)
+            sql_disp = 'INSERT INTO tb_disp (sn,nombre) values (%s,%s)'
+            if self.cur == None :
+                self.cur=self.conn.cursor()
+            try :
+                self.cur.execute(sql_disp,data_disp)
+                self.cur.execute("select currval('tb_disp_id_disp_seq')")
+                result=self.cur.fetchone()
+                code_disp=result[0]
+            except Exception, error :
+                print error
+            data=(code_disp,idSO,s.ram,s.cpu,s.ncpu,s.cores,s.gw,s.v_os)
+            sql= "INSERT INTO TB_Servidor (id_disp,id_so,ram,tipo_cpu,n_cpu,n_cores,gw,version_os) VALUES (%s,%s,%s,%s,%s,%s,%s,%s)"
         else :
-            data=(s.nombre,idSO,s.ram,s.cpu,s.ncpu,code_serv)
-            sql="UPDATE TB_Servidor SET nombre =%s ,id_so =%s ,ram =%s ,tipo_cpu =%s ,n_cpu =%s WHERE id_serv = %s"
+            code_disp = code[0]
+            code_serv = code[1]
+            data=(idSO,s.ram,s.cpu,s.ncpu,s.cores,s.gw,s.v_os)
+            sql="UPDATE TB_Servidor SET  id_so =%s ,ram =%s ,tipo_cpu =%s ,n_cpu =%s, n_cores=%s, gw=%s, version_os=%s WHERE id_serv =" +str(code_serv)
         if self.cur == None :
             self.cur=self.conn.cursor()
         try :
             self.cur.execute(sql,data)
-            if code_serv == None :
+            if code == None :
                 self.cur.execute("select currval('tb_servidor_id_serv_seq')")
-                code_serv=self.cur.fetchone()
+                result=self.cur.fetchone()
+                code_serv=result[0]
+                
         except Exception, error :
             print error
-        
-            
-        return code_serv[0]
+                    
+        return code_disp,code_serv
     
 
     
-    def grabaIPS(self,ip,id_serv):
+    def grabaIPS(self,ip,id_disp):
         
-        idNet=self.existeNet(ip.red)
+        idNet=self.existeNet(ip.ip,ip.mascara)
         if  idNet <> None :
-            data = (ip.ip,ip.mac,id_serv,idNet)
-            sql = "INSERT INTO TB_IP (ip, mac, id_serv, id_net) VALUES (%s,%s,%s,%s)"
+            tipoNet=self.retIdNet(ip.tipoRed)
+            data = (tipoNet,idNet,ip.ip,ip.mascara,ip.mac,ip.nombre,id_disp)
+            sql = "INSERT INTO TB_Interface (id_TipoInt,id_net,ip,mascara, mac, nombre, id_disp) VALUES (%s,%s,%s,%s, %s, %s, %s)"
             if self.cur <> None :
                 try :
                     self.cur.execute(sql,data)
@@ -160,11 +217,13 @@ class bbdd():
                     print error   
             
         return
-
+   
     def grabaFS(self,fs,id_serv):
-        
-        data = (id_serv,fs.montaje,fs.size,fs.tipo)
-        sql = "INSERT INTO TB_FS (id_serv, montaje, size, tipo) VALUES (%s,%s,%s,%s)"
+
+        tipoFs = self.retIdTipoFS(fs.tipoFs)
+        tipoAl = self.retIdTipoAl(fs.tipoAl)
+        data = (id_serv,fs.montaje,fs.size,tipoFs,tipoAl)
+        sql = "INSERT INTO TB_FS (id_serv, montaje, size, id_tipoFS,id_tipoAl) VALUES (%s,%s,%s,%s,%s)"
         if self.cur <> None :
             try :
                 self.cur.execute(sql,data)

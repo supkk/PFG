@@ -10,13 +10,15 @@ class objFS(object):
     '''
 
 
-    def __init__(self, montaje, size, tipo):
+    def __init__(self, montaje, size, tipoFs,tipoAl):
         '''
         Constructor
         '''
         self.montaje = montaje
         self.size = size
-        self.tipo = tipo
+        self.tipoFs = tipoFs
+        self.tipoAl = tipoAl
+        
             
     def grabaBBDD(self,conn,id_serv):
         conn.grabaFS(self,id_serv)
