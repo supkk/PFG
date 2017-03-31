@@ -3,7 +3,6 @@ Created on 4 mar. 2017
 
 @author: jose
 '''
-from objetos.objDispositivo import ObjDispositivo
 from objetos.bbdd  import bbdd
 
 

@@ -11,7 +11,7 @@ class objIp(object):
     '''
 
 
-    def __init__(self, ip,mac,mascara,nombre,tipoRed):
+    def __init__(self,ip,mac,mascara,nombre,tipoRed):
         '''
         Constructor
         '''

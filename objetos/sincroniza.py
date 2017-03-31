@@ -25,20 +25,8 @@ class cmdbuild(object):
         return
     
     def creaClase(self,clase,attr):
-        uri = self.url+"classes/"+clase+"/cards/"
-#        data='{"'
         
-        '''       for k,v in attr :
-
-            data=data + k + '":'
-            if type(v) == 'str':
-                data = data + v + '",'
-            else:
-                data = data + str(v) +','
-                
-        data[len(data)-1]="}"
-        '''     
-           
+        uri = self.url+"classes/"+clase+"/cards/"
         data = str(attr)
         data = data.replace('\'', '"')
         r = requests.post(uri,headers = self.cabeceras, data=data)
@@ -51,12 +39,24 @@ class cmdbuild(object):
         data = str(attr)
         data = data.replace('\'', '"')
         r = requests.put(uri,headers = self.cabeceras, data=data)
-        return
+        return r.ok
     
     def creaRelacion(self,dominio,attr):
-        return
-    def actualizaRelacion(self,dominio,attr): 
-        return
+        
+        uri = self.url+"domains/" + dominio + "/relations/"
+        data = str(attr)
+        data = data.replace('\'', '"')
+        r = requests.post(uri,headers = self.cabeceras, data=data)
+        return json.loads(r.text)['data']
+    
+    def actualizaRelacion(self,dominio,attr,idomain): 
+        
+        uri = self.url+"domains/"+dominio+"/relations/"+str(idomain)
+        data = str(attr)
+        data = data.replace('\'', '"')
+        r = requests.put(uri,headers = self.cabeceras, data=data)
+        
+        return r.ok
     
     
     

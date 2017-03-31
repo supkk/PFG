@@ -67,7 +67,7 @@ CREATE  TABLE TB_Servidor(
    id_so       varchar(2) NOT NULL,
    version_os  varchar(100),
    ram         integer NOT NULL,
-   Tipo_cpu    varchar(10) NOT NULL,
+   Tipo_cpu    varchar(100) NOT NULL,
    n_cpu       int NOT NULL,
    n_cores     int NOT NULL,
    gw          inet, 

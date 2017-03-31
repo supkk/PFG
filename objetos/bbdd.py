@@ -17,7 +17,7 @@ class bbdd():
         '''
         self.cur = None
         try :
-            self.conn = psycopg2.connect(database="sda_db", user="postgres", password="postgres", host="192.168.1.46", port="5432")
+            self.conn = psycopg2.connect(database="sda_db", user="postgres", password="postgres", host="192.168.1.41", port="5432")
         except :
             print ("Error de acceso a BBDD")  
         return   
@@ -35,7 +35,7 @@ class bbdd():
         self.cur=self.conn.cursor()
         self.cur.execute(con)
         rows = self.cur.fetchall()
-        self.cur.close()
+
         
         return rows
     
@@ -101,7 +101,7 @@ class bbdd():
     def existeServer(self,nombre):
         
         cur=self.conn.cursor()
-        cur.execute("select s.id_disp, s.id_serv from TB_Disp d, TB_Servidor s where d.nombre ='"+nombre+"'")
+        cur.execute("select d.id_disp,s.id_serv from tb_disp d join tb_servidor s on d.id_disp=s.id_disp where d.nombre='"+nombre+"'")
         code_id = cur.fetchone()
         cur.close()
         
@@ -115,8 +115,9 @@ class bbdd():
         cur.execute("select id_net from TB_net where ipBase ='" + red + "' and mascara = '" +mascara + "'")
         id_red = cur.fetchone()
         cur.close()
-
-        return id_red[0]
+        if id_red <> None :
+            id_red=id_red[0]
+        return id_red
     
     def existeInterface(self,id_disp):
         
@@ -236,8 +237,8 @@ class bbdd():
         self.cur=self.conn.cursor()
         for s in ls:
             self.insertaDisp(s)
-        self.commit()
-        self.cur.close()
+        self.confirma()
+        
 
         return
     
