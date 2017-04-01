@@ -41,7 +41,7 @@ class objServidor(object):
         self.sws.append(soft)
         return
     
-    def grabaBBDD(self,conn):
+    def grabaBBDD(self,conn,ip):
 
         try :
             self.id_disp, self.id_serv = conn.grabaServidor(self)
@@ -53,8 +53,11 @@ class objServidor(object):
                 conn.borraInterfaces(self.id_disp)
             for ip in self.ips:
                 ip.grabaBBDD(conn,self.id_disp)
+            if conn.existeSw(self.id_serv)<> None:
+                conn.borraSw(self.id_disp)
             for sw in self.sws :
                 sw.grabaBBDD(conn,self.id_serv)
+            conn.apuntaProcesado(ip.ip)
             conn.confirma()
         except Exception, error :
             print (error)

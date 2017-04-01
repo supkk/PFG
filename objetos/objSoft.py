@@ -1,5 +1,5 @@
 '''
-Created on 14 mar. 2017
+Created on 1 abr. 2017
 
 @author: jose
 '''
@@ -10,11 +10,14 @@ class objSoft(object):
     '''
 
 
-    def __init__(self, desc):
+    def __init__(self,cadRunning):
         '''
         Constructor
         '''
-        self.desc = desc
+        self.cadRunning = cadRunning
+        return
+    
+    def grabaBBDD(self,conn,id_serv):
+        conn.grabaSw(self,id_serv)
+        return
         
-    def grabarBBDD(self):
-        return 

@@ -5,6 +5,7 @@ Created on 8 mar. 2017
 '''
 import psycopg2
 import ipcalc
+import time
  
 class bbdd():
     '''
@@ -35,9 +36,21 @@ class bbdd():
         self.cur=self.conn.cursor()
         self.cur.execute(con)
         rows = self.cur.fetchall()
-
         
         return rows
+    
+    def apuntaProcesado(self,ip):
+        cur=self.conn.cursor()
+        cur.execute("update tb_dispositivos  set fecproc='"+time.strftime("%c") + "' where ip='" + ip +"'")
+        cur.execute("update tb_dispositivos set apagado = 0  where ip='" + ip+"'")
+        cur.close()
+        return
+    
+    def apuntaApagado(self,ip):
+        cur=self.conn.cursor()
+        cur.execute("update tb_dispositivos set apagado = COALESCE(apagado,1) +1 where ip='" + ip+"'")
+        cur.close()
+        return
     
     def retIdTipoFS(self,desc):
         cur=self.conn.cursor()
@@ -98,6 +111,15 @@ class bbdd():
             
         return code_id[0]
     
+    def retIdSoftware(self,desc):
+        
+        cur=self.conn.cursor()
+        cur.execute("select id_sw from tb_inv_software where n_proceso ='"+desc+"'")
+        code_id = cur.fetchone()
+        cur.close()
+            
+        return code_id[0]
+    
     def existeServer(self,nombre):
         
         cur=self.conn.cursor()
@@ -137,6 +159,22 @@ class bbdd():
         
         return result
     
+    def existeSw(self,id_serv):
+        
+        cur=self.conn.cursor()
+        cur.execute("select id_serv from TB_soft_running where id_serv =" + str(id_serv))
+        result = cur.fetchone()
+        cur.close()
+        
+        return result
+    
+    def borraSw(self,id_serv):
+        if self.cur == None:
+            self.cur = self.conn.cursor()
+
+        self.cur.execute('DELETE FROM TB_soft_running WHERE id_serv = ' + str(id_serv))
+        return
+    
     def borraInterfaces(self,id_disp):
         if self.cur == None:
             self.cur = self.conn.cursor()
@@ -158,9 +196,9 @@ class bbdd():
         data=(s.ip,s.fd,idDes,s.nombre,idSO,"N")
         try :
             self.cur.execute("INSERT INTO TB_Dispositivos(ip,fecdes,id_td,nombre,id_so,proc) VALUES (%s,%s,%s,%s,%s,%s)",data)
-        except Exception, error :
-            print error
+        except Exception :
             print ("la IP "+s.ip+" ya existe")
+            self.deshace()
         
         return
         
@@ -215,8 +253,7 @@ class bbdd():
                 try :
                     self.cur.execute(sql,data)
                 except Exception, error :
-                    print error   
-            
+                    print error      
         return
    
     def grabaFS(self,fs,id_serv):
@@ -225,6 +262,17 @@ class bbdd():
         tipoAl = self.retIdTipoAl(fs.tipoAl)
         data = (id_serv,fs.montaje,fs.size,tipoFs,tipoAl)
         sql = "INSERT INTO TB_FS (id_serv, montaje, size, id_tipoFS,id_tipoAl) VALUES (%s,%s,%s,%s,%s)"
+        if self.cur <> None :
+            try :
+                self.cur.execute(sql,data)
+            except Exception, error :
+                print error  
+        return
+    
+    def grabaSw(self,sw,id_serv):
+        id_soft=self.retIdSoftware(sw.cadRunning)
+        data=(id_soft,id_serv)
+        sql='INSERT INTO TB_SOFT_RUNNING (id_sw,id_serv) VALUES(%s,%s)'
         if self.cur <> None :
             try :
                 self.cur.execute(sql,data)

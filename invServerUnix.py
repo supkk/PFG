@@ -7,7 +7,10 @@ from objetos import objServidor
 from objetos import objFS
 from objetos import objIp
 from objetos import bbdd
+from objetos import objSoft
 from easysnmp import Session
+
+
 
 def procesaUname(un):
     s = un.split(' ')
@@ -16,19 +19,24 @@ def procesaUname(un):
 def procesaCPU (c):
     
     cpu = c.walk('hrDeviceType')
-    cores = 2
+    cores = 0
     ncpu=0
     for el in cpu:
         if '.1.3.6.1.2.1.25.3.1.3' in el.value :
             indice = el.oid_index
-            ncpu+=1
-    ncpu=ncpu/cores
+            cores+=1
+    if cores < 2:
+        ncpu=1
+    else:
+        ncpu = cores /2
+        cores = 2
+        
     procesor = c.get('HOST-RESOURCES-MIB::hrDeviceDescr.'+ str(indice)).value  
      
     return procesor,ncpu, cores
 
 def descubreSSH(ip):
-    ok=True
+    ok=None
     return ok
 
 def procesaFS(c,serv):
@@ -73,8 +81,23 @@ def procesaInterfaz(c,serv):
        
     return serv
 
+def procesaSW(c,serv,lsoft):
+    
+    sws=c.walk('hrSWRunPath')
+    dic={}
+    for ls in lsoft:
+        dic[ls[0]] = ls[1]
+    for sw in sws :
+        if sw.value <> '':
+            cad_soft = sw.value +" "+ c.get('hrSWRunParameters.'+sw.oid_index).value
+            for k,v in dic.items() :
+                if  v in cad_soft :
+                    soft = objSoft.objSoft(dic[k])
+                    serv.anade_SW(soft)
+                    dic[k]='___NINGUNO__________'
+    return serv
 
-def descubreIPLinux(ip):
+def descubreIPLinux(ip,lsoft):
 
     
     try:
@@ -83,14 +106,16 @@ def descubreIPLinux(ip):
         serv.v_os = c.get('SNMPv2-MIB::sysDescr.0').value
         serv.so,serv.nombre = procesaUname(serv.v_os)
         ram = c.get ('HOST-RESOURCES-MIB::hrMemorySize.0').value
-        serv.ram = int(ram.encode('ascii'))/1048576
+        serv.ram = int(ram.encode('ascii'))/1000000
         serv.gw = c.get ('IP-MIB::ip.21.1.7.0.0.0.0').value
         serv.cpu, serv.ncpu,serv.cores = procesaCPU(c)
         serv = procesaInterfaz(c,serv)  
-        serv = procesaFS(c,serv)     
+        serv = procesaFS(c,serv)   
+        serv = procesaSW(c,serv,lsoft)  
     except Exception,  error:
         print error
         serv=descubreSSH(ip)
+    
     return serv
 
 def descubreWindows(ip):
@@ -104,15 +129,19 @@ def main():
     conn=bbdd.bbdd()
     sql = 'select * from TB_Dispositivos'
     datos=conn.consulta(sql)
+    sql = 'select id_sw,n_proceso from tb_inv_software'
+    lsoft =conn.consulta(sql)
     for reg in datos:  
         if reg[4]=='LX' :
-            serv=descubreIPLinux(reg[0])
+            serv=descubreIPLinux(reg[0],lsoft)
         elif reg[4]=='WN' :
             descubreWindows(reg[0])
         else:
             descubreOtros(reg[0])
         if serv <> None :
-            serv.grabaBBDD(conn)
+            serv.grabaBBDD(conn,reg[0])
+        else :
+            conn.apuntaApagado(reg[0])
     return
 
 if __name__ == '__main__':

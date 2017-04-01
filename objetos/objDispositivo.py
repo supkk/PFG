@@ -20,6 +20,7 @@ class ObjDispositivo(object):
         self.nombre=nombre
         self.os=os
         self.indice=socket.inet_aton(ip)
+        self.apagado = 0
         
         return
         

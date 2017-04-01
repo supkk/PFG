@@ -48,6 +48,7 @@ CREATE  TABLE TB_Dispositivos(
   id_so   CHARACTER(2), 
   Proc    CHARACTER(1) NOT NULL,
   fecProc DATE,
+  apagado int,
   CONSTRAINT pk_tb_Dispositivos PRIMARY KEY(IP),
   CONSTRAINT fk_TB_Dispositivos_so FOREIGN KEY(id_so) REFERENCES tb_lkp_so(code),
   CONSTRAINT fk_TB_Dispositivos_td FOREIGN KEY(id_td) REFERENCES tb_lkp_Desc(code)
@@ -116,18 +117,30 @@ CREATE  TABLE TB_FS(
    CONSTRAINT fk_TB_FS_TipoAlmacenamiento FOREIGN KEY(id_tipoAl) REFERENCES tb_lkp_Almacenamiento(code)
 );
 
+
+CREATE TABLE tb_lkp_Cat_Software (
+   id_cat      varchar(4),
+   descripcion varchar(40),
+   CONSTRAINT pk_tb_Cat_software PRIMARY KEY(id_cat)
+);
+
 CREATE  TABLE TB_INV_SOFTWARE(
    id_sw       serial NOT NULL,
    Descripcion varchar NOT NULL,
-   CONSTRAINT pk_tb_inv_software PRIMARY KEY(id_sw)
+   id_cat      varchar(4) NOT NULL,
+   n_proceso   varchar NOT NULL,
+   CONSTRAINT pk_tb_inv_software PRIMARY KEY(id_sw),
+   CONSTRAINT fk_TB_FS_Sof_Cat FOREIGN KEY(id_cat) REFERENCES tb_lkp_Cat_Software(id_cat)
 );
 
-CREATE  TABLE tb_lkp_SOFT_RUNNING(
+
+CREATE  TABLE tb_soft_running(
+   _id         integer,
    id_sw       int NOT NULL,
    id_serv     int NOT NULL,
-   CONSTRAINT pk_tb_lkp_SOFT_RUNNING PRIMARY KEY(id_sw,id_serv),
-   CONSTRAINT fk_tb_lkp_SOFT_Servidor FOREIGN KEY(id_serv) REFERENCES TB_Servidor(id_serv),
-   CONSTRAINT fk_tb_lkp_SOFT_INVT FOREIGN KEY(id_sw) REFERENCES TB_INV_SOFTWARE(id_SW)  
+   CONSTRAINT pk_tb_soft_running PRIMARY KEY(id_sw,id_serv),
+   CONSTRAINT fk_tb_SOFT_Servidor FOREIGN KEY(id_serv) REFERENCES TB_Servidor(id_serv),
+   CONSTRAINT fk_tb_SOFT_INVT FOREIGN KEY(id_sw) REFERENCES TB_INV_SOFTWARE(id_SW)  
 );
 
 INSERT INTO tb_lkp_so VALUES ('LX','LINUX');
@@ -157,6 +170,16 @@ INSERT INTO TB_LKP_ALMACENAMIENTO VALUES('OTR','OTRO');
 
 
 insert into tb_net (nombre,ipbase,mascara) values ('NET01','192.168.1.0','255.255.255.0');
+insert into tb_net (nombre,ipbase,mascara) values ('NETLOOKUP','127.0.0.0','255.255.255.0');
+insert into tb_net (nombre,ipbase,mascara) values ('NET_NO_CONFIGURADA','0.0.0.0','0.0.0.0');
 
+INSERT INTO tb_lkp_cat_software (id_cat, Descripcion) VALUES('BBDD','BASE DATOS');
+INSERT INTO tb_lkp_cat_software (id_cat, Descripcion) VALUES('SAPL','SERVIDOR DE APLICACIONES');
+INSERT INTO tb_lkp_cat_software (id_cat, Descripcion) VALUES('SWEB','SERVIDOR WEB');
 
+INSERT INTO tb_inv_software (Descripcion,id_cat,n_proceso) VALUES('SERVIDOR WEB APACHE','SWEB','httpd');
+INSERT INTO tb_inv_software (Descripcion,id_cat,n_proceso) VALUES('SERVIDOR APLICACIONES TOMCAT','SAPL','tomcat');
+INSERT INTO tb_inv_software (Descripcion,id_cat,n_proceso) VALUES('SERVIDOR APLICACIONES JBOSS','SAPL','jboss');
+INSERT INTO tb_inv_software (Descripcion,id_cat,n_proceso) VALUES('SERVIDOR DE BBBDD MYSQL','BBDD','mysql');
+INSERT INTO tb_inv_software (Descripcion,id_cat,n_proceso) VALUES('SERVIDOR DE BBDD POSTGRESQL','BBDD','postgres');
 
