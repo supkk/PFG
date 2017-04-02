@@ -120,6 +120,15 @@ class bbdd():
             
         return code_id[0]
     
+    def retCadSoftware(self,desc):
+        
+        cur=self.conn.cursor()
+        cur.execute("select n_proceso from tb_inv_software where id_sw =" + str(desc))
+        code_id = cur.fetchone()
+        cur.close()
+            
+        return code_id[0]
+    
     def existeServer(self,nombre):
         
         cur=self.conn.cursor()
@@ -268,8 +277,17 @@ class bbdd():
             except Exception, error :
                 print error  
         return
+
+    def actualizaTabla(self,sql):
+        
+        cur=self.conn.cursor()
+        cur.execute(sql)
+        cur.close()
+        
+        return
     
     def grabaSw(self,sw,id_serv):
+        
         id_soft=self.retIdSoftware(sw.cadRunning)
         data=(id_soft,id_serv)
         sql='INSERT INTO TB_SOFT_RUNNING (id_sw,id_serv) VALUES(%s,%s)'

@@ -10,10 +10,11 @@ class objSoft(object):
     '''
 
 
-    def __init__(self,cadRunning):
+    def __init__(self,_id,cadRunning):
         '''
         Constructor
         '''
+        self._id = _id
         self.cadRunning = cadRunning
         return
     

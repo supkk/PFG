@@ -10,10 +10,11 @@ class objFS(object):
     '''
 
 
-    def __init__(self, montaje, size, tipoFs,tipoAl):
+    def __init__(self, _id=None, montaje='', size=0, tipoFs='',tipoAl=''):
         '''
         Constructor
         '''
+        self._id=_id
         self.montaje = montaje
         self.size = size
         self.tipoFs = tipoFs

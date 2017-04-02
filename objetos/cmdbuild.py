@@ -30,8 +30,11 @@ class cmdbuild(object):
         data = str(attr)
         data = data.replace('\'', '"')
         r = requests.post(uri,headers = self.cabeceras, data=data)
-        
-        return json.loads(r.text)['data']
+        if r.ok :
+            result = json.loads(r.text)['data']
+        else :   
+            result = "Error "+str(r.status_code)
+        return result
     
     def actualizaClase(self,clase,attr,idclass):
         
@@ -61,10 +64,10 @@ class cmdbuild(object):
     
     
 if __name__ == '__main__':
-    conn = cmdbuild("192.168.1.46","admin","admin")
-    data = {"Code":"PR6","nombreDisp":"Prueba5"}
+    conn = cmdbuild("192.168.1.41","admin","admin")
+    data = {"Code":"PR8","nombreDisp":"Prueba5"}
     r=conn.creaClase("Servidor", data)
-    data = {"Code":"PR5","nombreDisp":"Prueba6"}
+    data = {"Code":"PR5","nombreDisp":"Prueba6","Estado":"Nuevo"}
     r=conn.actualizaClase("Servidor", data,r)
     
     print r

@@ -58,6 +58,7 @@ CREATE  TABLE TB_Disp(
    id_disp     serial NOT NULL,
    sn          varchar(20),
    nombre      varchar(20) NOT NULL,
+   fsync       date,
    CONSTRAINT pk_tb_Disp PRIMARY KEY(id_disp)
    );
 

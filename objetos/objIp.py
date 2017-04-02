@@ -11,11 +11,11 @@ class objIp(object):
     '''
 
 
-    def __init__(self,ip,mac,mascara,nombre,tipoRed):
+    def __init__(self,_id=None,ip='',mac='',mascara='',nombre='',tipoRed='OTR',net=0):
         '''
         Constructor
         '''
-        self._id=0
+        self._id=_id
         self.nombre = nombre
         self.ip = ip
         self.mac = mac
