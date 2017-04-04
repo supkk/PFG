@@ -19,6 +19,7 @@ class objServidor(object):
         Constructor
         '''
         _id = None
+        self._idDisp = None
         self.id_serv = id_disp
         self.id_disp = id_serv
         self.nombre = nombre
@@ -37,24 +38,25 @@ class objServidor(object):
         if id_serv <> 0 :
             self.cargaServidor(id_disp,id_serv)
         
-    def estaSync(self):
+    def estaCargado(self):
         
         return self._id <> None
     
     def cargaServidor(self,id_disp,id_serv):
         c = bbdd.bbdd()
-        sql = 'select * from tb_disp d inner join tb_servidor s on d.id_disp=s.id_disp where id_serv=' + str(id_serv)
+        sql = 'select s._id,d.nombre, s.ram, s.tipo_cpu, s.n_cpu, s.n_cores, d.sn, s.gw, s.version_os, s.id_so, d._id  from tb_disp d inner join tb_servidor s on d.id_disp=s.id_disp where id_serv=' + str(id_serv)
         s=c.consulta(sql)
-        self.nombre = s[0][2]
-        self.so = s[0][7]
-        self.ram = s[0][9]
-        self.cpu = s[0][10]
-        self.ncpu = s[0][11]
-        self.cores = s[0][12]
-        self.sn = s[0][1]
-        self.gw = s[0][13]
+        self.nombre = s[0][1]
+        self.so = s[0][9]
+        self.ram = s[0][2]
+        self.cpu = s[0][3]
+        self.ncpu = s[0][4]
+        self.cores = s[0][5]
+        self.sn = s[0][6]
+        self.gw = s[0][7]
         self.v_os = s[0][8]
         self._id = s[0][0]
+        self._idDisp = s[0][9]
         sql='select * from tb_interface where id_disp='+str(id_disp)
         cins= c.consulta(sql)
         for i in cins:
@@ -107,10 +109,38 @@ class objServidor(object):
         
         return
     
-    def sincroniza(self):
-#        if self.estaSync()==False:
-            
-            
+    def sincroniza(self,api,conn):
+        
+        data = {'Code': str(self.id_disp)}
+        data['Description']=self.nombre
+        data['Estado']=api.retIdLookup('CI-Estado','NV')
+        data['NS']=self.sn
+        data['nombreDisp']=self.nombre
+        data['CodeServ']= str(self.id_serv)
+        data['SO'] = api.retIdLookup('DISP-SO',self.so)
+        data['VersionOS'] =self.v_os.split(' ')[0]
+        data['RAM'] =self.ram
+        data['CPU'] =self.cpu
+        data['TCPU'] =self.ncpu
+        data['CPC'] =self.cores
+        data['Gateway'] =self.gw
+        
+        if self.estaCargado()==False:
+ 
+            id_class = api.creaClase('Servidor',data)
+            if  id_class > 0:
+                sql = "update tb_Servidor set _id =" + str(id_class) + " where id_serv = " + str(self.id_serv)
+                conn.actualizaTabla(sql) 
+            else :
+                return
+        else :
+            api.actualizaClase('Servidor',data,self._id)
+
+        for fs in self.sfs:
+            fs.sincroniza(api,conn,self.id_serv,self._id)
+        for i in self.ips :
+            i.sincroniza(api,conn,self.id_disp,self._idDisp)
+        conn.confirma()    
         return
 
         

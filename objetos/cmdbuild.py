@@ -22,6 +22,7 @@ class cmdbuild(object):
         r = requests.post(self.url+"sessions",headers = self.cabeceras ,data=data)
         resultado=json.loads(r.text)
         self.cabeceras['CMDBuild-Authorization'] = resultado['data']['_id']
+
         return
     
     def creaClase(self,clase,attr):
@@ -33,7 +34,8 @@ class cmdbuild(object):
         if r.ok :
             result = json.loads(r.text)['data']
         else :   
-            result = "Error "+str(r.status_code)
+            result = -1
+            
         return result
     
     def actualizaClase(self,clase,attr,idclass):
@@ -61,13 +63,24 @@ class cmdbuild(object):
         
         return r.ok
     
-    
+    def  retIdLookup(self,name, ele):
+        
+        idLookup=''
+        uri = self.url+"lookup_types/"+name+"/values"
+        r = requests.get(uri,headers = self.cabeceras)
+        resultado=json.loads(r.text)
+        for l in resultado["data"] :
+            if l['code'] == ele :
+                idLookup = l['_id'] 
+                break
+                            
+        return idLookup
     
 if __name__ == '__main__':
     conn = cmdbuild("192.168.1.41","admin","admin")
     data = {"Code":"PR8","nombreDisp":"Prueba5"}
     r=conn.creaClase("Servidor", data)
-    data = {"Code":"PR5","nombreDisp":"Prueba6","Estado":"Nuevo"}
+    data = {"Code":"PR5","nombreDisp":"Prueba6","Estado":281}
     r=conn.actualizaClase("Servidor", data,r)
     
     print r
