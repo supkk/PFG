@@ -48,7 +48,7 @@ def procesaFS(c,serv):
             s = c.get ('HOST-RESOURCES-MIB::hrStorageSize.'+str(fs.value)).value
             t = c.get ('HOST-RESOURCES-MIB::hrFSType.'+str(fs.value)).value
             if t=='.1.3.6.1.2.1.25.3.9.23' :    
-                tf='EXT'
+                tf='EXT4'
                 ta='INT'
             else:
                 tf='OTR'
@@ -92,7 +92,7 @@ def procesaSW(c,serv,lsoft):
             cad_soft = sw.value +" "+ c.get('hrSWRunParameters.'+sw.oid_index).value
             for k,v in dic.items() :
                 if  v in cad_soft :
-                    soft = objSoft.objSoft(dic[k])
+                    soft = objSoft.objSoft(k,dic[k])
                     serv.anade_SW(soft)
                     dic[k]='___NINGUNO__________'
     return serv
@@ -101,7 +101,7 @@ def descubreIPLinux(ip,lsoft):
 
     
     try:
-        serv=objServidor.objServidor('','',0,'',1,1,'','','')
+        serv=objServidor.objServidor()
         c = Session(hostname=ip, community='public', version=2)
         serv.v_os = c.get('SNMPv2-MIB::sysDescr.0').value
         serv.so,serv.nombre = procesaUname(serv.v_os)
@@ -113,7 +113,7 @@ def descubreIPLinux(ip,lsoft):
         serv = procesaFS(c,serv)   
         serv = procesaSW(c,serv,lsoft)  
     except Exception,  error:
-        print error
+        print Exception, error
         serv=descubreSSH(ip)
     
     return serv

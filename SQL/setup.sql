@@ -55,6 +55,7 @@ CREATE  TABLE TB_Dispositivos(
 );
 
 CREATE  TABLE TB_Disp(
+   _id         int,
    id_disp     serial NOT NULL,
    sn          varchar(20),
    nombre      varchar(20) NOT NULL,

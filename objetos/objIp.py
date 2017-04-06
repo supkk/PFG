@@ -11,7 +11,7 @@ class objIp(object):
     '''
 
 
-    def __init__(self,_id=None,ip='',mac='',mascara='',nombre='',tipoRed='OTR',net=0):
+    def __init__(self,ip='',mac='',mascara='',nombre='',tipoRed='OTR',net=0,_id=None):
         '''
         Constructor
         '''
@@ -31,7 +31,7 @@ class objIp(object):
         conn.grabaIPS(self,id_disp)
         return
     
-    def sincroniza (self,api,conn, id_disp,_id_Disp,id_net):
+    def sincroniza (self,api,conn, id_disp,_id_Disp):
         
         data = {}
         data['Code'] = self.ip
@@ -59,7 +59,7 @@ class objIp(object):
             else :
                 return
         else :
-            api.actualizaClase('FS',data,self._id)
+            api.actualizaClase('Interface',data,self._id)
         return
     
     

@@ -10,7 +10,7 @@ class objFS(object):
     '''
 
 
-    def __init__(self, _id=None, montaje='', size=0, tipoFs='',tipoAl=''):
+    def __init__(self,  montaje='', size=0, tipoFs='',tipoAl='',_id=None):
         '''
         Constructor
         '''

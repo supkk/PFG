@@ -18,7 +18,7 @@ class bbdd():
         '''
         self.cur = None
         try :
-            self.conn = psycopg2.connect(database="sda_db", user="postgres", password="postgres", host="192.168.1.41", port="5432")
+            self.conn = psycopg2.connect(database="sda_db", user="postgres", password="postgres", host="192.168.1.42", port="5432")
         except :
             print ("Error de acceso a BBDD")  
         return   

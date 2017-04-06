@@ -3,6 +3,7 @@ Created on 13 mar. 2017
 
 @author: jose
 '''
+import psycopg2
 from objetos import bbdd
 from objetos import objIp
 from objetos import objFS
@@ -20,8 +21,8 @@ class objServidor(object):
         '''
         _id = None
         self._idDisp = None
-        self.id_serv = id_disp
-        self.id_disp = id_serv
+        self.id_serv = id_serv
+        self.id_disp = id_disp
         self.nombre = nombre
         self.so = so
         self.ram = ram
@@ -38,13 +39,24 @@ class objServidor(object):
         if id_serv <> 0 :
             self.cargaServidor(id_disp,id_serv)
         
+    def retIdDisp(self,id_serv):
+        
+        conn = psycopg2.connect(database="cmdbuild", user="postgres", password="postgres", host="192.168.1.42", port="5432")
+        cur=conn.cursor()
+        cur.execute("select \"Id\" from \"Dispositivo\" where \"Code\" = '" + str(id_serv) + "' and \"Status\" = 'A'")
+        code_id = cur.fetchone()
+        cur.close()
+
+        return code_id[0]
+    
     def estaCargado(self):
         
         return self._id <> None
     
     def cargaServidor(self,id_disp,id_serv):
+        
         c = bbdd.bbdd()
-        sql = 'select s._id,d.nombre, s.ram, s.tipo_cpu, s.n_cpu, s.n_cores, d.sn, s.gw, s.version_os, s.id_so, d._id  from tb_disp d inner join tb_servidor s on d.id_disp=s.id_disp where id_serv=' + str(id_serv)
+        sql = 'select s._id,d.nombre, s.ram, s.tipo_cpu, s.n_cpu, s.n_cores, d.sn, s.gw, s.version_os, s.id_so, d._id from tb_disp d inner join tb_servidor s on d.id_disp=s.id_disp where id_serv=' + str(id_serv)
         s=c.consulta(sql)
         self.nombre = s[0][1]
         self.so = s[0][9]
@@ -56,15 +68,15 @@ class objServidor(object):
         self.gw = s[0][7]
         self.v_os = s[0][8]
         self._id = s[0][0]
-        self._idDisp = s[0][9]
-        sql='select * from tb_interface where id_disp='+str(id_disp)
+        self._idDisp = s[0][10]
+        sql='select _id,id_tipoint,id_net,ip,mascara,mac,nombre from tb_interface where id_disp='+str(id_disp)
         cins= c.consulta(sql)
         for i in cins:
-            self.anade_IP(objIp.objIp(i[0],i[3],i[5],i[4],i[6],i[1],i[2]))
-        sql='select * from tb_fs where id_serv='+str(id_serv)
+            self.anade_IP(objIp.objIp(i[3],i[5],i[4],i[6],i[1],i[2],i[0]))
+        sql='select _id,montaje,size,id_tipoFS,id_tipoAl  from tb_fs where id_serv='+str(id_serv)
         cfs= c.consulta(sql)
         for fs in cfs:
-            self.anade_FS(objFS.objFS(fs[0],fs[2],fs[3],fs[4],fs[5]))
+            self.anade_FS(objFS.objFS(fs[1],fs[2],fs[3],fs[4],fs[0]))
         
         sql='select * from tb_soft_running where id_serv='+str(id_serv)
         sws= c.consulta(sql)
@@ -127,9 +139,14 @@ class objServidor(object):
         
         if self.estaCargado()==False:
  
+ 
             id_class = api.creaClase('Servidor',data)
             if  id_class > 0:
+                self._id=id_class
+                self._idDisp = self.retIdDisp(self.id_serv)
                 sql = "update tb_Servidor set _id =" + str(id_class) + " where id_serv = " + str(self.id_serv)
+                conn.actualizaTabla(sql) 
+                sql = "update tb_Servidor set _id = " + str(self._idDisp) + " where id_disp = " + str(self.id_disp)
                 conn.actualizaTabla(sql) 
             else :
                 return
