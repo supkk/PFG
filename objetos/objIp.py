@@ -21,7 +21,7 @@ class objIp(object):
         self.mac = mac
         self.mascara = mascara 
         self.tipoRed = tipoRed
-        self.net = 0
+        self.net = net
 
     def estaCargado(self):
         
@@ -50,9 +50,9 @@ class objIp(object):
                 data['_sourceId'] = _id_Disp
                 data['_destinationId'] = id_class
                 data['_destinationType'] = "Interface"
-                api.creaRelacion('ServidorToInterface',data)
+                api.creaRelacion('DispToInterfaces',data)
                 data['_sourceType'] = "Red"
-                data['_sourceId'] = self.net
+                data['_sourceId'] = conn.retCodeRed(self.net)
                 api.creaRelacion('RedToInterface',data)
                 sql = "update tb_Interface set _id =" + str(id_class) + " where id_disp = " + str(id_disp)
                 conn.actualizaTabla(sql) 

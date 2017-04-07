@@ -78,10 +78,10 @@ class objServidor(object):
         for fs in cfs:
             self.anade_FS(objFS.objFS(fs[1],fs[2],fs[3],fs[4],fs[0]))
         
-        sql='select * from tb_soft_running where id_serv='+str(id_serv)
+        sql='select _id,id_sw from tb_soft_running where id_serv='+str(id_serv)
         sws= c.consulta(sql)
         for sw in sws:
-            self.anade_SW(objSoft.objSoft(sw[0],c.retCadSoftware(sw[1])))     
+            self.anade_SW(objSoft.objSoft(sw[0],c.retCadSoftware(sw[1]),sw[1]))     
         
         return 
     
@@ -157,6 +157,8 @@ class objServidor(object):
             fs.sincroniza(api,conn,self.id_serv,self._id)
         for i in self.ips :
             i.sincroniza(api,conn,self.id_disp,self._idDisp)
+        for sw in self.sws:
+            sw.sincroniza(api,conn,self.id_serv,self._id)
         conn.confirma()    
         return
 

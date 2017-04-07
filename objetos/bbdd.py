@@ -102,6 +102,23 @@ class bbdd():
             code_id =["ND"]
         return code_id[0]
     
+    def retDescSoftware (self,idw):
+        
+        cur=self.conn.cursor()
+        cur.execute("select descripcion from tb_inv_software where id_sw = " + str(idw))
+        res = cur.fetchone()
+        cur.close()
+             
+        return res[0]
+    
+    def retIdCatalogoSw (self,idw):
+        cur=self.conn.cursor()
+        cur.execute("select _id from tb_inv_software where id_sw = " + str(idw))
+        res = cur.fetchone()
+        cur.close()
+        
+        return res[0]
+    
     def retIdNet(self,desc):
         
         cur=self.conn.cursor()
@@ -110,6 +127,14 @@ class bbdd():
         cur.close()
             
         return code_id[0]
+    
+    def retCodeRed(self,idRed):
+        cur=self.conn.cursor()
+        cur.execute("select _id from tb_net where id_net =" + str(idRed))
+        code_id = cur.fetchone()
+        cur.close()
+        return code_id[0]
+    
     
     def retIdSoftware(self,desc):
         

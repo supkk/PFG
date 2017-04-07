@@ -131,6 +131,7 @@ CREATE  TABLE TB_INV_SOFTWARE(
    Descripcion varchar NOT NULL,
    id_cat      varchar(4) NOT NULL,
    n_proceso   varchar NOT NULL,
+   _id         int,
    CONSTRAINT pk_tb_inv_software PRIMARY KEY(id_sw),
    CONSTRAINT fk_TB_FS_Sof_Cat FOREIGN KEY(id_cat) REFERENCES tb_lkp_Cat_Software(id_cat)
 );

@@ -20,11 +20,25 @@ def sincronizaRed(con,api):
             con.confirma()
     return
 
+def sincronizaCatalogoSw(con,api):
+    
+    sql = 'select id_sw,Descripcion,id_cat,n_proceso,_id from tb_inv_software where _id is null'
+    soft = con.consulta(sql)
+    for sw in soft:
+        data='{"Code":"'+str(sw[0])+'","Description":"'+sw[1]+'","Estado":'+str(api.retIdLookup('CI-Estado','NV'))+',"Categoria":"'+str(api.retIdLookup('Software-Tipo',sw[2]))+'","Patron":"'+sw[3]+'"}'
+        id_class = api.creaClase('CatalogoSw',data)
+        if  id_class > 0:
+            sql = "update tb_inv_software set _id =" + str(id_class) + " where id_sw = " + str(sw[0])
+            con.actualizaTabla(sql)
+            con.confirma()
+    return
+
 def main ():
 
     conn =bbdd.bbdd()
     api = cmdbuild.cmdbuild('192.168.1.42','admin','admin')
-#    sincronizaRed(conn,api)
+ #   sincronizaRed(conn,api)
+    sincronizaCatalogoSw(conn,api)
     sql = "select d.id_disp, s.id_serv from tb_disp d inner join tb_servidor s on d.id_disp = s.id_disp where fsync ='01/01/01'"
 
     lServidores = conn.consulta(sql)
