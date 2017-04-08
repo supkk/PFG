@@ -60,6 +60,7 @@ CREATE  TABLE TB_Disp(
    sn          varchar(20),
    nombre      varchar(20) NOT NULL,
    fsync       date,
+   deleted     boolean,
    CONSTRAINT pk_tb_Disp PRIMARY KEY(id_disp)
    );
 
@@ -74,6 +75,8 @@ CREATE  TABLE TB_Servidor(
    n_cpu       int NOT NULL,
    n_cores     int NOT NULL,
    gw          inet, 
+   fsync       date,
+   deleted     boolean,
    CONSTRAINT pk_tb_Servidor PRIMARY KEY(id_serv),
    CONSTRAINT fk_TB_Servidor_SO FOREIGN KEY(id_so) REFERENCES tb_lkp_so(code), 
    CONSTRAINT fk_TB_Servidor_Disp FOREIGN KEY(id_disp) REFERENCES tb_Disp(id_disp) 
@@ -87,6 +90,8 @@ CREATE  TABLE TB_Router(
    dns         inet,
    puertos     integer,
    gw          inet, 
+   fsync       date,
+   deleted     boolean,
    CONSTRAINT pk_tb_Router PRIMARY KEY(id_router),
    CONSTRAINT fk_TB_Router_Disp FOREIGN KEY(id_disp) REFERENCES tb_Disp(id_disp) 
 );
@@ -98,9 +103,12 @@ CREATE  TABLE TB_Interface(
    ip          inet NOT NULL,
    mascara     inet NOT NULL,
    mac         varchar(20),
-   nombre      varchar(10),
+   nombre      varchar(30),
    id_disp     int NOT NULL,
-   CONSTRAINT pk_tb_Interface PRIMARY KEY(ip),
+   id_int      serial not NULL,
+   fsync       date,
+   deleted     boolean,
+   CONSTRAINT pk_tb_Interface PRIMARY KEY(id_int),
    CONSTRAINT fk_TB_Int_Disp FOREIGN KEY(id_disp) REFERENCES TB_Disp(id_disp),
    CONSTRAINT fk_TB_Int_Net FOREIGN KEY(id_net) REFERENCES tb_net(id_net),
    CONSTRAINT fk_TB_Int_TipoInt FOREIGN KEY(id_TipoInt) REFERENCES tb_lkp_Interface(code)
@@ -113,6 +121,8 @@ CREATE  TABLE TB_FS(
    size        bigint,
    id_tipoFS   varchar(5),
    id_tipoAl   varchar(5),
+   fsync       date,
+   deleted     boolean,
    CONSTRAINT pk_tb_fs PRIMARY KEY(id_serv,montaje),
    CONSTRAINT fk_TB_FS_Servidor FOREIGN KEY(id_serv) REFERENCES TB_Servidor(id_serv),
    CONSTRAINT fk_TB_FS_TipoFS FOREIGN KEY(id_tipoFS) REFERENCES tb_lkp_FS(code),
@@ -141,6 +151,7 @@ CREATE  TABLE tb_soft_running(
    _id         integer,
    id_sw       int NOT NULL,
    id_serv     int NOT NULL,
+   fsync       date,
    CONSTRAINT pk_tb_soft_running PRIMARY KEY(id_sw,id_serv),
    CONSTRAINT fk_tb_SOFT_Servidor FOREIGN KEY(id_serv) REFERENCES TB_Servidor(id_serv),
    CONSTRAINT fk_tb_SOFT_INVT FOREIGN KEY(id_sw) REFERENCES TB_INV_SOFTWARE(id_SW)  
@@ -185,4 +196,4 @@ INSERT INTO tb_inv_software (Descripcion,id_cat,n_proceso) VALUES('SERVIDOR APLI
 INSERT INTO tb_inv_software (Descripcion,id_cat,n_proceso) VALUES('SERVIDOR APLICACIONES JBOSS','SAPL','jboss');
 INSERT INTO tb_inv_software (Descripcion,id_cat,n_proceso) VALUES('SERVIDOR DE BBBDD MYSQL','BBDD','mysql');
 INSERT INTO tb_inv_software (Descripcion,id_cat,n_proceso) VALUES('SERVIDOR DE BBDD POSTGRESQL','BBDD','postgres');
-
+insert into tb_inv_software (descripcion,id_cat,n_proceso) values ('SERVIDOR WEB IIS WINDOWS','SWEB','iissvcs');

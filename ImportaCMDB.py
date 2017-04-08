@@ -37,9 +37,9 @@ def main ():
 
     conn =bbdd.bbdd()
     api = cmdbuild.cmdbuild('192.168.1.42','admin','admin')
- #   sincronizaRed(conn,api)
+    sincronizaRed(conn,api)
     sincronizaCatalogoSw(conn,api)
-    sql = "select d.id_disp, s.id_serv from tb_disp d inner join tb_servidor s on d.id_disp = s.id_disp where fsync ='01/01/01'"
+    sql = "select d.id_disp, s.id_serv from tb_disp d inner join tb_servidor s on d.id_disp = s.id_disp"
 
     lServidores = conn.consulta(sql)
     for s in lServidores:

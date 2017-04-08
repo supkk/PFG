@@ -70,7 +70,7 @@ class cmdbuild(object):
         r = requests.get(uri,headers = self.cabeceras)
         resultado=json.loads(r.text)
         for l in resultado["data"] :
-            if l['code'] == ele :
+            if l['code'] == ele.strip() :
                 idLookup = l['_id'] 
                 break
                             

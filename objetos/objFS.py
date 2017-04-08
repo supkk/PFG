@@ -30,7 +30,7 @@ class objFS(object):
         data['Code'] = self.montaje
         data['PM'] = self.montaje
         data['Description'] = self.montaje
-        data['Capacidad'] = int(self.size/1000)
+        data['Capacidad'] = int(self.size)
         data['Estado'] = api.retIdLookup('CI-Estado','NV')
         data['TipoM'] = api.retIdLookup('FileSystemTipoAlmacenamiento',self.tipoAl)
         data['TipoFS'] = api.retIdLookup('FileSystemTipo',self.tipoFs)

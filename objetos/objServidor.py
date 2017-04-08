@@ -101,16 +101,10 @@ class objServidor(object):
 
         try :
             self.id_disp, self.id_serv = conn.grabaServidor(self)
-            if conn.existeFS(self.id_serv):
-                conn.borraFS(self.id_serv)
             for sf in self.sfs :
                 sf.grabaBBDD(conn,self.id_serv)
-            if conn.existeInterface(self.id_disp)<> None:
-                conn.borraInterfaces(self.id_disp)
             for ip in self.ips:
                 ip.grabaBBDD(conn,self.id_disp)
-            if conn.existeSw(self.id_serv)<> None:
-                conn.borraSw(self.id_disp)
             for sw in self.sws :
                 sw.grabaBBDD(conn,self.id_serv)
             conn.apuntaProcesado(ip.ip)

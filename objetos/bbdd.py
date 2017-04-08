@@ -175,7 +175,7 @@ class bbdd():
             id_red=id_red[0]
         return id_red
     
-    def existeInterface(self,id_disp):
+    def existeInterfaceDisp(self,id_disp):
         
         cur=self.conn.cursor()
         cur.execute("select id_disp from TB_Interface where id_disp =" + str(id_disp))
@@ -184,10 +184,10 @@ class bbdd():
         
         return result
     
-    def existeFS(self,id_serv):
-        
+    def existeFS(self,id_serv,montaje):
+
         cur=self.conn.cursor()
-        cur.execute("select id_serv from TB_fs where id_serv =" + str(id_serv))
+        cur.execute("select size,id_tipofs,id_tipoAl from TB_fs where id_serv =" + str(id_serv)+ " and montaje = '" + montaje + "'")
         result = cur.fetchone()
         cur.close()
         
@@ -209,7 +209,7 @@ class bbdd():
         self.cur.execute('DELETE FROM TB_soft_running WHERE id_serv = ' + str(id_serv))
         return
     
-    def borraInterfaces(self,id_disp):
+    def borraInterfacesDisp(self,id_disp):
         if self.cur == None:
             self.cur = self.conn.cursor()
 
@@ -253,24 +253,23 @@ class bbdd():
                 code_disp=result[0]
             except Exception, error :
                 print error
-            data=(code_disp,idSO,s.ram,s.cpu,s.ncpu,s.cores,s.gw,s.v_os)
-            sql= "INSERT INTO TB_Servidor (id_disp,id_so,ram,tipo_cpu,n_cpu,n_cores,gw,version_os) VALUES (%s,%s,%s,%s,%s,%s,%s,%s)"
-        else :
-            code_disp = code[0]
-            code_serv = code[1]
-            data=(idSO,s.ram,s.cpu,s.ncpu,s.cores,s.gw,s.v_os)
-            sql="UPDATE TB_Servidor SET  id_so =%s ,ram =%s ,tipo_cpu =%s ,n_cpu =%s, n_cores=%s, gw=%s, version_os=%s WHERE id_serv =" +str(code_serv)
-        if self.cur == None :
-            self.cur=self.conn.cursor()
-        try :
+            data=(code_disp,idSO,s.ram,s.cpu,s.ncpu,s.cores,s.gw,s.v_os,time.strftime("%c"))
+            sql= "INSERT INTO TB_Servidor (id_disp,id_so,ram,tipo_cpu,n_cpu,n_cores,gw,version_os,fsync) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)"
             self.cur.execute(sql,data)
             if code == None :
                 self.cur.execute("select currval('tb_servidor_id_serv_seq')")
                 result=self.cur.fetchone()
                 code_serv=result[0]
-                
-        except Exception, error :
-            print error
+        else :
+            code_disp = code[0]
+            code_serv = code[1]
+            data=(idSO,s.ram,s.cpu,s.ncpu,s.cores,s.gw,s.v_os)
+            sql="select id_so,ram,tipo_cpu,n_cpu,n_cores,gw,version_os from tb_servidor where id_serv="+str(code_serv)
+            if data <> self.consulta(sql):
+                data=(idSO,s.ram,s.cpu,s.ncpu,s.cores,s.gw,s.v_os,time.strftime("%c"))
+                sql="UPDATE TB_Servidor SET  id_so =%s ,ram =%s ,tipo_cpu =%s ,n_cpu =%s, n_cores=%s, gw=%s, version_os=%s, fsync =%s WHERE id_serv =" +str(code_serv)
+                self.cur=self.conn.cursor()
+                self.cur.execute(sql,data)      
                     
         return code_disp,code_serv
     
@@ -292,15 +291,27 @@ class bbdd():
    
     def grabaFS(self,fs,id_serv):
 
+
         tipoFs = self.retIdTipoFS(fs.tipoFs)
         tipoAl = self.retIdTipoAl(fs.tipoAl)
-        data = (id_serv,fs.montaje,fs.size,tipoFs,tipoAl)
-        sql = "INSERT INTO TB_FS (id_serv, montaje, size, id_tipoFS,id_tipoAl) VALUES (%s,%s,%s,%s,%s)"
-        if self.cur <> None :
-            try :
-                self.cur.execute(sql,data)
-            except Exception, error :
-                print error  
+       
+        data_fs = self.existeFS(id_serv,fs.montaje)
+        if data_fs == None :
+            data = (id_serv,fs.montaje,fs.size,tipoFs,tipoAl,time.strftime("%c"))
+            sql = "INSERT INTO TB_FS (id_serv, montaje, size, id_tipoFS,id_tipoAl,fsync) VALUES (%s,%s,%s,%s,%s,%s)"
+            if self.cur <> None :
+                try :
+                    self.cur.execute(sql,data)
+                except Exception, error :
+                    print error  
+            data = (fs.size,tipoFs,tipoAl,time.strftime("%c"))
+            if data == data_fs :
+                sql = "UPDATE TB_FS SET size=%s,id_tipoFS=%s,id_tipoAl=%s,fsync=%s where id_serv= "+str(id_serv) +" and montaje ='"+fs.montaje + "'" 
+                if self.cur <> None :
+                    try :
+                        self.cur.execute(sql,data)
+                    except Exception, error :
+                        print error  
         return
 
     def actualizaTabla(self,sql):
