@@ -10,18 +10,19 @@ class objSoft(object):
     '''
 
 
-    def __init__(self,_id='',cadRunning='',idws=0):
+    def __init__(self,idsw='',cadRunning='',_id=0, deleted=False):
         '''
         Constructor
         '''
         self._id = _id
-        self.idsw = idws
+        self.idsw = idsw
         self.cadRunning = cadRunning
+        self.deleted = deleted
         return
     
     def grabaBBDD(self,conn,id_serv):
-        conn.grabaSw(self,id_serv)
-        return
+        modificado = conn.grabaSw(self,id_serv)
+        return modificado
     
     def estaCargado(self):
         return self._id <>  None

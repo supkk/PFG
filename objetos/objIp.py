@@ -11,7 +11,7 @@ class objIp(object):
     '''
 
 
-    def __init__(self,ip='',mac='',mascara='',nombre='',tipoRed='OTR',net=0,_id=None):
+    def __init__(self,ip='',mac='',mascara='',nombre='',tipoRed='OTR',net=0,_id=None,deleted=False):
         '''
         Constructor
         '''
@@ -22,14 +22,15 @@ class objIp(object):
         self.mascara = mascara 
         self.tipoRed = tipoRed
         self.net = net
+        self.deleted = deleted
 
     def estaCargado(self):
         
         return self._id <> None
 
     def grabaBBDD(self,conn,id_disp):
-        conn.grabaIPS(self,id_disp)
-        return
+        modificado = conn.grabaIPS(self,id_disp)
+        return modificado
     
     def sincroniza (self,api,conn, id_disp,_id_Disp):
         

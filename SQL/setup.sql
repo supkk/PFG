@@ -152,9 +152,22 @@ CREATE  TABLE tb_soft_running(
    id_sw       int NOT NULL,
    id_serv     int NOT NULL,
    fsync       date,
+   deleted     boolean,
    CONSTRAINT pk_tb_soft_running PRIMARY KEY(id_sw,id_serv),
    CONSTRAINT fk_tb_SOFT_Servidor FOREIGN KEY(id_serv) REFERENCES TB_Servidor(id_serv),
    CONSTRAINT fk_tb_SOFT_INVT FOREIGN KEY(id_sw) REFERENCES TB_INV_SOFTWARE(id_SW)  
+);
+
+CREATE TABLE tb_sda_config (
+   id               serial not null,
+   fsync            date,
+   host_cmdb        varchar,
+   port             varchar,
+   usuario_cmdb     varchar,
+   password_cmdb    varchar,
+   usuario_ssh      varchar,
+   password_ssh     varchar,
+   CONSTRAINT pk_tb_sda_config PRIMARY KEY(id)
 );
 
 INSERT INTO tb_lkp_so VALUES ('LX','LINUX');
@@ -175,6 +188,7 @@ INSERT INTO TB_LKP_FS VALUES('EX4','EXT4');
 INSERT INTO TB_LKP_FS VALUES('F32','FAT32');
 INSERT INTO TB_LKP_FS VALUES('BRF','BRFS');
 INSERT INTO TB_LKP_FS VALUES('OTR','OTRO FS');
+insert into tb_lkp_fs values ('FAT','FAT');
 
 INSERT INTO TB_LKP_ALMACENAMIENTO VALUES('NFS','NFS');
 INSERT INTO TB_LKP_ALMACENAMIENTO VALUES('SMB','SMB');
@@ -184,7 +198,7 @@ INSERT INTO TB_LKP_ALMACENAMIENTO VALUES('OTR','OTRO');
 
 
 insert into tb_net (nombre,ipbase,mascara) values ('NET01','192.168.1.0','255.255.255.0');
-insert into tb_net (nombre,ipbase,mascara) values ('NETLOOKUP','127.0.0.0','255.255.255.0');
+insert into tb_net (nombre,ipbase,mascara) values ('NETLOOKUP','127.0.0.0','255.0.0.0');
 insert into tb_net (nombre,ipbase,mascara) values ('NET_NO_CONFIGURADA','0.0.0.0','0.0.0.0');
 
 INSERT INTO tb_lkp_cat_software (id_cat, Descripcion) VALUES('BBDD','BASE DATOS');
@@ -197,3 +211,4 @@ INSERT INTO tb_inv_software (Descripcion,id_cat,n_proceso) VALUES('SERVIDOR APLI
 INSERT INTO tb_inv_software (Descripcion,id_cat,n_proceso) VALUES('SERVIDOR DE BBBDD MYSQL','BBDD','mysql');
 INSERT INTO tb_inv_software (Descripcion,id_cat,n_proceso) VALUES('SERVIDOR DE BBDD POSTGRESQL','BBDD','postgres');
 insert into tb_inv_software (descripcion,id_cat,n_proceso) values ('SERVIDOR WEB IIS WINDOWS','SWEB','iissvcs');
+insert into tb_sda_config (fsync, host_cmdb, port, usuario_cmdb, password_cmdb, usuario_ssh, password_ssh) values ('01/01/01','192.168.1.42','8080','admin','admin','user_ssh','user_ssh');

@@ -41,16 +41,21 @@ def descubreSSH(ip):
 
 def procesaFS(c,serv):
     
+    primero =True
     fileSystem = c.walk('hrStorageIndex')
     for fs in fileSystem :
         tipofs = c.get ('HOST-RESOURCES-MIB::hrStorageType.'+str(fs.value)).value
         if tipofs in ('.1.3.6.1.2.1.25.2.1.4','.1.3.6.1.2.1.25.2.1.7') :
-            m = c.get ('HOST-RESOURCES-MIB::hrStorageDescr.'+str(fs.value)).value.split(' ')
+            if primero == True:
+                diferencial = int(fs.value) - 1
+                primero = False
+            m = c.get ('HOST-RESOURCES-MIB::hrStorageDescr.'+str(fs.value)).value.split(' ')[0]
             if m <> 'NOSUCHINSTANCE' :
                 s = c.get ('HOST-RESOURCES-MIB::hrStorageSize.'+str(fs.value)).value
                 bloque = c.get ('HOST-RESOURCES-MIB::hrStorageAllocationUnits.'+str(fs.value)).value
                 s = int(s.encode('ascii'))* int(bloque.encode('ascii'))/1000000
-                t = c.get ('HOST-RESOURCES-MIB::hrFSType.'+str(fs.value)).value
+                indice = int(fs.value) - diferencial
+                t = c.get ('HOST-RESOURCES-MIB::hrFSType.'+str(indice)).value
                 if t=='.1.3.6.1.2.1.25.3.9.23' :    
                     tf='EXT4'
                     ta='INT'
@@ -123,7 +128,7 @@ def descubreIPLinux(ip,lsoft):
         serv = procesaFS(c,serv)   
         serv = procesaSW(c,serv,lsoft)  
     except Exception,  error:
-        print Exception, error
+        print error
         serv=descubreSSH(ip)
     
     return serv
@@ -171,8 +176,10 @@ def main():
             descubreOtros(reg[0])
         if serv <> None :
             serv.grabaBBDD(conn,reg[0])
+            conn.apuntaProcesado(reg[0])
         else :
             conn.apuntaApagado(reg[0])
+        conn.confirma()
     return
 
 if __name__ == '__main__':

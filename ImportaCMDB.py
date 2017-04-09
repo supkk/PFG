@@ -6,6 +6,8 @@ Created on 28 mar. 2017
 from objetos import bbdd
 from objetos import objServidor
 from objetos import cmdbuild
+import argparse
+
 
 def sincronizaRed(con,api):
     
@@ -33,14 +35,20 @@ def sincronizaCatalogoSw(con,api):
             con.confirma()
     return
 
+def recuperaConfig(conn):
+    
+    sql = 'select * from tb_sda_config'
+    config = conn.consulta(sql)
+    return config
+
 def main ():
 
-    conn =bbdd.bbdd()
-    api = cmdbuild.cmdbuild('192.168.1.42','admin','admin')
+    conn = bbdd.bbdd()
+    config = recuperaConfig(conn)
+    api = cmdbuild.cmdbuild(config[0][2],config[0][3],config[0][4])
     sincronizaRed(conn,api)
     sincronizaCatalogoSw(conn,api)
-    sql = "select d.id_disp, s.id_serv from tb_disp d inner join tb_servidor s on d.id_disp = s.id_disp"
-
+    sql = "select d.id_disp, s.id_serv from tb_disp d inner join tb_servidor s on d.id_disp = s.id_disp where  fsync >= '" +config[0[1]]+ "'" 
     lServidores = conn.consulta(sql)
     for s in lServidores:
         serv = objServidor.objServidor(id_disp=s[0],id_serv=s[1])

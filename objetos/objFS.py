@@ -10,7 +10,7 @@ class objFS(object):
     '''
 
 
-    def __init__(self,  montaje='', size=0, tipoFs='',tipoAl='',_id=None):
+    def __init__(self,  montaje='', size=0, tipoFs='',tipoAl='',_id=None, deleted= False):
         '''
         Constructor
         '''
@@ -19,6 +19,7 @@ class objFS(object):
         self.size = size
         self.tipoFs = tipoFs
         self.tipoAl = tipoAl
+        self.deleted = deleted
         
     def estaCargado(self):
         
@@ -54,5 +55,5 @@ class objFS(object):
         return
             
     def grabaBBDD(self,conn,id_serv):
-        conn.grabaFS(self,id_serv)
-        return
+        modificado=conn.grabaFS(self,id_serv)
+        return modificado

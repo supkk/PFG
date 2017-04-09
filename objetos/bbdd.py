@@ -39,6 +39,12 @@ class bbdd():
         
         return rows
     
+    def apuntaApagado(self,ip):
+        cur=self.conn.cursor()
+        cur.execute("update tb_dispositivos set apagado = COALESCE(apagado,1) +1 where ip='" + ip+"'")
+        cur.close()
+        return
+    
     def apuntaProcesado(self,ip):
         cur=self.conn.cursor()
         cur.execute("update tb_dispositivos  set fecproc='"+time.strftime("%c") + "' where ip='" + ip +"'")
@@ -46,12 +52,7 @@ class bbdd():
         cur.close()
         return
     
-    def apuntaApagado(self,ip):
-        cur=self.conn.cursor()
-        cur.execute("update tb_dispositivos set apagado = COALESCE(apagado,1) +1 where ip='" + ip+"'")
-        cur.close()
-        return
-    
+  
     def retIdTipoFS(self,desc):
         cur=self.conn.cursor()
         cur.execute("select code from tb_lkp_fs where descripcion ='"+desc.upper()+"'")
@@ -175,10 +176,10 @@ class bbdd():
             id_red=id_red[0]
         return id_red
     
-    def existeInterfaceDisp(self,id_disp):
-        
+    def existeInterfaceDisp(self,nombre,id_disp):
+
         cur=self.conn.cursor()
-        cur.execute("select id_disp from TB_Interface where id_disp =" + str(id_disp))
+        cur.execute("select id_TipoInt,id_net,ip,mascara,mac,nombre from TB_Interface where id_disp =" + str(id_disp)+" and nombre='"+nombre+"'")
         result = cur.fetchone()
         cur.close()
         
@@ -193,10 +194,10 @@ class bbdd():
         
         return result
     
-    def existeSw(self,id_serv):
+    def existeSw(self,id_serv,id_soft):
         
         cur=self.conn.cursor()
-        cur.execute("select id_serv from TB_soft_running where id_serv =" + str(id_serv))
+        cur.execute("select id_serv from TB_soft_running where id_serv =" + str(id_serv)+ " and id_sw="+str(id_soft))
         result = cur.fetchone()
         cur.close()
         
@@ -239,7 +240,7 @@ class bbdd():
     def grabaServidor(self,s):
         
         idSO=self.retIdSO(s.so)
-        
+        modificado = True
         code = self.existeServer(s.nombre)
         if code == None :
             data_disp=(s.sn,s.nombre)
@@ -265,33 +266,55 @@ class bbdd():
             code_serv = code[1]
             data=(idSO,s.ram,s.cpu,s.ncpu,s.cores,s.gw,s.v_os)
             sql="select id_so,ram,tipo_cpu,n_cpu,n_cores,gw,version_os from tb_servidor where id_serv="+str(code_serv)
-            if data <> self.consulta(sql):
+            datos_serv = self.consulta(sql)
+            if data <> datos_serv[0]:
                 data=(idSO,s.ram,s.cpu,s.ncpu,s.cores,s.gw,s.v_os,time.strftime("%c"))
-                sql="UPDATE TB_Servidor SET  id_so =%s ,ram =%s ,tipo_cpu =%s ,n_cpu =%s, n_cores=%s, gw=%s, version_os=%s, fsync =%s WHERE id_serv =" +str(code_serv)
+                sql="UPDATE TB_Servidor SET  id_so =%s ,ram =%s ,tipo_cpu =%s ,n_cpu =%s, n_cores=%s, gw=%s, version_os=%s, fsync =%s WHERE id_serv =" +str(code_serv) 
                 self.cur=self.conn.cursor()
                 self.cur.execute(sql,data)      
-                    
-        return code_disp,code_serv
+            else :
+                modificado = False
+                        
+        return modificado, code_disp,code_serv
     
 
     
     def grabaIPS(self,ip,id_disp):
         
+        cambiado = False
+        
         idNet=self.existeNet(ip.ip,ip.mascara)
         if  idNet <> None :
+            datosInterface = self.existeInterfaceDisp(ip.nombre,id_disp)
             tipoNet=self.retIdNet(ip.tipoRed)
-            data = (tipoNet,idNet,ip.ip,ip.mascara,ip.mac,ip.nombre,id_disp)
-            sql = "INSERT INTO TB_Interface (id_TipoInt,id_net,ip,mascara, mac, nombre, id_disp) VALUES (%s,%s,%s,%s, %s, %s, %s)"
-            if self.cur <> None :
-                try :
-                    self.cur.execute(sql,data)
-                except Exception, error :
-                    print error      
-        return
+            data = (tipoNet,idNet,ip.ip,ip.mascara,ip.mac,ip.nombre)
+            if datosInterface == None :
+                data = (tipoNet,idNet,ip.ip,ip.mascara,ip.mac,ip.nombre,id_disp,time.strftime("%c"))
+                sql = "INSERT INTO TB_Interface (id_TipoInt,id_net,ip,mascara, mac, nombre, id_disp,fsync) VALUES (%s,%s,%s,%s, %s, %s, %s,%s)"
+                if self.cur <> None :
+                    try :
+                        self.cur.execute(sql,data)
+                        cambiado = True
+                    except Exception, error :
+                        print error
+            else :
+                if data <> datosInterface :
+                    data = (tipoNet,idNet,ip.ip,ip.mascara,ip.mac,ip.nombre,time.strftime("%c"))
+                    sql = "UPDATE TB_Interface SET id_TipoInt=%s,id_net=%s,ip=%s,mascara=%s, mac=%s, nombre=%s, fsync=%s where id_disp="+str(id_disp) + " and nombre = '" + ip.nombre + "'"                    
+                    if self.cur <> None :
+                        try :
+                            self.cur.execute(sql,data)
+                            cambiado = True
+                        except Exception, error :
+                            print error
+        else:
+            print "No existe red donde ubicar la IP "+ip.ip      
+            
+        return cambiado
    
     def grabaFS(self,fs,id_serv):
 
-
+        modificado = False
         tipoFs = self.retIdTipoFS(fs.tipoFs)
         tipoAl = self.retIdTipoAl(fs.tipoAl)
        
@@ -302,17 +325,22 @@ class bbdd():
             if self.cur <> None :
                 try :
                     self.cur.execute(sql,data)
+                    modificado=True
                 except Exception, error :
                     print error  
-            data = (fs.size,tipoFs,tipoAl,time.strftime("%c"))
-            if data == data_fs :
+        else:
+            data = (fs.size,tipoFs,tipoAl)
+            if data <> data_fs :
+                data = (fs.size,tipoFs,tipoAl,time.strftime("%c"))
                 sql = "UPDATE TB_FS SET size=%s,id_tipoFS=%s,id_tipoAl=%s,fsync=%s where id_serv= "+str(id_serv) +" and montaje ='"+fs.montaje + "'" 
+                modificado = True  
                 if self.cur <> None :
                     try :
                         self.cur.execute(sql,data)
                     except Exception, error :
                         print error  
-        return
+    
+        return modificado
 
     def actualizaTabla(self,sql):
         
@@ -324,15 +352,19 @@ class bbdd():
     
     def grabaSw(self,sw,id_serv):
         
+        modificado = False
         id_soft=self.retIdSoftware(sw.cadRunning)
-        data=(id_soft,id_serv)
-        sql='INSERT INTO TB_SOFT_RUNNING (id_sw,id_serv) VALUES(%s,%s)'
-        if self.cur <> None :
-            try :
-                self.cur.execute(sql,data)
-            except Exception, error :
-                print error  
-        return
+        
+        if self.existeSw(id_serv,id_soft) == None:
+            data=(id_soft,id_serv,time.strftime("%c"))
+            sql='INSERT INTO TB_SOFT_RUNNING (id_sw,id_serv,fsync) VALUES(%s,%s,%s)'
+            if self.cur <> None :
+                try :
+                    self.cur.execute(sql,data)
+                    modificado=True
+                except Exception, error :
+                    print error 
+        return modificado
     
     def insertaAll(self,ls):
         

@@ -8,6 +8,7 @@ from objetos import bbdd
 from objetos import objIp
 from objetos import objFS
 from objetos import objSoft
+import time
 
 class objServidor(object):
     '''
@@ -35,6 +36,7 @@ class objServidor(object):
         self.sfs = []
         self.ips = []
         self.sws = []
+        self.deleted = False
         
         if id_serv <> 0 :
             self.cargaServidor(id_disp,id_serv)
@@ -56,7 +58,7 @@ class objServidor(object):
     def cargaServidor(self,id_disp,id_serv):
         
         c = bbdd.bbdd()
-        sql = 'select s._id,d.nombre, s.ram, s.tipo_cpu, s.n_cpu, s.n_cores, d.sn, s.gw, s.version_os, s.id_so, d._id from tb_disp d inner join tb_servidor s on d.id_disp=s.id_disp where id_serv=' + str(id_serv)
+        sql = 'select s._id,d.nombre, s.ram, s.tipo_cpu, s.n_cpu, s.n_cores, d.sn, s.gw, s.version_os, s.id_so, d._id, s.deleted from tb_disp d inner join tb_servidor s on d.id_disp=s.id_disp where id_serv=' + str(id_serv)
         s=c.consulta(sql)
         self.nombre = s[0][1]
         self.so = s[0][9]
@@ -69,19 +71,21 @@ class objServidor(object):
         self.v_os = s[0][8]
         self._id = s[0][0]
         self._idDisp = s[0][10]
-        sql='select _id,id_tipoint,id_net,ip,mascara,mac,nombre from tb_interface where id_disp='+str(id_disp)
+        self.deleted = s[0][11]
+        
+        sql='select _id,id_tipoint,id_net,ip,mascara,mac,nombre,deleted from tb_interface where id_disp='+str(id_disp)
         cins= c.consulta(sql)
         for i in cins:
-            self.anade_IP(objIp.objIp(i[3],i[5],i[4],i[6],i[1],i[2],i[0]))
-        sql='select _id,montaje,size,id_tipoFS,id_tipoAl  from tb_fs where id_serv='+str(id_serv)
+            self.anade_IP(objIp.objIp(i[3],i[5],i[4],i[6],i[1],i[2],i[0],i[7]))
+        sql='select _id,montaje,size,id_tipoFS,id_tipoAl, deleted  from tb_fs where id_serv='+str(id_serv)
         cfs= c.consulta(sql)
         for fs in cfs:
-            self.anade_FS(objFS.objFS(fs[1],fs[2],fs[3],fs[4],fs[0]))
+            self.anade_FS(objFS.objFS(fs[1],fs[2],fs[3],fs[4],fs[0],fs[6]))
         
-        sql='select _id,id_sw from tb_soft_running where id_serv='+str(id_serv)
+        sql='select _id,id_sw,deleted from tb_soft_running where id_serv='+str(id_serv)
         sws= c.consulta(sql)
         for sw in sws:
-            self.anade_SW(objSoft.objSoft(sw[0],c.retCadSoftware(sw[1]),sw[1]))     
+            self.anade_SW(objSoft.objSoft(sw[1],c.retCadSoftware(sw[1]),sw[1]),sw[0],sw[2])     
         
         return 
     
@@ -96,21 +100,106 @@ class objServidor(object):
     def anade_SW(self,soft):
         self.sws.append(soft)
         return
+
+    def retPuntoMontaje(self):
+    
+        lpm =[]
+        for fs in self.sfs:
+            lpm.append(fs.montaje)
+            
+        return lpm 
+    
+    def retNombreInterface(self):
+        lint=[]
+        for i in self.ips:
+            lint.append(i.nombre)
+            
+        return lint
+    
+    def retListaSoftware(self):
+        
+        lsws = []
+        for sw in self.sws :
+            lsws.append(sw.idsw)
+        
+        return lsws
+    
+    def apuntaModificado(self,conn):
+
+        sql="update tb_Servidor set fsync ='"+time.strftime("%c")+"' where id_serv=" + str(self.id_serv)
+        conn.actualizaTabla(sql)
+
+        return
+    
+    def apuntafsBorrados(self,conn):
+        
+        cambiado = False
+        sql = "select montaje from tb_fs where id_serv= " +str(self.id_serv) + " and deleted <> 'True'"
+        lfs= conn.consulta(sql)
+        lmontaje = self.retPuntoMontaje()
+        for fs in lfs:
+            if fs[0] not in lmontaje:
+                sql = "update tb_fs set deleted = 'True', fsync='"+time.strftime("%c")+"' where id_serv="+str(self.id_serv)+ " and montaje = '"+fs[0] + "'"
+                conn.actualizaTabla(sql)
+                cambiado = cambiado or True
+        
+        return cambiado
+    
+    def apuntaInterfacesBorrados(self,conn):
+        
+        cambiado =False
+        sql = "select nombre from tb_Interface where id_disp= " +str(self.id_disp)+ " and deleted <> 'True'"
+        lInter= conn.consulta(sql)
+        lnomInt = self.retNombreInterface()
+        for i in lInter:
+            if i[0] not in lnomInt:
+                sql = "update tb_Interface set deleted = 'True', fsync='"+time.strftime("%c")+"' where id_disp="+str(self.id_disp)+ " and nombre = '"+ i[0] + "'"
+                conn.actualizaTabla(sql)
+                cambiado = cambiado or True
+        return cambiado
+    
+    def apuntaSwBorrado(self,conn):
+        
+        cambiado=False
+        sql = "select id_sw from tb_soft_running where id_serv= " +str(self.id_serv) + " and deleted <> 'True'"
+        lsws= conn.consulta(sql)
+        lnomSoft = self.retListaSoftware()
+        for s in lsws:
+            if s[0] not in lnomSoft:
+                sql = "update tb_soft_running set deleted = 'True', fsync='"+time.strftime("%c")+"' where id_serv="+str(self.id_serv)+ " and id_sw = "+ str(s[0]) + ""
+                conn.actualizaTabla(sql)
+                cambiado = cambiado or True
+                
+        return cambiado
     
     def grabaBBDD(self,conn,ip):
 
         try :
-            self.id_disp, self.id_serv = conn.grabaServidor(self)
+            self.modificado,self.id_disp, self.id_serv = conn.grabaServidor(self)
             for sf in self.sfs :
-                sf.grabaBBDD(conn,self.id_serv)
+                cambiado = sf.grabaBBDD(conn,self.id_serv)
+                self.modificado = self.modificado or cambiado
+            cambiado=self.apuntafsBorrados(conn) 
+            self.modificado = self.modificado or cambiado
+            
             for ip in self.ips:
-                ip.grabaBBDD(conn,self.id_disp)
+                cambiado=ip.grabaBBDD(conn,self.id_disp)
+                self.modificado = self.modificado or cambiado
+            cambiado=self.apuntaInterfacesBorrados(conn) 
+            self.modificado = self.modificado or cambiado
+ 
             for sw in self.sws :
-                sw.grabaBBDD(conn,self.id_serv)
-            conn.apuntaProcesado(ip.ip)
-            conn.confirma()
+                self.cambiado = sw.grabaBBDD(conn,self.id_serv)
+                self.modificado = self.modificado or cambiado
+            cambiado=self.apuntaSwBorrado(conn) 
+            self.modificado = self.modificado or cambiado
+            
+            if self.modificado == True :
+                self.apuntaModificado(conn)
+
+           
         except Exception, error :
-            print (error)
+            print (Exception, error)
             conn.deshace()
         
         return
