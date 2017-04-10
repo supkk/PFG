@@ -12,13 +12,13 @@ class cmdbuild(object):
     '''
 
 
-    def __init__(self, host, user, password):
+    def __init__(self, host,puerto, user, password):
         '''
         Constructor
         '''
         self.cabeceras = { 'Accept': '*/*','Content-Type': 'application/json' }
         data = '{"username":"'+user+'","password":"'+password+'"}'
-        self.url = 'http://'+host+':8080/cmdbuild/services/rest/v1/'
+        self.url = 'http://'+host+':'+puerto+'/cmdbuild/services/rest/v1/'
         r = requests.post(self.url+"sessions",headers = self.cabeceras ,data=data)
         resultado=json.loads(r.text)
         self.cabeceras['CMDBuild-Authorization'] = resultado['data']['_id']

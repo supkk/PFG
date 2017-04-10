@@ -10,6 +10,7 @@ from objetos import objFS
 from objetos import objSoft
 import time
 
+
 class objServidor(object):
     '''
     classdocs
@@ -37,6 +38,7 @@ class objServidor(object):
         self.ips = []
         self.sws = []
         self.deleted = False
+        self.fsync ='01/01/01'
         
         if id_serv <> 0 :
             self.cargaServidor(id_disp,id_serv)
@@ -58,7 +60,7 @@ class objServidor(object):
     def cargaServidor(self,id_disp,id_serv):
         
         c = bbdd.bbdd()
-        sql = 'select s._id,d.nombre, s.ram, s.tipo_cpu, s.n_cpu, s.n_cores, d.sn, s.gw, s.version_os, s.id_so, d._id, s.deleted from tb_disp d inner join tb_servidor s on d.id_disp=s.id_disp where id_serv=' + str(id_serv)
+        sql = 'select s._id,d.nombre, s.ram, s.tipo_cpu, s.n_cpu, s.n_cores, d.sn, s.gw, s.version_os, s.id_so, d._id, s.deleted,s.fsync from tb_disp d inner join tb_servidor s on d.id_disp=s.id_disp where id_serv=' + str(id_serv)
         s=c.consulta(sql)
         self.nombre = s[0][1]
         self.so = s[0][9]
@@ -72,20 +74,21 @@ class objServidor(object):
         self._id = s[0][0]
         self._idDisp = s[0][10]
         self.deleted = s[0][11]
+        self.fsync = s[0][12]
         
-        sql='select _id,id_tipoint,id_net,ip,mascara,mac,nombre,deleted from tb_interface where id_disp='+str(id_disp)
+        sql='select _id,id_tipoint,id_net,ip,mascara,mac,nombre,deleted, fsync from tb_interface where id_disp='+str(id_disp)
         cins= c.consulta(sql)
         for i in cins:
-            self.anade_IP(objIp.objIp(i[3],i[5],i[4],i[6],i[1],i[2],i[0],i[7]))
-        sql='select _id,montaje,size,id_tipoFS,id_tipoAl, deleted  from tb_fs where id_serv='+str(id_serv)
+            self.anade_IP(objIp.objIp(i[3],i[5],i[4],i[6],i[1],i[2],i[0],i[7],i[8]))
+        sql='select _id,montaje,size,id_tipoFS,id_tipoAl, deleted,fsync  from tb_fs where id_serv='+str(id_serv)
         cfs= c.consulta(sql)
         for fs in cfs:
-            self.anade_FS(objFS.objFS(fs[1],fs[2],fs[3],fs[4],fs[0],fs[6]))
+            self.anade_FS(objFS.objFS(fs[1],fs[2],fs[3],fs[4],fs[0],fs[5],fs[6]))
         
-        sql='select _id,id_sw,deleted from tb_soft_running where id_serv='+str(id_serv)
+        sql='select _id,id_sw,deleted,fsync from tb_soft_running where id_serv='+str(id_serv)
         sws= c.consulta(sql)
         for sw in sws:
-            self.anade_SW(objSoft.objSoft(sw[1],c.retCadSoftware(sw[1]),sw[1]),sw[0],sw[2])     
+            self.anade_SW(objSoft.objSoft(sw[1],c.retCadSoftware(sw[1]),sw[0],sw[2],sw[3]))    
         
         return 
     
@@ -204,44 +207,75 @@ class objServidor(object):
         
         return
     
-    def sincroniza(self,api,conn):
+    def borraServidor(self,api,conn):
         
-        data = {'Code': str(self.id_disp)}
-        data['Description']=self.nombre
-        data['Estado']=api.retIdLookup('CI-Estado','NV')
-        data['NS']=self.sn
-        data['nombreDisp']=self.nombre
-        data['CodeServ']= str(self.id_serv)
-        data['SO'] = api.retIdLookup('DISP-SO',self.so)
-        data['VersionOS'] =self.v_os.split(' ')[0]
-        data['RAM'] =self.ram
-        data['CPU'] =self.cpu
-        data['TCPU'] =self.ncpu
-        data['CPC'] =self.cores
-        data['Gateway'] =self.gw
-        
-        if self.estaCargado()==False:
- 
- 
-            id_class = api.creaClase('Servidor',data)
-            if  id_class > 0:
-                self._id=id_class
-                self._idDisp = self.retIdDisp(self.id_serv)
-                sql = "update tb_Servidor set _id =" + str(id_class) + " where id_serv = " + str(self.id_serv)
-                conn.actualizaTabla(sql) 
-                sql = "update tb_Servidor set _id = " + str(self._idDisp) + " where id_disp = " + str(self.id_disp)
-                conn.actualizaTabla(sql) 
-            else :
-                return
+        Correcto = True
+        data = {'deleted':'True'}
+        if self._id <> '' :
+            Correcto = api.actualizaClase('Servidor',data,self._id)
+        if Correcto :
+            for fs in self.sfs :
+                ok=fs.borraFsCMDB(api,conn)
+                Correcto = Correcto and ok
+            for i in self.ips:
+                ok = i.borraIntCMDB(api,conn)
+                Correcto = Correcto and ok
+            for s in self.sws:
+                ok = s.borraSwCMDB(api,conn)
+                Correcto = Correcto and ok
+            if Correcto :
+                sql = "delete from tb_servidor where id_serv = " + str(self.id_serv)    
+                conn.actualizaTabla(sql)
+                sql = "delete from tb_disp where id_disp = " + str(self.id_disp)    
+                conn.actualizaTabla(sql)
+            else:
+                print "Error al borrar el servidor id="+str(self.id_serv)
         else :
-            api.actualizaClase('Servidor',data,self._id)
-
-        for fs in self.sfs:
-            fs.sincroniza(api,conn,self.id_serv,self._id)
-        for i in self.ips :
-            i.sincroniza(api,conn,self.id_disp,self._idDisp)
-        for sw in self.sws:
-            sw.sincroniza(api,conn,self.id_serv,self._id)
+            print "Error al borrar el servidor id="+str(self.id_serv)
+        
+    
+    def sincroniza(self,api,conn,ultimaSync):
+        
+        
+        if not self.deleted :
+            data = {'Code': str(self.id_disp)}
+            data['Description']=self.nombre
+            data['Estado']=api.retIdLookup('CI-Estado','NV')
+            data['NS']=self.sn
+            data['nombreDisp']=self.nombre
+            data['CodeServ']= str(self.id_serv)
+            data['SO'] = api.retIdLookup('DISP-SO',self.so)
+            data['VersionOS'] =self.v_os.split(' ')[0]
+            data['RAM'] =self.ram
+            data['CPU'] =self.cpu
+            data['TCPU'] =self.ncpu
+            data['CPC'] =self.cores
+            data['Gateway'] =self.gw
+            
+            if not self.estaCargado():
+     
+                id_class = api.creaClase('Servidor',data)
+                if  id_class > 0:
+                    self._id=id_class
+                    self._idDisp = self.retIdDisp(self.id_serv)
+                    sql = "update tb_Servidor set _id =" + str(id_class) + " where id_serv = " + str(self.id_serv)
+                    conn.actualizaTabla(sql) 
+                    sql = "update tb_Disp _id = " + str(self._idDisp) + " where id_disp = " + str(self.id_disp)
+                    conn.actualizaTabla(sql) 
+                else :
+                    return
+            else :
+                if self.fsync > ultimaSync :
+                    api.actualizaClase('Servidor',data,self._id)
+    
+            for fs in self.sfs:
+                fs.sincroniza(api,conn,self.id_serv,self._id,ultimaSync)
+            for i in self.ips :
+                i.sincroniza(api,conn,self.id_disp,self._idDisp,ultimaSync)
+            for sw in self.sws:
+                sw.sincroniza(api,conn,self.id_serv,self._id,ultimaSync)
+        else :
+            self.borraServidor()
         conn.confirma()    
         return
 
