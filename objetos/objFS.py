@@ -27,13 +27,13 @@ class objFS(object):
         
         return self._id <> None
     
-    def borraFsCMDB(self,api,conn):
+    def borraFsCMDB(self,api,conn,id_serv):
         
         ok = True
-        if self._id <> '' :
+        if self._id <> None :
             data = {'deleted':'True'}
             ok = api.actualizaClase('FileSystem',data,self._id)
-        sql = "delete from tb_fs where _id="+str(self._id)
+        sql = "delete from tb_fs where id_serv="+str(id_serv)+ " and montaje='"+self.montaje+"'"
         conn.actualizaTabla(sql)
         
         return ok
@@ -66,7 +66,7 @@ class objFS(object):
                 if self.fsync > ultimaSync :
                     api.actualizaClase('FS',data,self._id)
         else:
-            self.borraFsCMDB(api, conn)
+            self.borraFsCMDB(api, conn,id_serv)
             
         return
             

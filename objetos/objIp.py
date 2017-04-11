@@ -30,13 +30,13 @@ class objIp(object):
         
         return self._id <> None
 
-    def borraIntCMDB(self,api,conn):
+    def borraIntCMDB(self,api,conn,id_disp):
         
         ok = True
-        if self._id <> '' :
+        if self._id <> None :
             data = {'deleted':'True'}
             ok = api.actualizaClase('Interface',data,self._id)
-        sql = "delete from tb_Interface where _id="+str(self._id)
+        sql = "delete from tb_Interface where id_disp=" + str(id_disp) + " and nombre ='"+self.nombre+"'" 
         conn.actualizaTabla(sql)
         
         return ok
@@ -77,7 +77,7 @@ class objIp(object):
                 if self.fsync > ultimaSync :
                     api.actualizaClase('Interface',data,self._id)
         else:
-            self.borraIntCMDB(api, conn)
+            self.borraIntCMDB(api, conn,id_disp)
         
         return
     

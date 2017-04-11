@@ -44,15 +44,15 @@ CREATE  TABLE TB_Dispositivos(
   IP      character(15) NOT NULL,
   fecDes  DATE NOT NULL,
   id_td   character(2) NOT NULL,
-  nombre  CHARACTER(25),
   id_so   CHARACTER(2), 
   Proc    CHARACTER(1) NOT NULL,
   fecProc DATE,
   apagado int,
+  id_Dis  int,
   CONSTRAINT pk_tb_Dispositivos PRIMARY KEY(IP),
   CONSTRAINT fk_TB_Dispositivos_so FOREIGN KEY(id_so) REFERENCES tb_lkp_so(code),
   CONSTRAINT fk_TB_Dispositivos_td FOREIGN KEY(id_td) REFERENCES tb_lkp_Desc(code)
-);
+  );
 
 CREATE  TABLE TB_Disp(
    _id         int,

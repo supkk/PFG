@@ -40,15 +40,25 @@ class bbdd():
         return rows
     
     def apuntaApagado(self,ip):
+       
         cur=self.conn.cursor()
-        cur.execute("update tb_dispositivos set apagado = COALESCE(apagado,1) +1 where ip='" + ip+"'")
+        result = self.consulta("select apagado,id_disp from tb_dispositivos where IP='" + ip+"'")
+        if result[0][0] < 3:
+            cur.execute("update tb_dispositivos set apagado = COALESCE(apagado,1) +1 where ip='" + ip+"'")
+        else :
+            if result[0][1] <> 0:
+                cur.execute("update tb_servidor set deleted ='True' where id_disp="+ str(result[0][1]))
+            else :
+                cur.execute("delete from tb_dispositivos where ip='"+ip+"'")
+            
         cur.close()
         return
     
-    def apuntaProcesado(self,ip):
+    def apuntaProcesado(self,ip,id_disp):
         cur=self.conn.cursor()
         cur.execute("update tb_dispositivos  set fecproc='"+time.strftime("%c") + "' where ip='" + ip +"'")
         cur.execute("update tb_dispositivos set apagado = 0  where ip='" + ip+"'")
+        cur.execute("update tb_dispositivos set id_disp ="+str(id_disp)+"  where ip='"+ ip +"'")
         cur.close()
         return
     
@@ -228,9 +238,9 @@ class bbdd():
         
         idDes=self.retIdDesc(s.td)
         idSO=self.retIdSO(s.os)
-        data=(s.ip,s.fd,idDes,s.nombre,idSO,"N")
+        data=(s.ip,s.fd,idDes,idSO,"N",0,0)
         try :
-            self.cur.execute("INSERT INTO TB_Dispositivos(ip,fecdes,id_td,nombre,id_so,proc) VALUES (%s,%s,%s,%s,%s,%s)",data)
+            self.cur.execute("INSERT INTO TB_Dispositivos(ip,fecdes,id_td,id_so,proc,apagado,id_disp) VALUES (%s,%s,%s,%s,%s,%s,%s)",data)
         except Exception :
             print ("la IP "+s.ip+" ya existe")
             self.deshace()

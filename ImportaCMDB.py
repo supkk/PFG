@@ -6,7 +6,7 @@ Created on 28 mar. 2017
 from objetos import bbdd
 from objetos import objServidor
 from objetos import cmdbuild
-
+import time
 
 
 def sincronizaRed(con,api):
@@ -41,6 +41,11 @@ def recuperaConfig(conn):
     config = conn.consulta(sql)
     return config
 
+def actualizaFSync(conn):
+    
+    sql = "update tb_sad_config set fsync = '"+time.strftime("%c")+"'"
+    conn.actualizaTabla(sql)
+    
 def main ():
 
     conn = bbdd.bbdd()
@@ -55,7 +60,7 @@ def main ():
         serv = objServidor.objServidor(id_disp=s[0],id_serv=s[1])
         serv.sincroniza(api,conn,ultimaSync)
     return
-
+    actualizaFSync()
 if __name__ == '__main__':
     main()
     

@@ -20,6 +20,8 @@ class listServer(object):
         return
         
     def insert_or_update(self,server):
+        
+        print "Descubierta IP "+ server.ip
         if self.ls == []:
             self.ls.append(server)
         else:

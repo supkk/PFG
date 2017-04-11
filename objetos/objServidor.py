@@ -211,22 +211,24 @@ class objServidor(object):
         
         Correcto = True
         data = {'deleted':'True'}
-        if self._id <> '' :
+        if self._id <> None :
             Correcto = api.actualizaClase('Servidor',data,self._id)
         if Correcto :
             for fs in self.sfs :
-                ok=fs.borraFsCMDB(api,conn)
+                ok=fs.borraFsCMDB(api,conn,self.id_serv)
                 Correcto = Correcto and ok
             for i in self.ips:
-                ok = i.borraIntCMDB(api,conn)
+                ok = i.borraIntCMDB(api,conn,self.id_disp)
                 Correcto = Correcto and ok
             for s in self.sws:
-                ok = s.borraSwCMDB(api,conn)
+                ok = s.borraSwCMDB(api,conn,self.id_serv)
                 Correcto = Correcto and ok
             if Correcto :
                 sql = "delete from tb_servidor where id_serv = " + str(self.id_serv)    
                 conn.actualizaTabla(sql)
                 sql = "delete from tb_disp where id_disp = " + str(self.id_disp)    
+                conn.actualizaTabla(sql)
+                sql = "delete from tb_dispositivos where id_disp = " + str(self.id_disp)    
                 conn.actualizaTabla(sql)
             else:
                 print "Error al borrar el servidor id="+str(self.id_serv)
@@ -260,7 +262,7 @@ class objServidor(object):
                     self._idDisp = self.retIdDisp(self.id_serv)
                     sql = "update tb_Servidor set _id =" + str(id_class) + " where id_serv = " + str(self.id_serv)
                     conn.actualizaTabla(sql) 
-                    sql = "update tb_Disp _id = " + str(self._idDisp) + " where id_disp = " + str(self.id_disp)
+                    sql = "update tb_Disp set _id = " + str(self._idDisp) + " where id_disp = " + str(self.id_disp)
                     conn.actualizaTabla(sql) 
                 else :
                     return
@@ -275,7 +277,7 @@ class objServidor(object):
             for sw in self.sws:
                 sw.sincroniza(api,conn,self.id_serv,self._id,ultimaSync)
         else :
-            self.borraServidor()
+            self.borraServidor(api,conn)
         conn.confirma()    
         return
 

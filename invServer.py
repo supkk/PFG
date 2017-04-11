@@ -162,21 +162,21 @@ def descubreOtros(ip):
 def main():
     serv=None
     conn=bbdd.bbdd()
-    sql = 'select * from TB_Dispositivos'
+    sql = 'select ip,id_so from TB_Dispositivos'
     datos=conn.consulta(sql)
     sql = 'select id_sw,n_proceso from tb_inv_software'
     lsoft =conn.consulta(sql)
     for reg in datos:  
-        if reg[4]=='LX' :
+        if reg[1]=='LX' :
             serv=descubreIPLinux(reg[0],lsoft)
             print "Encontrado Linux" 
-        elif reg[4]=='WS' :
+        elif reg[1]=='WS' :
             serv=descubreWindows(reg[0],lsoft)
         else:
             descubreOtros(reg[0])
         if serv <> None :
             serv.grabaBBDD(conn,reg[0])
-            conn.apuntaProcesado(reg[0])
+            conn.apuntaProcesado(reg[0],serv.id_disp)
         else :
             conn.apuntaApagado(reg[0])
         conn.confirma()

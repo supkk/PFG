@@ -26,13 +26,13 @@ class objSoft(object):
         modificado = conn.grabaSw(self,id_serv)
         return modificado
     
-    def borraSwCMDB(self,api,conn):
+    def borraSwCMDB(self,api,conn,id_serv):
         
         ok = True
         if self._id <> '' :
             data = {'deleted':'True'}
             ok = api.actualizaClase('SoftwareInstalado',data,self._id)
-        sql = "delete from tb_soft_running where _id="+str(self._id)
+        sql = "delete from tb_soft_running where id_sw="+str(self.idsw)+ " and id_serv="+str(id_serv)
         conn.actualizaTabla(sql)
     
         return ok
@@ -66,5 +66,5 @@ class objSoft(object):
                 if self.fsync > ultimaSync :
                     api.actualizaClase('SoftwareInstalado',data,self._id)
         else:
-            self.borraSwCMDB(api, conn)
+            self.borraSwCMDB(api, conn,id_serv)
         return
