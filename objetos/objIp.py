@@ -3,7 +3,7 @@ Created on 14 mar. 2017
 
 @author: jose
 '''
-
+import ipaddress
 
 
 class objIp(object):
@@ -20,12 +20,21 @@ class objIp(object):
         self.nombre = nombre
         self.ip = ip
         self.mac = mac
-        self.mascara = mascara 
+        self.mascara = self.convertirIP(mascara) 
         self.tipoRed = tipoRed
         self.net = net
         self.deleted = deleted
         self.fsync=fsync
 
+    def convertirIP(self,m):
+        
+        if "." in m :
+            mask= m 
+        else :
+            mask=ipaddress.IPv4Address(int(m,16)).__str__()
+            
+        return mask
+    
     def estaCargado(self):
         
         return self._id <> None

@@ -9,8 +9,79 @@ from objetos import objIp
 from objetos import bbdd
 from objetos import objSoft
 from easysnmp import Session
+from objetos import objssh
 
+def procesaFS_SSH(c,dctC):
+    
+    if 'saltar' in dctC['fileSystem'].keys():
+        saltar = dctC['fileSystem']['saltar']
+    else :
+        saltar=0
+    fss = c.enviaComando(dctC['fileSystem']['comando'], dctC['fileSystem']['regex'],saltar)
+    listafs=[]
+    for fs in fss:
+        listafs.append(objFS(montaje=fs[1],size=int(fs[0]),tipoFs=fs[2],tipoAl='INT'))
+        
+    return listafs
 
+def procesaIP_SSH(c,dctC):
+    
+    if 'saltar' in dctC['fileSystem'].keys():
+        saltar = dctC['net']['saltar']
+    else :
+        saltar=0
+    ints = c.enviaComando(dctC['net']['comando'], dctC['net']['regex'],saltar)
+    listaint=[]
+    for i in ints:
+        listaint.append(objIp(ip=i[1],mac=i[3],mascara=i[2],nombre=i[0],tipoRed=''))
+                        
+    return listaint
+
+def procesaSW_SSH(c,dctC,lsoft):
+    
+    if 'saltar' in dctC['fileSystem'].keys():
+        saltar = dctC['net']['saltar']
+    else :
+        saltar=0
+    sws = c.enviaComando(dctC['procesos']['comando'], dctC['procesos']['regex'],saltar)
+    listaSw=[]
+    dic={}
+    for ls in lsoft:
+        dic[ls[0]] = ls[1]
+        
+    for sw in sws:
+        for k,v in dic.items() :
+            if  v in sw :
+                soft = objSoft(k,dic[k])
+                listaSw.append(soft)
+                dic[k]='___NINGUNO__________'
+                
+                    
+    return listaSw  
+
+def descubreSSH(ip,lsoft):
+    
+    try:
+        conexSSH = objssh(ip,"jose","juanito")
+        dctC =conexSSH.cargaConf()
+    except Exception, error:
+        print error
+        return None
+    
+    serv=objServidor()
+    serv.nombre = conexSSH.enviaComando(dctC['nombre']['comando'], dctC['nombre']['regex'])[0]
+    serv.ram = conexSSH.enviaComando(dctC['ram']['comando'], dctC['ram']['regex'])[0]
+    serv.gw = conexSSH.enviaComando(dctC['gw']['comando'], dctC['gw']['regex'])[0]
+    serv.cpu = conexSSH.enviaComando(dctC['cpu']['comando'], dctC['cpu']['regex'])[0]
+    serv.n_cpu = conexSSH.enviaComando(dctC['n_cpu']['comando'], dctC['n_cpu']['regex'])[0]
+    serv.v_os = conexSSH.enviaComando(dctC['version_os']['comando'], dctC['version_os']['regex'])[0]
+    serv.cores = conexSSH.enviaComando(dctC['cores']['comando'], dctC['cores']['regex'])[0]
+    serv.sn = conexSSH.enviaComando(dctC['sn']['comando'], dctC['sn']['regex'])[0]
+    serv.sfs = procesaFS_SSH(conexSSH,dctC)[:]
+    serv.ips = procesaIP_SSH(conexSSH,dctC)[:]   
+    serv.sws = procesaSW_SSH(conexSSH,dctC,lsoft)[:]
+    
+    return serv
 
 def procesaUname(un):
     s = un.split(' ')
@@ -35,9 +106,7 @@ def procesaCPU (c):
      
     return procesor,ncpu, cores
 
-def descubreSSH(ip):
-    ok=None
-    return ok
+
 
 def procesaFS(c,serv):
     
@@ -129,7 +198,7 @@ def descubreIPLinux(ip,lsoft):
         serv = procesaSW(c,serv,lsoft)  
     except Exception,  error:
         print error
-        serv=descubreSSH(ip)
+        serv=descubreSSH(ip,lsoft)
     
     return serv
 

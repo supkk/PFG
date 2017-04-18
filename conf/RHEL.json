@@ -1,0 +1,13 @@
+{"nombre":{"comando":"hostname","regex":"(.*)"},
+"sn":{"comando":"hostid","regex":"(.*)"},
+"id_so":{"comando":"uname -s","regex":"(.*)"},
+"version_os":{"comando":"lsb_release -a | awk -F ':' '/Descrip/ {print $2}'","regex":"(.*)"},
+"ram":{"comando":"free | awk '/Mem/ {print $2}'","regex":"([0-9]+)"},
+"cpu":{"comando":"lscpu | awk -F : '/Vendor ID/ {print $2}'","regex":"(.*)"},
+"n_cpu":{"comando":"lscpu | awk -F : '/CPU socket/ {print $2}'","regex":"(.*)"},
+"cores":{"comando":"lscpu | awk -F : '/Core/ {print $2}'","regex":"(.*)"},
+"gw":{"comando":"ip route | awk '/default/ {print $3}'","regex":"(.*)"},
+"fileSystem":{"comando":"df -PTBM | awk 'NR>1{print $3\";\"$7\";\"$2}'","regex":"([^M]+)M;([^;]+);([^;]+)\n"},
+"net":{"comando":"ifconfig -a | awk '/Link encap/ {printf \"\\n@@\"$1\";\"$5\"--\"}   /inet / {printf $2\";\"$3\";\"$4}' | awk '/@@/ {print $0\"==\"}' | sed 's/;--/;0:0:0:0:0--/g' | sed 's/--==/--inet:0.0.0.0;Difus.:0.0.0.0;M.sc:255.255.255.0==/g'","regex": "@@([^;]+);([^-]+)-.*?:([^;]+).*?sk:([^=]+)"},
+"procesos":{"comando":"ps -ef","regex":".*? [0-9]+ *?[0-9]+ *?[0-9]+ *?[0-9:]+.*? *?[0-9:]+(.*?)\n"}
+}

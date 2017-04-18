@@ -189,6 +189,9 @@ INSERT INTO TB_LKP_FS VALUES('F32','FAT32');
 INSERT INTO TB_LKP_FS VALUES('BRF','BRFS');
 INSERT INTO TB_LKP_FS VALUES('OTR','OTRO FS');
 insert into tb_lkp_fs values ('FAT','FAT');
+INSERT INTO TB_LKP_FS VALUES('ZFS','ZFS');
+INSERT INTO TB_LKP_FS VALUES('TMP','TMPFS');
+INSERT INTO TB_LKP_FS VALUES('ISO','ISO9660');
 
 INSERT INTO TB_LKP_ALMACENAMIENTO VALUES('NFS','NFS');
 INSERT INTO TB_LKP_ALMACENAMIENTO VALUES('SMB','SMB');
@@ -204,6 +207,7 @@ insert into tb_net (nombre,ipbase,mascara) values ('NET_NO_CONFIGURADA','0.0.0.0
 INSERT INTO tb_lkp_cat_software (id_cat, Descripcion) VALUES('BBDD','BASE DATOS');
 INSERT INTO tb_lkp_cat_software (id_cat, Descripcion) VALUES('SAPL','SERVIDOR DE APLICACIONES');
 INSERT INTO tb_lkp_cat_software (id_cat, Descripcion) VALUES('SWEB','SERVIDOR WEB');
+INSERT INTO tb_lkp_cat_software (id_cat, Descripcion) VALUES('SRMT','TERMINAL REMOTO');
 
 INSERT INTO tb_inv_software (Descripcion,id_cat,n_proceso) VALUES('SERVIDOR WEB APACHE','SWEB','httpd');
 INSERT INTO tb_inv_software (Descripcion,id_cat,n_proceso) VALUES('SERVIDOR APLICACIONES TOMCAT','SAPL','tomcat');
@@ -211,4 +215,6 @@ INSERT INTO tb_inv_software (Descripcion,id_cat,n_proceso) VALUES('SERVIDOR APLI
 INSERT INTO tb_inv_software (Descripcion,id_cat,n_proceso) VALUES('SERVIDOR DE BBBDD MYSQL','BBDD','mysql');
 INSERT INTO tb_inv_software (Descripcion,id_cat,n_proceso) VALUES('SERVIDOR DE BBDD POSTGRESQL','BBDD','postgres');
 insert into tb_inv_software (descripcion,id_cat,n_proceso) values ('SERVIDOR WEB IIS WINDOWS','SWEB','iissvcs');
+insert into tb_inv_software (descripcion,id_cat,n_proceso) values ('SERVIDOR DE TERMINALES','SRMT','sshd');
+
 insert into tb_sda_config (fsync, host_cmdb, port, usuario_cmdb, password_cmdb, usuario_ssh, password_ssh) values ('01/01/01','192.168.1.42','8080','admin','admin','user_ssh','user_ssh');

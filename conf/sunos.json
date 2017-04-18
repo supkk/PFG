@@ -6,7 +6,8 @@
 "cpu":{"comando":"/usr/sbin/psrinfo -pv","regex":"\n.*\n([^\n]+)"},
 "n_cpu":{"comando":"/usr/sbin/psrinfo -p","regex":"(.*)"},
 "gw":{"comando":"netstat -r","regex":"default *([^ ]+)"},
-"fileSystem":{"comando":"df -h  | sort -k 6 > /tmp/f1; df -n | sort -k 1 > /tmp/f2;join -1 6 -2 1 -o 1.2 1.6 2.3 /tmp/f1 /tmp/f2","regex":"([0-9]+). ([^ ]+) ([^ ]+)\n"}
-"net":{"comando":"sudo /usr/bin/ifconfig -a","regex":"sudo /usr/sbin/ifconfig -a | gawk '/IPv4/ {printf \"@@\"$1\";\"} /ether/ {print $2\";\"} /inet / {printf $2\";\"$4\"--\"}' | sed  \"s/--@@/--0:0:0:0;@@/g""},
+"cores":{"comando":"echo 1", "regex":"(.*)"},
+"fileSystem":{"comando":"df -h  | sort -k 6 > /tmp/f1; df -n | sort -k 1 > /tmp/f2;join -1 6 -2 1 -o 1.2 1.6 2.3 /tmp/f1 /tmp/f2","regex":"([0-9]+). ([^ ]+) ([^ ]+)\n"},
+"net":{"comando":"sudo -S /usr/sbin/ifconfig -a | gawk '/IPv4/ {printf \"@@\"$1\";\"} /ether/ {print $2\";\"} /inet / {printf $2\";\"$4\"--\"}' | sed  's/--@@/--0:0:0:0;@@/g'","regex":"@@([^;]+);([^;]+);([^-]+)--([^;]+)"},
 "procesos":{"comando":"ps -ef","regex":".*? [0-9]+ *?[0-9]+ *?[0-9]+ *?[0-9:]+.*? *?[0-9:]+(.*?)\n"}
 }
