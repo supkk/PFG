@@ -2,12 +2,12 @@
 "sn":{"comando":"hostid","regex":"(.*)"},
 "id_so":{"comando":"uname -s","regex":"(.*)"},
 "version_os":{"comando":"lsb_release -a | awk -F ':' '/Descripcion/ {print $2}'","regex":"(.*)"},
-"ram":{"comando":"free | awk '/Mem/ {print $2}'","regex":"([0-9]+)"},
+"ram":{"comando":"free -m | awk '/Mem/ {print $2}'","regex":"([0-9]+)"},
 "cpu":{"comando":"lscpu | awk -F : '/Model name/ {print $2}'","regex":"(.*)"},
 "n_cpu":{"comando":"lscpu | awk -F : '/Socket/ {print $2}'","regex":"(.*)"},
 "cores":{"comando":"lscpu | awk -F : '/Núcleo/ {print $2}'","regex":"(.*)"},
 "gw":{"comando":"ip route | awk '/default/ {print $3}'","regex":"(.*)"},
 "fileSystem":{"comando":"df -TBM | awk 'NR>1{print $3\";\"$7\";\"$2}'","regex":"([^M]+)M;([^;]+);([^;]+)\n"},
-"net":{"comando":"ifconfig -a | awk '/Link/ {printf \"\\n@@\"$1\";\"$5\"--\"}   /inet:/ {printf $2\";\"$3\";\"$4}' | awk '/@@/ {print $0\"==\"}' | sed 's/;--/;0:0:0:0:0--/g' | sed 's/--==/--inet:0.0.0.0;Difus.:0.0.0.0;M.sc:255.255.255.0==/g'","regex": "@@([^;]+);([^-]+)-.*?:([^;]+).*?sc:([^=]+)"},
+"net":{"/sbin/ifconfig -a | awk '/Link encap/ {printf \"\\n@@\"$1\";\"$5\"--;\"}   /inet:/ {printf $2\";\"$3\";\"$4\";\"}' | awk '/inet/ {print $0}' | sed 's/;--;/;0:0:0:0:0:0--;/g'| awk -F';' '/Difus/ { print $1\";"$2\";\"$3\";\"$5} !/Difus/ {print $0}' | awk -F';' '{ print $1\";\"$3\";\"$4\";\"$2}'","regex": "@@([^;]+);.*?:([^;]+).*?:([^;]+);([^-]+)"},
 "procesos":{"comando":"ps -ef","regex":".*? [0-9]+ *?[0-9]+ *?[0-9]+ *?[0-9:]+.*? *?[0-9:]+(.*?)\n"}
 }

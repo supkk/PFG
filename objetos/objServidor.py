@@ -43,15 +43,16 @@ class objServidor(object):
         if id_serv <> 0 :
             self.cargaServidor(id_disp,id_serv)
         
-    def retIdDisp(self,id_serv):
+    def retIdDisp(self,id_disp):
         
-        conn = psycopg2.connect(database="cmdbuild", user="postgres", password="postgres", host="192.168.1.42", port="5432")
+        conn = psycopg2.connect(database="cmdbuild", user="postgres", password="postgres", host="192.168.1.20", port="5432")
         cur=conn.cursor()
-        cur.execute("select \"Id\" from \"Dispositivo\" where \"Code\" = '" + str(id_serv) + "' and \"Status\" = 'A'")
+        cur.execute("select \"Id\" from \"Dispositivo\" where \"Code\" = '" + str(id_disp) + "' and \"Status\" = 'A'")
         code_id = cur.fetchone()
         cur.close()
-
-        return code_id[0]
+        if code_id <> None :
+            code_id = code_id[0]
+        return code_id
     
     def estaCargado(self):
         
@@ -259,7 +260,7 @@ class objServidor(object):
                 id_class = api.creaClase('Servidor',data)
                 if  id_class > 0:
                     self._id=id_class
-                    self._idDisp = self.retIdDisp(self.id_serv)
+                    self._idDisp = self.retIdDisp(self.id_disp)
                     sql = "update tb_Servidor set _id =" + str(id_class) + " where id_serv = " + str(self.id_serv)
                     conn.actualizaTabla(sql) 
                     sql = "update tb_Disp set _id = " + str(self._idDisp) + " where id_disp = " + str(self.id_disp)

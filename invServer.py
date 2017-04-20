@@ -20,7 +20,7 @@ def procesaFS_SSH(c,dctC):
     fss = c.enviaComando(dctC['fileSystem']['comando'], dctC['fileSystem']['regex'],saltar)
     listafs=[]
     for fs in fss:
-        listafs.append(objFS(montaje=fs[1],size=int(fs[0]),tipoFs=fs[2],tipoAl='INT'))
+        listafs.append(objFS.objFS(montaje=fs[1],size=int(fs[0]),tipoFs=fs[2],tipoAl='INTERNO'))
         
     return listafs
 
@@ -33,7 +33,7 @@ def procesaIP_SSH(c,dctC):
     ints = c.enviaComando(dctC['net']['comando'], dctC['net']['regex'],saltar)
     listaint=[]
     for i in ints:
-        listaint.append(objIp(ip=i[1],mac=i[3],mascara=i[2],nombre=i[0],tipoRed=''))
+        listaint.append(objIp.objIp(ip=i[1],mac=i[3],mascara=i[2],nombre=i[0],tipoRed='OTRO'))
                         
     return listaint
 
@@ -52,7 +52,7 @@ def procesaSW_SSH(c,dctC,lsoft):
     for sw in sws:
         for k,v in dic.items() :
             if  v in sw :
-                soft = objSoft(k,dic[k])
+                soft = objSoft.objSoft(k,dic[k])
                 listaSw.append(soft)
                 dic[k]='___NINGUNO__________'
                 
@@ -62,21 +62,22 @@ def procesaSW_SSH(c,dctC,lsoft):
 def descubreSSH(ip,lsoft):
     
     try:
-        conexSSH = objssh(ip,"jose","juanito")
+        conexSSH = objssh.objssh(ip,"jose","juanito")
         dctC =conexSSH.cargaConf()
     except Exception, error:
         print error
         return None
     
-    serv=objServidor()
-    serv.nombre = conexSSH.enviaComando(dctC['nombre']['comando'], dctC['nombre']['regex'])[0]
+    serv=objServidor.objServidor()
+    serv.nombre = conexSSH.enviaComando(dctC['nombre']['comando'], dctC['nombre']['regex'])[0].strip()
     serv.ram = conexSSH.enviaComando(dctC['ram']['comando'], dctC['ram']['regex'])[0]
     serv.gw = conexSSH.enviaComando(dctC['gw']['comando'], dctC['gw']['regex'])[0]
-    serv.cpu = conexSSH.enviaComando(dctC['cpu']['comando'], dctC['cpu']['regex'])[0]
-    serv.n_cpu = conexSSH.enviaComando(dctC['n_cpu']['comando'], dctC['n_cpu']['regex'])[0]
-    serv.v_os = conexSSH.enviaComando(dctC['version_os']['comando'], dctC['version_os']['regex'])[0]
+    serv.cpu = conexSSH.enviaComando(dctC['cpu']['comando'], dctC['cpu']['regex'])[0].strip()
+    serv.ncpu = conexSSH.enviaComando(dctC['n_cpu']['comando'], dctC['n_cpu']['regex'])[0]
+    serv.v_os = conexSSH.enviaComando(dctC['version_os']['comando'], dctC['version_os']['regex'])[0].strip()
     serv.cores = conexSSH.enviaComando(dctC['cores']['comando'], dctC['cores']['regex'])[0]
     serv.sn = conexSSH.enviaComando(dctC['sn']['comando'], dctC['sn']['regex'])[0]
+    serv.so = conexSSH.enviaComando(dctC['id_so']['comando'], dctC['id_so']['regex'])[0]
     serv.sfs = procesaFS_SSH(conexSSH,dctC)[:]
     serv.ips = procesaIP_SSH(conexSSH,dctC)[:]   
     serv.sws = procesaSW_SSH(conexSSH,dctC,lsoft)[:]
@@ -190,14 +191,13 @@ def descubreIPLinux(ip,lsoft):
         serv.v_os = c.get('SNMPv2-MIB::sysDescr.0').value
         serv.so,serv.nombre = procesaUname(serv.v_os)
         ram = c.get ('HOST-RESOURCES-MIB::hrMemorySize.0').value
-        serv.ram = int(ram.encode('ascii'))/1000000
+        serv.ram = int(ram.encode('ascii'))/1000
         serv.gw = c.get ('IP-MIB::ip.21.1.7.0.0.0.0').value
         serv.cpu, serv.ncpu,serv.cores = procesaCPU(c)
         serv = procesaInterfaz(c,serv)  
         serv = procesaFS(c,serv)   
         serv = procesaSW(c,serv,lsoft)  
     except Exception,  error:
-        print error
         serv=descubreSSH(ip,lsoft)
     
     return serv
@@ -214,7 +214,7 @@ def descubreWindows(ip,listaSoftware):
         serv.so = serv.v_os.split(' ')[0]
         serv.nombre = c.get ('SNMPv2-MIB::sysName.0').value
         ram = c.get ('HOST-RESOURCES-MIB::hrMemorySize.0').value
-        serv.ram = int(ram.encode('ascii'))/1000000
+        serv.ram = int(ram.encode('ascii'))/1000
         serv.gw = c.get ('IP-MIB::ip.21.1.7.0.0.0.0').value
         serv.cpu, serv.ncpu,serv.cores = procesaCPU(c)
         serv = procesaInterfaz(c,serv)  
@@ -226,7 +226,7 @@ def descubreWindows(ip,listaSoftware):
     return serv
 
 def descubreOtros(ip):
-    return
+    return None
 
 def main():
     serv=None
@@ -242,7 +242,7 @@ def main():
         elif reg[1]=='WS' :
             serv=descubreWindows(reg[0],lsoft)
         else:
-            descubreOtros(reg[0])
+            serv=descubreOtros(reg[0])
         if serv <> None :
             serv.grabaBBDD(conn,reg[0])
             conn.apuntaProcesado(reg[0],serv.id_disp)

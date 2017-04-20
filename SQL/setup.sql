@@ -48,7 +48,7 @@ CREATE  TABLE TB_Dispositivos(
   Proc    CHARACTER(1) NOT NULL,
   fecProc DATE,
   apagado int,
-  id_Dis  int,
+  id_Disp int,
   CONSTRAINT pk_tb_Dispositivos PRIMARY KEY(IP),
   CONSTRAINT fk_TB_Dispositivos_so FOREIGN KEY(id_so) REFERENCES tb_lkp_so(code),
   CONSTRAINT fk_TB_Dispositivos_td FOREIGN KEY(id_td) REFERENCES tb_lkp_Desc(code)
@@ -174,6 +174,7 @@ INSERT INTO tb_lkp_so VALUES ('LX','LINUX');
 INSERT INTO tb_lkp_so VALUES ('WS','WINDOWS');
 INSERT INTO tb_lkp_so VALUES ('ND','NO DESC');
 INSERT INTO tb_lkp_so VALUES ('OL','OT LINUX');
+INSERT INTO tb_lkp_so VALUES ('SO','SUNOS');
 
 INSERT INTO tb_lkp_Desc VALUES ('NM','NMAP');
 
@@ -192,6 +193,20 @@ insert into tb_lkp_fs values ('FAT','FAT');
 INSERT INTO TB_LKP_FS VALUES('ZFS','ZFS');
 INSERT INTO TB_LKP_FS VALUES('TMP','TMPFS');
 INSERT INTO TB_LKP_FS VALUES('ISO','ISO9660');
+INSERT INTO TB_LKP_FS VALUES('VFA','VFAT');
+INSERT INTO TB_LKP_FS VALUES('DTM','DEVTMPFS');
+INSERT INTO TB_LKP_FS VALUES('DFS','DEVFS');
+INSERT INTO TB_LKP_FS VALUES('DEV','DEV');
+INSERT INTO TB_LKP_FS VALUES('CTF','CTFS');
+INSERT INTO TB_LKP_FS VALUES('PRC','PROC');
+INSERT INTO TB_LKP_FS VALUES('MNT','MNTFS');
+INSERT INTO TB_LKP_FS VALUES('OBJ','OBJFS');
+INSERT INTO TB_LKP_FS VALUES('SHR','SHAREFS');
+INSERT INTO TB_LKP_FS VALUES('LOF','LOFS');
+INSERT INTO TB_LKP_FS VALUES('FD','FD');
+
+
+
 
 INSERT INTO TB_LKP_ALMACENAMIENTO VALUES('NFS','NFS');
 INSERT INTO TB_LKP_ALMACENAMIENTO VALUES('SMB','SMB');
@@ -216,5 +231,7 @@ INSERT INTO tb_inv_software (Descripcion,id_cat,n_proceso) VALUES('SERVIDOR DE B
 INSERT INTO tb_inv_software (Descripcion,id_cat,n_proceso) VALUES('SERVIDOR DE BBDD POSTGRESQL','BBDD','postgres');
 insert into tb_inv_software (descripcion,id_cat,n_proceso) values ('SERVIDOR WEB IIS WINDOWS','SWEB','iissvcs');
 insert into tb_inv_software (descripcion,id_cat,n_proceso) values ('SERVIDOR DE TERMINALES','SRMT','sshd');
+insert into tb_inv_software (descripcion,id_cat,n_proceso) values ('SERVIDOR WEB APACHE','SWEB','apache');
+insert into tb_inv_software (descripcion,id_cat,n_proceso) values ('SERVIDOR DE APLICACIONES PHP','SAPL','php-fpm');
 
 insert into tb_sda_config (fsync, host_cmdb, port, usuario_cmdb, password_cmdb, usuario_ssh, password_ssh) values ('01/01/01','192.168.1.42','8080','admin','admin','user_ssh','user_ssh');

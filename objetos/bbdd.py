@@ -242,7 +242,7 @@ class bbdd():
         try :
             self.cur.execute("INSERT INTO TB_Dispositivos(ip,fecdes,id_td,id_so,proc,apagado,id_disp) VALUES (%s,%s,%s,%s,%s,%s,%s)",data)
             self.confirma()
-        except Exception :
+        except Exception, error :
             print ("la IP "+s.ip+" ya existe")
             self.deshace()
         
