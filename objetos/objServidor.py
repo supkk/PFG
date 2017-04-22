@@ -279,7 +279,7 @@ class objServidor(object):
                 sw.sincroniza(api,conn,self.id_serv,self._id,ultimaSync)
         else :
             self.borraServidor(api,conn)
-        conn.confirma()    
+ 
         return
 
         

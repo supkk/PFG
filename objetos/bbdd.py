@@ -358,6 +358,7 @@ class bbdd():
         cur=self.conn.cursor()
         cur.execute(sql)
         cur.close()
+        self.confirma()
         
         return
     

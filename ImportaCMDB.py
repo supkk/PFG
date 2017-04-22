@@ -19,7 +19,7 @@ def sincronizaRed(con,api):
         if  id_class > 0:
             sql = "update tb_net set _id =" + str(id_class) + " where id_net = " + str(red[1])
             con.actualizaTabla(sql)
-            con.confirma()
+
     return
 
 def sincronizaCatalogoSw(con,api):
@@ -32,7 +32,6 @@ def sincronizaCatalogoSw(con,api):
         if  id_class > 0:
             sql = "update tb_inv_software set _id =" + str(id_class) + " where id_sw = " + str(sw[0])
             con.actualizaTabla(sql)
-            con.confirma()
     return
 
 def recuperaConfig(conn):
@@ -43,7 +42,7 @@ def recuperaConfig(conn):
 
 def actualizaFSync(conn):
     
-    sql = "update tb_sad_config set fsync = '"+time.strftime("%c")+"'"
+    sql = "update tb_sda_config set fsync = '"+time.strftime("%c")+"'"
     conn.actualizaTabla(sql)
     
 def main ():
@@ -59,8 +58,9 @@ def main ():
     for s in lServidores:
         serv = objServidor.objServidor(id_disp=s[0],id_serv=s[1])
         serv.sincroniza(api,conn,ultimaSync)
+    actualizaFSync(conn)
     return
-    actualizaFSync()
+    
 if __name__ == '__main__':
     main()
     

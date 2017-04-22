@@ -6,6 +6,7 @@ Created on 14 mar. 2017
 import ipaddress
 
 
+
 class objIp(object):
     '''
     classdocs
@@ -26,6 +27,8 @@ class objIp(object):
         self.deleted = deleted
         self.fsync=fsync
 
+
+  
     def convertirIP(self,m):
         
         if "." in m :
@@ -52,11 +55,11 @@ class objIp(object):
      
     def grabaBBDD(self,conn,id_disp):
         modificado = conn.grabaIPS(self,id_disp)
+
         return modificado
     
     def sincroniza (self,api,conn, id_disp,_id_Disp,ultimaSync):
         
-
         
         if not self.deleted :
             data = {}
@@ -64,7 +67,7 @@ class objIp(object):
             data['Description'] = self.ip
             data['Nombre'] = self.nombre
             data['Estado'] = api.retIdLookup('CI-Estado','NV')
-            data['Tipo'] = api.retIdLookup('InterfaceTipo',self.tipoRed)
+            data['Tipo'] = api.retIdLookup('Interface-Tipo',self.tipoRed)
             data['MAC'] = self.mac
             data['IP'] = self.ip
             data['Mascara'] = self.mascara

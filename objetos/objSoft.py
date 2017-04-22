@@ -22,8 +22,11 @@ class objSoft(object):
         
         return
     
+    
+    
     def grabaBBDD(self,conn,id_serv):
         modificado = conn.grabaSw(self,id_serv)
+
         return modificado
     
     def borraSwCMDB(self,api,conn,id_serv):

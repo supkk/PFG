@@ -3,7 +3,7 @@ Created on 14 mar. 2017
 
 @author: jose
 '''
-
+import time
 
 class objFS(object):
     '''
@@ -23,6 +23,7 @@ class objFS(object):
         self.deleted = deleted
         self.fsync=fsync
         
+
     def estaCargado(self):
         
         return self._id <> None
@@ -72,4 +73,5 @@ class objFS(object):
             
     def grabaBBDD(self,conn,id_serv):
         modificado=conn.grabaFS(self,id_serv)
+
         return modificado
