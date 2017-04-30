@@ -12,13 +12,13 @@ class bbdd():
     classdocs
     '''
 
-    def __init__(self):
+    def __init__(self, bd="sda_db",u="postgres",pw="postgres",h="192.168.1.20",p="5432"):
         '''
         Constructor
         '''
         self.cur = None
         try :
-            self.conn = psycopg2.connect(database="sda_db", user="postgres", password="postgres", host="192.168.1.20", port="5432")
+            self.conn = psycopg2.connect(database=bd, user=u, password=pw, host=h, port=p)
         except :
             print ("Error de acceso a BBDD")  
         return   
@@ -238,15 +238,17 @@ class bbdd():
         
         idDes=self.retIdDesc(s.td)
         idSO=self.retIdSO(s.os)
+        Correcto = True
         data=(s.ip,s.fd,idDes,idSO,"N",0,0)
+        cur=self.conn.cursor()
         try :
-            self.cur.execute("INSERT INTO TB_Dispositivos(ip,fecdes,id_td,id_so,proc,apagado,id_disp) VALUES (%s,%s,%s,%s,%s,%s,%s)",data)
+            cur.execute("INSERT INTO TB_Dispositivos(ip,fecdes,id_td,id_so,proc,apagado,id_disp) VALUES (%s,%s,%s,%s,%s,%s,%s)",data)
             self.confirma()
         except Exception, error :
-            print ("la IP "+s.ip+" ya existe")
+            Correcto = False
             self.deshace()
         
-        return
+        return Correcto
         
     def grabaServidor(self,s):
         
@@ -380,7 +382,7 @@ class bbdd():
     
     def insertaAll(self,ls):
         
-        self.cur=self.conn.cursor()
+
         for s in ls:
             self.insertaDisp(s)
 

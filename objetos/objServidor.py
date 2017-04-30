@@ -17,7 +17,7 @@ class objServidor(object):
     '''
 
     
-    def __init__(self, id_disp=0,id_serv=0,nombre='',so='',ram=0,cpu='',ncpu=0,cores=0,sn='',gw='',v_os=''):
+    def __init__(self, id_disp=0,id_serv=0,nombre='',so='',ram=0,cpu='',ncpu=0,cores=0,sn='',gw='',v_os='',id_marca='',id_entorno=''):
         '''
         Constructor
         '''
@@ -39,9 +39,23 @@ class objServidor(object):
         self.sws = []
         self.deleted = False
         self.fsync ='01/01/01'
+        self.id_marca = id_marca
+        self.id_entorno = recEntorno()
         
         if id_serv <> 0 :
             self.cargaServidor(id_disp,id_serv)
+            
+    def recEntorno(self):
+        nombre= self.nombre.lower()
+        if "des" in nombre:
+            id_entorno = 'DES'
+        elif 'pre' in nombre:
+            id_entorno = 'PRE'
+        elif 'int' in nombre:
+            id_entorno = 'INT'
+        else:
+            id_entorno ='PRO'   
+        return id_entorno
         
     def retIdDisp(self,id_disp):
         

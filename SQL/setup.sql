@@ -13,6 +13,12 @@ CREATE  TABLE tb_lkp_entorno(
   CONSTRAINT pk_tb_lkp_entorno PRIMARY KEY(code)
 );
 
+CREATE TABLE tb_lkp_MarcaDisp (
+   code        varchar(4),
+   descripcion varchar(40),
+   CONSTRAINT pk_tb_lkp_MarcaDisp PRIMARY KEY(code)
+);
+
 CREATE  TABLE tb_lkp_tabla(
   code  character(3) NOT NULL,
   descripcion  character(20) NOT NULL,
@@ -79,7 +85,9 @@ CREATE  TABLE TB_Disp(
    nombre      varchar(20) NOT NULL,
    fsync       date,
    deleted     boolean,
-   CONSTRAINT pk_tb_Disp PRIMARY KEY(id_disp)
+   id_marca	   varchar(10) NOT 	NULL,
+   CONSTRAINT pk_tb_Disp PRIMARY KEY(id_disp),
+   CONSTRAINT fk_TB_Disp_Marca FOREIGN KEY(id_marca) REFERENCES tb_lkp_MarcaDisp(code) 
    );
 
 CREATE  TABLE TB_Servidor(
@@ -95,9 +103,12 @@ CREATE  TABLE TB_Servidor(
    gw          inet, 
    fsync       date,
    deleted     boolean,
+   id_entorno  varchar(3),
    CONSTRAINT pk_tb_Servidor PRIMARY KEY(id_serv),
    CONSTRAINT fk_TB_Servidor_SO FOREIGN KEY(id_so) REFERENCES tb_lkp_so(code), 
-   CONSTRAINT fk_TB_Servidor_Disp FOREIGN KEY(id_disp) REFERENCES tb_Disp(id_disp) 
+   CONSTRAINT fk_TB_Servidor_Disp FOREIGN KEY(id_disp) REFERENCES tb_Disp(id_disp),
+   CONSTRAINT FK_TB_Servidor_Entorno FOREIGN KEY(id_entorno) REFERENCES TB_lkp_entorno(code)
+   
 );
 
 CREATE  TABLE TB_Router(
@@ -154,6 +165,9 @@ CREATE TABLE tb_lkp_Cat_Software (
    CONSTRAINT pk_tb_Cat_software PRIMARY KEY(id_cat)
 );
 
+
+
+
 CREATE  TABLE TB_INV_SOFTWARE(
    id_sw       serial NOT NULL,
    Descripcion varchar NOT NULL,
@@ -179,15 +193,16 @@ CREATE  TABLE tb_soft_running(
 CREATE TABLE TB_SoftwareInstancia (
    _id			int,
    id_SI		serial NOT NULL,
-   id_sw       int NOT NULL,
-   id_serv     int NOT NULL,
-   entorno      varchar(2),
+   id_sw        int NOT NULL,
+   id_serv      int NOT NULL,
+   id_entorno   varchar(3),
    version      varchar(20),
    home         varchar(100),
    Usuario      varchar(10),
-   fsync       date,
+   fsync        date,
    CONSTRAINT PK_TB_SoftwareInstancia PRIMARY KEY(id_SI),
-   CONSTRAINT fk_tb_SI_SR FOREIGN KEY(id_sw,id_serv) REFERENCES TB_soft_running(id_sw,id_serv)  
+   CONSTRAINT fk_tb_SI_SR FOREIGN KEY(id_sw,id_serv) REFERENCES TB_soft_running(id_sw,id_serv),
+   CONSTRAINT FK_TB_SofInst_Entorno FOREIGN KEY(id_entorno) REFERENCES TB_lkp_entorno(code)
 );
 
 CREATE TABLE TB_DB (
@@ -207,7 +222,8 @@ CREATE TABLE TB_ServAplicaciones (
    id_SA		serial NOT NULL,
    JVM			varchar(100),
    puerto       int,
-   fsync       date,
+   fsync        date,
+   id_entorno   varchar(3),
    CONSTRAINT PK_TB_ServAplicaciones PRIMARY KEY(id_SA),
    CONSTRAINT FK_TB_SA_SoftwareInstancia FOREIGN KEY(id_SI) REFERENCES TB_SoftwareInstancia(id_SI)
 );
@@ -217,7 +233,7 @@ CREATE TABLE TB_ServAplicaciones (
    id_web		serial NOT NULL,
    id_SI        int	not null,
    urlAdmin     int,
-   fsync       date,
+   fsync        date,
    CONSTRAINT PK_TB_ PRIMARY KEY(id_web),
    CONSTRAINT FK_TB_web_SoftwareInstancia FOREIGN KEY(id_SI) REFERENCES TB_SoftwareInstancia(id_SI)
 );
@@ -416,5 +432,11 @@ insert into tb_inv_software (descripcion,id_cat,n_proceso) values ('SERVIDOR WEB
 insert into tb_inv_software (descripcion,id_cat,n_proceso) values ('SERVIDOR DE TERMINALES','SRMT','sshd');
 insert into tb_inv_software (descripcion,id_cat,n_proceso) values ('SERVIDOR WEB APACHE','SWEB','apache');
 insert into tb_inv_software (descripcion,id_cat,n_proceso) values ('SERVIDOR DE APLICACIONES PHP','SAPL','php-fpm');
+
+INSERT INTO TB_LKP_MarcaDisp VALUES('HP','HP');
+INSERT INTO TB_LKP_MarcaDisp VALUES('SUN','SUN');
+INSERT INTO TB_LKP_MarcaDisp VALUES('ORCL','ORACLE');
+INSERT INTO TB_LKP_MarcaDisp VALUES('DELL','DELL');
+
 
 insert into tb_sda_config (fsync, host_cmdb, port, usuario_cmdb, password_cmdb, usuario_ssh, password_ssh) values ('01/01/01','192.168.1.20','8080','admin','admin','user_ssh','user_ssh');
