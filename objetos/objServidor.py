@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 '''
 Created on 13 mar. 2017
 
@@ -17,7 +18,7 @@ class objServidor(object):
     '''
 
     
-    def __init__(self, id_disp=0,id_serv=0,nombre='',so='',ram=0,cpu='',ncpu=0,cores=0,sn='',gw='',v_os='',id_marca='',id_entorno=''):
+    def __init__(self, id_disp=0,id_serv=0,nombre='',so='',ram=0,cpu='',ncpu=0,cores=0,sn='',gw='',v_os='',id_marca='',id_entorno='',virtual=False):
         '''
         Constructor
         '''
@@ -40,7 +41,8 @@ class objServidor(object):
         self.deleted = False
         self.fsync ='01/01/01'
         self.id_marca = id_marca
-        self.id_entorno = recEntorno()
+        self.entorno = self.recEntorno()
+        self.virtual=virtual
         
         if id_serv <> 0 :
             self.cargaServidor(id_disp,id_serv)
@@ -75,7 +77,7 @@ class objServidor(object):
     def cargaServidor(self,id_disp,id_serv):
         
         c = bbdd.bbdd()
-        sql = 'select s._id,d.nombre, s.ram, s.tipo_cpu, s.n_cpu, s.n_cores, d.sn, s.gw, s.version_os, s.id_so, d._id, s.deleted,s.fsync from tb_disp d inner join tb_servidor s on d.id_disp=s.id_disp where id_serv=' + str(id_serv)
+        sql = 'select s._id,d.nombre, s.ram, s.tipo_cpu, s.n_cpu, s.n_cores, d.sn, s.gw, s.version_os, s.id_so, d._id, s.deleted,s.fsync,d.id_marca,s.id_entorno,s.virtual from tb_disp d inner join tb_servidor s on d.id_disp=s.id_disp where id_serv=' + str(id_serv)
         s=c.consulta(sql)
         self.nombre = s[0][1]
         self.so = s[0][9]
@@ -90,6 +92,9 @@ class objServidor(object):
         self._idDisp = s[0][10]
         self.deleted = s[0][11]
         self.fsync = s[0][12]
+        self.id_marca = s[0][13]
+        self.entorno = s[0][14]
+        self.virtual = s[0][15]
         
         sql='select _id,id_tipoint,id_net,ip,mascara,mac,nombre,deleted, fsync from tb_interface where id_disp='+str(id_disp)
         cins= c.consulta(sql)

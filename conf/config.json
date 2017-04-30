@@ -5,5 +5,13 @@
   "user":"postgres",
   "password":"postgres",
   "port":"5432"  
+  },
+  "BD_CMDBuild":
+  {
+  "host":"192.168.1.20",
+  "bd":"cmdbuild",
+  "user":"postgres",
+  "password":"postgres",
+  "port":"5432"  
   }
 }

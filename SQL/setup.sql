@@ -104,6 +104,7 @@ CREATE  TABLE TB_Servidor(
    fsync       date,
    deleted     boolean,
    id_entorno  varchar(3),
+   virtual     boolean,
    CONSTRAINT pk_tb_Servidor PRIMARY KEY(id_serv),
    CONSTRAINT fk_TB_Servidor_SO FOREIGN KEY(id_so) REFERENCES tb_lkp_so(code), 
    CONSTRAINT fk_TB_Servidor_Disp FOREIGN KEY(id_disp) REFERENCES tb_Disp(id_disp),
@@ -437,6 +438,7 @@ INSERT INTO TB_LKP_MarcaDisp VALUES('HP','HP');
 INSERT INTO TB_LKP_MarcaDisp VALUES('SUN','SUN');
 INSERT INTO TB_LKP_MarcaDisp VALUES('ORCL','ORACLE');
 INSERT INTO TB_LKP_MarcaDisp VALUES('DELL','DELL');
+INSERT INTO TB_LKP_MARCADISP VALUES ('NA','NO APLICA');
 
 
 insert into tb_sda_config (fsync, host_cmdb, port, usuario_cmdb, password_cmdb, usuario_ssh, password_ssh) values ('01/01/01','192.168.1.20','8080','admin','admin','user_ssh','user_ssh');

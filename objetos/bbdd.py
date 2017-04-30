@@ -62,7 +62,19 @@ class bbdd():
         cur.close()
         return
     
-  
+    def retIdFab(self,desc):
+        
+        cur=self.conn.cursor()
+        cur.execute("select code from tb_lkp_MarcaDisp where descripcion ='"+desc.upper()+"'")
+        code_id = cur.fetchone()
+        cur.close()
+        if code_id == None :
+            code_retorno = 'NA'
+        else :
+            code_retorno = code_id[0]
+            
+        return code_retorno  
+    
     def retIdTipoFS(self,desc):
         cur=self.conn.cursor()
         cur.execute("select code from tb_lkp_fs where descripcion ='"+desc.upper()+"'")
@@ -256,8 +268,8 @@ class bbdd():
         modificado = True
         code = self.existeServer(s.nombre)
         if code == None :
-            data_disp=(s.sn,s.nombre)
-            sql_disp = 'INSERT INTO tb_disp (sn,nombre) values (%s,%s)'
+            data_disp=(s.sn,s.nombre,s.id_marca)
+            sql_disp = 'INSERT INTO tb_disp (sn,nombre, id_marca) values (%s,%s,%s)'
             if self.cur == None :
                 self.cur=self.conn.cursor()
             try :
@@ -266,9 +278,10 @@ class bbdd():
                 result=self.cur.fetchone()
                 code_disp=result[0]
             except Exception, error :
-                print error
-            data=(code_disp,idSO,s.ram,s.cpu,s.ncpu,s.cores,s.gw,s.v_os,time.strftime("%c"))
-            sql= "INSERT INTO TB_Servidor (id_disp,id_so,ram,tipo_cpu,n_cpu,n_cores,gw,version_os,fsync) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)"
+                print (time.strftime("%c")+"--"+"Error al insertar dispositivo --> "+s.nombre)
+                print (time.strftime("%c")+"--",error)
+            data=(code_disp,idSO,s.ram,s.cpu,s.ncpu,s.cores,s.gw,s.v_os,time.strftime("%c"),s.entorno,s.virtual)
+            sql= "INSERT INTO TB_Servidor (id_disp,id_so,ram,tipo_cpu,n_cpu,n_cores,gw,version_os,fsync,id_entorno,virtual) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
             self.cur.execute(sql,data)
             if code == None :
                 self.cur.execute("select currval('tb_servidor_id_serv_seq')")
@@ -277,12 +290,12 @@ class bbdd():
         else :
             code_disp = code[0]
             code_serv = code[1]
-            data=(idSO,s.ram,s.cpu,s.ncpu,s.cores,s.gw,s.v_os)
-            sql="select id_so,ram,tipo_cpu,n_cpu,n_cores,gw,version_os from tb_servidor where id_serv="+str(code_serv)
+            data=(idSO,s.ram,s.cpu,s.ncpu,s.cores,s.gw,s.v_os,s.entorno,s.virtual)
+            sql="select id_so,ram,tipo_cpu,n_cpu,n_cores,gw,version_os,id_entorno,virtual from tb_servidor where id_serv="+str(code_serv)
             datos_serv = self.consulta(sql)
             if data <> datos_serv[0]:
-                data=(idSO,s.ram,s.cpu,s.ncpu,s.cores,s.gw,s.v_os,time.strftime("%c"))
-                sql="UPDATE TB_Servidor SET  id_so =%s ,ram =%s ,tipo_cpu =%s ,n_cpu =%s, n_cores=%s, gw=%s, version_os=%s, fsync =%s WHERE id_serv =" +str(code_serv) 
+                data=(idSO,s.ram,s.cpu,s.ncpu,s.cores,s.gw,s.v_os,time.strftime("%c"),s.entorno,s.virtual)
+                sql="UPDATE TB_Servidor SET  id_so =%s ,ram =%s ,tipo_cpu =%s ,n_cpu =%s, n_cores=%s, gw=%s, version_os=%s, fsync =%s ,id_entorno=%s, virtual=%s WHERE id_serv =" +str(code_serv) 
                 self.cur=self.conn.cursor()
                 self.cur.execute(sql,data)      
             else :
@@ -290,14 +303,31 @@ class bbdd():
                         
         return modificado, code_disp,code_serv
     
-
+    def creaNet(self,ip,mask):
+        address = ipcalc.Network(ip,mask)  
+        red = address.network().dq
+        data = ("NET_"+red,red,mask)
+        sql = 'insert into tb_net (nombre,red,mask) values (%s,%s,%s)'
+        try:
+            self.cur=self.conn.cursor()
+            self.cur.execute(sql,data)
+            self.cur.execute("select currval('tb_net_id_net_seq')")
+            result=self.cur.fetchone()
+            id_net=result[0]
+        except Exception, error :
+            id_net = 0
+            
+            
+        return id_net
     
     def grabaIPS(self,ip,id_disp):
         
         cambiado = False
         
         idNet=self.existeNet(ip.ip,ip.mascara)
-        if  idNet <> None :
+        if  idNet == None :
+            idNet = self.CreaNet(ip.ip,ip.mascara)
+        if idNet <> 0 :
             datosInterface = self.existeInterfaceDisp(ip.nombre,id_disp)
             tipoNet=self.retIdNet(ip.tipoRed)
             data = (tipoNet,idNet,ip.ip,ip.mascara,ip.mac,ip.nombre)
@@ -309,7 +339,8 @@ class bbdd():
                         self.cur.execute(sql,data)
                         cambiado = True
                     except Exception, error :
-                        print error
+                        print (time.strftime("%c")+"--"+ error)
+                        print (time.strftime("%c")+"--"+"Error al insertar la IP  "+ ip.ip +" con mascara " + ip.mascara)
             else :
                 if data <> datosInterface :
                     data = (tipoNet,idNet,ip.ip,ip.mascara,ip.mac,ip.nombre,time.strftime("%c"))
@@ -319,10 +350,11 @@ class bbdd():
                             self.cur.execute(sql,data)
                             cambiado = True
                         except Exception, error :
-                            print error
-        else:
-            print "No existe red donde ubicar la IP "+ip.ip      
-            
+                            print (time.strftime("%c")+"--"+ error)
+                            print (time.strftime("%c")+"--"+"Error al actualizar la red "+ ip.ip +" con mascara " + ip.mascara)
+    
+        else :
+            print (time.strftime("%c")+"--"+"Error al grabar la red "+ ip.ip +" con mascara " + ip.mascara)    
         return cambiado
    
     def grabaFS(self,fs,id_serv):
@@ -379,14 +411,7 @@ class bbdd():
                 except Exception, error :
                     print error 
         return modificado
-    
-    def insertaAll(self,ls):
-        
 
-        for s in ls:
-            self.insertaDisp(s)
-
-        return
     
     def cierraDB(self):
         self.conn.close()

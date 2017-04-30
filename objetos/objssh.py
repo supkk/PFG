@@ -36,9 +36,9 @@ class objssh(object):
             
         return
     
-    def cargaConf(self):
+    def cargaPlantilla(self,tipo):
 
-        fichero = "/home/jose/workspace/PFG/conf/"+self.so+".json"
+        fichero = "./conf/"+tipo+"/"+self.so+".json"
         dc = json.loads(open(fichero).read())
         
         return dc 

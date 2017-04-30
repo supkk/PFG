@@ -1,8 +1,13 @@
+# -*- coding: utf-8 -*-
+
 '''
 Created on 15 mar. 2017
 
 @author: jose
 '''
+import time
+import argparse
+import simplejson as json
 from objetos import objServidor
 from objetos import objFS
 from objetos import objIp
@@ -10,6 +15,7 @@ from objetos import bbdd
 from objetos import objSoft
 from easysnmp import Session
 from objetos import objssh
+
 
 def procesaFS_SSH(c,dctC):
     
@@ -59,13 +65,14 @@ def procesaSW_SSH(c,dctC,lsoft):
                     
     return listaSw  
 
-def descubreSSH(ip,lsoft):
+def descubreSSH(ip,lsoft,con):
     
     try:
         conexSSH = objssh.objssh(ip,"jose","juanito")
-        dctC =conexSSH.cargaConf()
+        dctC =conexSSH.cargaPlantilla("so")
     except Exception, error:
-        print error
+        print (time.strftime("%c")+"--"+"Error al conectar por SSH con --> "+ip )
+        print (time.strftime("%c")+"--", error)
         return None
     
     serv=objServidor.objServidor()
@@ -81,6 +88,12 @@ def descubreSSH(ip,lsoft):
     serv.sfs = procesaFS_SSH(conexSSH,dctC)[:]
     serv.ips = procesaIP_SSH(conexSSH,dctC)[:]   
     serv.sws = procesaSW_SSH(conexSSH,dctC,lsoft)[:]
+    serv.virtual = (conexSSH.enviaComando(dctC['virtual']['comando'], dctC['virtual']['regex'])<> None)
+    marca = conexSSH.enviaComando(dctC['marca']['comando'], dctC['marca']['regex'])[0]
+    serv.id_marca= con.retIdFab(marca)
+    if serv.id_marca == 'NA':
+        print (time.strftime("%c")+"-- Posible marca nueva  "+ marca)
+    
     
     return serv
 
@@ -174,7 +187,9 @@ def procesaSW(c,serv,lsoft):
         dic[ls[0]] = ls[1]
     for sw in sws :
         if sw.value <> '':
-            cad_soft = sw.value +" "+ c.get('hrSWRunParameters.'+sw.oid_index).value
+            cad_soft = sw.value +" "+c.get('hrSWRunName.'+sw.oid_index).value +" "+c.get('hrSWRunParameters.'+sw.oid_index).value
+            if 'VBoxService' in cad_soft:
+                serv.virtual=True
             for k,v in dic.items() :
                 if  v in cad_soft :
                     soft = objSoft.objSoft(k,dic[k])
@@ -182,7 +197,7 @@ def procesaSW(c,serv,lsoft):
                     dic[k]='___NINGUNO__________'
     return serv
 
-def descubreIPLinux(ip,lsoft):
+def descubreIPLinux(ip,lsoft,con):
 
     
     try:
@@ -190,6 +205,7 @@ def descubreIPLinux(ip,lsoft):
         c = Session(hostname=ip, community='public', version=2)
         serv.v_os = c.get('SNMPv2-MIB::sysDescr.0').value
         serv.so,serv.nombre = procesaUname(serv.v_os)
+        serv.entorno = serv.recEntorno()
         ram = c.get ('HOST-RESOURCES-MIB::hrMemorySize.0').value
         serv.ram = int(ram.encode('ascii'))/1000
         serv.gw = c.get ('IP-MIB::ip.21.1.7.0.0.0.0').value
@@ -197,8 +213,10 @@ def descubreIPLinux(ip,lsoft):
         serv = procesaInterfaz(c,serv)  
         serv = procesaFS(c,serv)   
         serv = procesaSW(c,serv,lsoft)  
+        serv.id_marca ='NA'
     except Exception,  error:
-        serv=descubreSSH(ip,lsoft)
+        print (time.strftime("%c")+"--"+"No conecto por SNMP. Intento por SSH --> "+ip)
+        serv=descubreSSH(ip,lsoft,con)
     
     return serv
 
@@ -213,6 +231,7 @@ def descubreWindows(ip,listaSoftware):
         serv.v_os = c.get('SNMPv2-MIB::sysDescr.0').value.split('- Software:')[1].strip()
         serv.so = serv.v_os.split(' ')[0]
         serv.nombre = c.get ('SNMPv2-MIB::sysName.0').value
+        serv.entorno = serv.recEntorno()
         ram = c.get ('HOST-RESOURCES-MIB::hrMemorySize.0').value
         serv.ram = int(ram.encode('ascii'))/1000
         serv.gw = c.get ('IP-MIB::ip.21.1.7.0.0.0.0').value
@@ -220,25 +239,42 @@ def descubreWindows(ip,listaSoftware):
         serv = procesaInterfaz(c,serv)  
         serv = procesaFS(c,serv)   
         serv = procesaSW(c,serv,listaSoftware)  
+        serv.id_marca ='NA'
     except Exception,  error:
-        print Exception, error
+        print (time.strftime("%c")+"--"+"Error al conectar por SNMP. Lo intento por WMI --> "+ip)
+        print (time.strftime("%c")+"--", Exception, error)
         serv=descubreWMI(ip)
     return serv
 
 def descubreOtros(ip):
     return None
 
+def parametros():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-v", "--verbose", help="Descubre elementos de red", action="store_true")
+    parser.add_argument("-i", "--ip" ,help="Descubre solo una IP" )
+    parser.add_argument("-c","--conf",help="ruta del fichero de configuración")
+    args = parser.parse_args()  
+    cnf =  json.loads(open(args.conf).read())
+    return cnf,args;
+
+
 def main():
+    cnf,arg = parametros()
+    
     serv=None
-    conn=bbdd.bbdd()
-    sql = 'select ip,id_so from TB_Dispositivos'
+    conf=cnf['BaseDatos']
+    conn=bbdd.bbdd(bd=conf['bd'],u=conf['user'],pw=conf['password'],h=conf['host'],p=conf['port'])
+    if type(arg.ip) <> str:
+        sql = 'select ip,id_so from TB_Dispositivos'
+    else :
+        sql = "select ip,id_so from TB_Dispositivos where ip='"+arg.ip+"'"
     datos=conn.consulta(sql)
     sql = 'select id_sw,n_proceso from tb_inv_software'
     lsoft =conn.consulta(sql)
     for reg in datos:  
         if reg[1]=='LX' :
-            serv=descubreIPLinux(reg[0],lsoft)
-            print "Encontrado Linux" 
+            serv=descubreIPLinux(reg[0],lsoft,conn)
         elif reg[1]=='WS' :
             serv=descubreWindows(reg[0],lsoft)
         else:
@@ -249,6 +285,7 @@ def main():
         else :
             conn.apuntaApagado(reg[0])
         conn.confirma()
+        print (time.strftime("%c")+"-- Procesado el servidor "+ reg[0])
     return
 
 if __name__ == '__main__':
