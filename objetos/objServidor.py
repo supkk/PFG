@@ -273,6 +273,10 @@ class objServidor(object):
             data['TCPU'] =self.ncpu
             data['CPC'] =self.cores
             data['Gateway'] =self.gw
+            data['Entorno'] =api.retIdLookup('CI-Entorno',self.entorno)
+            data['Marca'] =api.retIdLookup('Disp-Marca',self.id_marca)
+            data['Carga'] =api.retIdLookup('CI-TipoCarga',"AU")
+            data['Virtual'] = str(self.virtual).lower()
             
             if not self.estaCargado():
      
@@ -284,11 +288,14 @@ class objServidor(object):
                     conn.actualizaTabla(sql) 
                     sql = "update tb_Disp set _id = " + str(self._idDisp) + " where id_disp = " + str(self.id_disp)
                     conn.actualizaTabla(sql) 
+                    print (time.strftime("%c")+"-- Añadido el  servidor  "+ self.nombre)
                 else :
+                    print (time.strftime("%c")+"-- Error al sincronizar el   servidor  "+ self.nombre)
                     return
             else :
                 if self.fsync > ultimaSync :
                     api.actualizaClase('Servidor',data,self._id)
+                    print (time.strftime("%c")+"-- Actualizado el  servidor  "+ self.nombre)
     
             for fs in self.sfs:
                 fs.sincroniza(api,conn,self.id_serv,self._id,ultimaSync)

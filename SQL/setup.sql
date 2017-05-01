@@ -82,7 +82,7 @@ CREATE  TABLE TB_Disp(
    _id         int,
    id_disp     serial NOT NULL,
    sn          varchar(20),
-   nombre      varchar(20) NOT NULL,
+   nombre      varchar(50) NOT NULL,
    fsync       date,
    deleted     boolean,
    id_marca	   varchar(10) NOT 	NULL,
@@ -439,6 +439,7 @@ INSERT INTO TB_LKP_MarcaDisp VALUES('SUN','SUN');
 INSERT INTO TB_LKP_MarcaDisp VALUES('ORCL','ORACLE');
 INSERT INTO TB_LKP_MarcaDisp VALUES('DELL','DELL');
 INSERT INTO TB_LKP_MARCADISP VALUES ('NA','NO APLICA');
+INSERT INTO TB_LKP_MARCADISP VALUES ('ACER','ACER');
 
 
 insert into tb_sda_config (fsync, host_cmdb, port, usuario_cmdb, password_cmdb, usuario_ssh, password_ssh) values ('01/01/01','192.168.1.20','8080','admin','admin','user_ssh','user_ssh');

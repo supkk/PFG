@@ -1,9 +1,11 @@
+# -*- coding: utf-8 -*-
 '''
 Created on 14 mar. 2017
 
 @author: jose
 '''
 import ipaddress
+import time
 
 
 
@@ -71,6 +73,7 @@ class objIp(object):
             data['MAC'] = self.mac
             data['IP'] = self.ip
             data['Mascara'] = self.mascara
+            data['Carga'] = api.retIdLookup('CI-TipoCarga',"AU")
             if self.estaCargado()==False:
                 id_class = api.creaClase('Interface',data)
                 if  id_class > 0:
@@ -85,12 +88,14 @@ class objIp(object):
                     api.creaRelacion('RedToInterface',data)
                     sql = "update tb_Interface set _id =" + str(id_class) + " where id_disp = " + str(id_disp) +" and nombre ='"+self.nombre+"'"               
                     conn.actualizaTabla(sql) 
+                    print (time.strftime("%c")+"-- Añadido el  Interfaz "+ self.nombre + " con la IP " + self.ip)
             else :
                 if self.fsync > ultimaSync :
                     api.actualizaClase('Interface',data,self._id)
+                    print (time.strftime("%c")+"-- Actualizado el  Interfaz "+ self.nombre + " con la IP " + self.ip)
         else:
             self.borraIntCMDB(api, conn,id_disp)
-        
+            print (time.strftime("%c")+"-- Borrado el  Interfaz "+ self.nombre + " con la IP " + self.ip)
         return
     
     

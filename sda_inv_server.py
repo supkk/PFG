@@ -65,10 +65,10 @@ def procesaSW_SSH(c,dctC,lsoft):
                     
     return listaSw  
 
-def descubreSSH(ip,lsoft,con):
+def descubreSSH(ip,lsoft,con,config):
     
     try:
-        conexSSH = objssh.objssh(ip,"jose","juanito")
+        conexSSH = objssh.objssh(ip,config['user'],config['password'])
         dctC =conexSSH.cargaPlantilla("so")
     except Exception, error:
         print (time.strftime("%c")+"--"+"Error al conectar por SSH con --> "+ip )
@@ -88,8 +88,8 @@ def descubreSSH(ip,lsoft,con):
     serv.sfs = procesaFS_SSH(conexSSH,dctC)[:]
     serv.ips = procesaIP_SSH(conexSSH,dctC)[:]   
     serv.sws = procesaSW_SSH(conexSSH,dctC,lsoft)[:]
-    serv.virtual = (conexSSH.enviaComando(dctC['virtual']['comando'], dctC['virtual']['regex'])<> None)
-    marca = conexSSH.enviaComando(dctC['marca']['comando'], dctC['marca']['regex'])[0]
+    serv.virtual = (conexSSH.enviaComando(dctC['virtual']['comando'], dctC['virtual']['regex'])[0]<> '')
+    marca = conexSSH.enviaComando(dctC['marca']['comando'], dctC['marca']['regex'])[0].strip()
     serv.id_marca= con.retIdFab(marca)
     if serv.id_marca == 'NA':
         print (time.strftime("%c")+"-- Posible marca nueva  "+ marca)
@@ -197,7 +197,7 @@ def procesaSW(c,serv,lsoft):
                     dic[k]='___NINGUNO__________'
     return serv
 
-def descubreIPLinux(ip,lsoft,con):
+def descubreIPLinux(ip,lsoft,con,config):
 
     
     try:
@@ -216,7 +216,7 @@ def descubreIPLinux(ip,lsoft,con):
         serv.id_marca ='NA'
     except Exception,  error:
         print (time.strftime("%c")+"--"+"No conecto por SNMP. Intento por SSH --> "+ip)
-        serv=descubreSSH(ip,lsoft,con)
+        serv=descubreSSH(ip,lsoft,con,config)
     
     return serv
 
@@ -273,8 +273,9 @@ def main():
     sql = 'select id_sw,n_proceso from tb_inv_software'
     lsoft =conn.consulta(sql)
     for reg in datos:  
+        print (time.strftime("%c")+"-- Comienzo a procesar el servidor "+ reg[0])
         if reg[1]=='LX' :
-            serv=descubreIPLinux(reg[0],lsoft,conn)
+            serv=descubreIPLinux(reg[0],lsoft,conn,cnf['conecta_ssh'])
         elif reg[1]=='WS' :
             serv=descubreWindows(reg[0],lsoft)
         else:

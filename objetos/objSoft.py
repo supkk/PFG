@@ -1,8 +1,10 @@
+# -*- coding: utf-8 -*-
 '''
 Created on 1 abr. 2017
 
 @author: jose
 '''
+import time
 
 class objSoft(object):
     '''
@@ -49,7 +51,10 @@ class objSoft(object):
         if not self.deleted :
             data = {'Code': str(self.idsw)}
             data['Description']=conn.retDescSoftware(self.idsw)
+            nombre = data['Description']
             data['Estado']=api.retIdLookup('CI-Estado','NV')
+            data['Carga'] =api.retIdLookup('CI-TipoCarga',"AU")
+
             if not self.estaCargado() :
                 id_class = api.creaClase('SoftwareInstalado',data)
                 if  id_class > 0:
@@ -65,9 +70,12 @@ class objSoft(object):
                     data['_sourceType'] = "CatalogoSw"
                     data['_sourceId'] = conn.retIdCatalogoSw(self.idsw)
                     api.creaRelacion('CatalogoToSoftware',data)
+                    print (time.strftime("%c")+"-- Añadido el  Software "+ nombre ) 
             else :
                 if self.fsync > ultimaSync :
                     api.actualizaClase('SoftwareInstalado',data,self._id)
+                    print (time.strftime("%c")+"-- Actualizado el  Software "+ nombre )
         else:
             self.borraSwCMDB(api, conn,id_serv)
+            print (time.strftime("%c")+"-- Borrado el  Software "+ nombre )
         return

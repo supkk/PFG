@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 '''
 Created on 14 mar. 2017
 
@@ -51,6 +52,7 @@ class objFS(object):
             data['Estado'] = api.retIdLookup('CI-Estado','NV')
             data['TipoM'] = api.retIdLookup('FileSystemTipoAlmacenamiento',self.tipoAl)
             data['TipoFS'] = api.retIdLookup('FileSystemTipo',self.tipoFs)
+            data['Carga'] =api.retIdLookup('CI-TipoCarga',"AU")
             
             if not self.estaCargado():
                 id_class = api.creaClase('FS',data)
@@ -62,13 +64,15 @@ class objFS(object):
                     data['_destinationType'] = "FS"
                     sql = "update tb_fs set _id =" + str(id_class) + " where id_serv = " + str(id_serv)+ " and montaje = '" +self.montaje + "'"
                     api.creaRelacion('ServidorToFileSystem',data)
-                    conn.actualizaTabla(sql) 
+                    conn.actualizaTabla(sql)
+                    print (time.strftime("%c")+"-- Añadido el  Sistema de fichero "+ self.montaje ) 
             else :
                 if self.fsync > ultimaSync :
                     api.actualizaClase('FS',data,self._id)
+                    print (time.strftime("%c")+"-- Actualizado el  Sistema de fichero "+ self.montaje ) 
         else:
             self.borraFsCMDB(api, conn,id_serv)
-            
+            print (time.strftime("%c")+"-- Borrado el  Sistema de fichero "+ self.montaje ) 
         return
             
     def grabaBBDD(self,conn,id_serv):

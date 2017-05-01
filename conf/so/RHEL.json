@@ -9,7 +9,7 @@
 "gw":{"comando":"/sbin/ip route | awk '/default/ {print $3}'","regex":"(.*)"},
 "fileSystem":{"comando":"df -PTBM | awk 'NR>1{print $3\";\"$7\";\"$2}'","regex":"([^M]+)M;([^;]+);([^;]+)\n"},
 "net":{"comando":"/sbin/ifconfig -a | awk '/Link encap/ {printf \"\\n@@\"$1\";\"$5\"--;\"}   /inet / {printf $2\";\"$3\";\"$4}' | awk '/@@/ {print $0\"==\"}' | sed 's/;--/;0:0:0:0:0--/g' | sed 's/--==/--inet:0.0.0.0;Difus.:0.0.0.0;M.sc:255.255.255.0==/g' | sed 's/;==/==/g' | awk -F';' '/Bcast/ { print $1\";\"$2\";\"$3\";\"$5} !/Bcast/ {print $0}' | awk -F';' '{ print $1\";\"$3\";\"$4\";\"$2}'","regex": "@@([^;]+);.*?:([^;]+).*?:([^=]+).*?;([^-]+)"},
-"procesos":{"comando":"ps -ef","regex":".*? [0-9]+ *?[0-9]+ *?[0-9]+ *?[0-9:]+.*? *?[0-9:]+(.*?)\n"}
+"procesos":{"comando":"ps -ef","regex":".*? [0-9]+ *?[0-9]+ *?[0-9]+ *?[0-9:]+.*? *?[0-9:]+(.*?)\n"},
 "marca":{"comando":"sudo dmidecode | grep \"^System Information\" -A1 | awk  -F: '/Manu/  {print $2}'","regex":"(.*)"},
-"virtual":{"comando":"lsmod | grep \"vboxguest\|wmware\"","regex":"(.*)"}
+"virtual":{"comando":"lsmod | grep vboxguest","regex":"(.*)"}
 }

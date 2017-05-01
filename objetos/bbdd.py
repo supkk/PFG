@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 '''
 Created on 8 mar. 2017
 
@@ -246,17 +247,35 @@ class bbdd():
         self.cur.execute('DELETE FROM TB_FS WHERE id_serv = ' + str(id_serv))
         return
     
+    def ExisteIpNoSync(self,ip):
+        
+        existe = False
+        cur=self.conn.cursor()
+        cur.execute("select id_disp from tb_dispositivos where ip ='"+ip+"'")
+        result = cur.fetchone()
+        cur.close()
+        if result <> None :
+            if result[0]==0:
+                existe=True
+        return  existe
+    
     def insertaDisp(self,s):
         
         idDes=self.retIdDesc(s.td)
         idSO=self.retIdSO(s.os)
         Correcto = True
-        data=(s.ip,s.fd,idDes,idSO,"N",0,0)
+        
         cur=self.conn.cursor()
         try :
-            cur.execute("INSERT INTO TB_Dispositivos(ip,fecdes,id_td,id_so,proc,apagado,id_disp) VALUES (%s,%s,%s,%s,%s,%s,%s)",data)
+            if self.ExisteIpNoSync(s.ip):
+                data=(s.fd,idDes,idSO,"N")
+                sql = "update tb_dispositivos set fecdes=%s,id_td=%s,id_so=%s,proc=%s where ip='" + s.ip + "'"
+            else :
+                data=(s.ip,s.fd,idDes,idSO,"N",0,0)
+                sql = "INSERT INTO TB_Dispositivos(ip,fecdes,id_td,id_so,proc,apagado,id_disp) VALUES (%s,%s,%s,%s,%s,%s,%s)"
+            cur.execute(sql,data)
             self.confirma()
-        except Exception, error :
+        except Exception, error:
             Correcto = False
             self.deshace()
         
