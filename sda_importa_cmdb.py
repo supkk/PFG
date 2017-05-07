@@ -63,7 +63,7 @@ def parametros():
     parser = argparse.ArgumentParser()
     parser.add_argument("-v", "--verbose", help="Sincroniza sda con cmdbuild", action="store_true")
     parser.add_argument("-n", "--nombre" ,help="Sincroniza solo un servidor" )
-    parser.add_argument("-c","--conf",help="ruta del fichero de configuración")
+    parser.add_argument("-c","--conf",help="ruta del fichero de configuración",default='./conf/config.json')
     args = parser.parse_args()  
     cnf =  json.loads(open(args.conf).read())
     return cnf,args
@@ -85,12 +85,14 @@ def main ():
         sql = "select d.id_disp, s.id_serv from tb_disp d inner join tb_servidor s on d.id_disp = s.id_disp where  s.fsync >= '" +str(config[0][1])+ "' and d.nombre ='"+arg.nombre +"'" 
   
     lServidores = conn.consulta(sql)
+    print (time.strftime("%c")+"-- Iniciando proceso de syncronización. La última fue   "+ str(config[0][1]))
     for s in lServidores:
         serv = objServidor.objServidor(id_disp=s[0],id_serv=s[1])
         print (time.strftime("%c")+"-- Iniciando la sincronizacion del servidor  "+ serv.nombre)
         serv.sincroniza(api,conn,ultimaSync)
         print (time.strftime("%c")+"-- Terminada la sincronizacion del servidor  "+ serv.nombre)
     actualizaFSync(conn)
+    print (time.strftime("%c")+"-- Fin del proceso de sincronización")
     return
     
 if __name__ == '__main__':

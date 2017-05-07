@@ -16,10 +16,10 @@ import simplejson as json
 def parametros():
     parser = argparse.ArgumentParser()
     parser.add_argument("-v", "--verbose", help="Descubre elementos de red", action="store_true")
-    group = parser.add_mutually_exclusive_group()
+    group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument("-i", "--ip" ,help="Descubre solo una IP" )
     group.add_argument("-r", "--red",help="Descubre toda una red"  )
-    parser.add_argument("-c","--conf",help="ruta del fichero de configuración")
+    parser.add_argument("-c","--conf",help="ruta del fichero de configuración",default='./conf/config.json')
     args = parser.parse_args()  
     cnf =  json.loads(open(args.conf).read())
     return cnf,args;

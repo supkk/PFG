@@ -5,9 +5,7 @@ Created on 15 mar. 2017
 
 @author: jose
 '''
-import time
-import argparse
-import simplejson as json
+
 from objetos import objServidor
 from objetos import objFS
 from objetos import objIp
@@ -15,6 +13,9 @@ from objetos import bbdd
 from objetos import objSoft
 from easysnmp import Session
 from objetos import objssh
+import time
+import argparse 
+import simplejson as json
 
 
 def procesaFS_SSH(c,dctC):
@@ -253,7 +254,7 @@ def parametros():
     parser = argparse.ArgumentParser()
     parser.add_argument("-v", "--verbose", help="Descubre elementos de red", action="store_true")
     parser.add_argument("-i", "--ip" ,help="Descubre solo una IP" )
-    parser.add_argument("-c","--conf",help="ruta del fichero de configuración")
+    parser.add_argument("-c","--conf",help="ruta del fichero de configuración",default='./conf/config.json')
     args = parser.parse_args()  
     cnf =  json.loads(open(args.conf).read())
     return cnf,args;
