@@ -19,8 +19,12 @@ class objSoftSapl(objSi.objSi):
         super(objSoftSapl,self).__init__(id_serv=idserv,id_sw=sw,id_entorno=ent,ip=ip,user=user,home=home)
         self.soft=soft
         self.puerto=port
+        self.dic_SA = {}
     
-    def descubre(self):
+    def descubre(self,cnf):
+        modulo = "from plugins import "+self.soft + " as module"
+        exec modulo
+        self.dic_SA = modulo.descubre(host=super(objSoftSapl,self).ip,u=cnf['user'],p=cnf['password'],port=self.puerto)
         return
-    def grabaBBDD(self):
+    def grabaBBDD(self,conn):
         return

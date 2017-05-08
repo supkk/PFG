@@ -16,6 +16,10 @@
 	   "user":"jose",
 	   "password":"juanito"
   },
+  "conecta_bd":{
+	   "user":"user",
+	   "password":"user"
+  },
   "CMDBuild":{
        "host":"192.168.1.20",
        "port":"8080",

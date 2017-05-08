@@ -245,6 +245,7 @@ CREATE TABLE TB_EsquemaBD (
    id_DB		int	NOT NULL,
    nombre		varchar(20),
    propietario  varchar(10),
+   nombre_db    varchar(50),
    fsync       date,
    CONSTRAINT PK_TB_EsquemaDB PRIMARY KEY(id_EDB),
    CONSTRAINT FK_TB_EDB_BD FOREIGN KEY(id_DB) REFERENCES TB_DB(id_DB)

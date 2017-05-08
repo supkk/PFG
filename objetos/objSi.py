@@ -30,7 +30,10 @@ class objSi(object):
         
         return
     
-    def grabaBBDD(self):
-        Correcto = True
-        return Correcto
+    def grabaBBDD(self,conn):
+        
+        Modificado = True
+        
+       
+        return Modificado
         

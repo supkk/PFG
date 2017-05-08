@@ -28,12 +28,12 @@ class intSoft(object):
         else :
             self.o=None
             
-    def descubre(self):
-        self.o.descubre()
+    def descubre(self,cnf):
+        self.o.descubre(cnf)
         return
     
-    def grabaBBDD(self):
-        self.o.grabaBBDD()
+    def grabaBBDD(self,conn):
+        self.o.grabaBBDD(conn)
         return 
 
 

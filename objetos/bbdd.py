@@ -116,6 +116,21 @@ class bbdd():
         cur.close()
         return code_id[0]
     
+    def retIdserv(self,idDisp):
+        
+        cur=self.conn.cursor()
+        cur.execute("select id_serv from tb_Servidor where id_disp ="+str(idDisp))
+        code_id = cur.fetchone()
+        cur.close()
+        return code_id[0]
+    
+    def retNombreServ(self,id_disp):
+        cur=self.conn.cursor()
+        cur.execute("select nombre from tb_disp where id_disp ="+str(id_disp))
+        code_id = cur.fetchone()
+        cur.close()
+        return code_id[0]
+    
     def retIdSO(self,desc):
         
         cur=self.conn.cursor()
@@ -176,6 +191,23 @@ class bbdd():
         code_id = cur.fetchone()
         cur.close()
             
+        return code_id[0]
+    
+    def retCatSoftware(self,idsw):
+        
+        cur=self.conn.cursor()
+        cur.execute("select id_cat,n_proceso from tb_inv_software where id_sw =" + str(idsw))
+        code_id = cur.fetchone()
+        cur.close()
+            
+        return code_id
+    
+    def retEntorno(self, idServ):
+        
+        cur=self.conn.cursor()
+        cur.execute("select id_entorno from tb_servidor where id_serv =" + str(idServ))
+        code_id = cur.fetchone()
+        cur.close()
         return code_id[0]
     
     def existeServer(self,nombre):
@@ -406,14 +438,19 @@ class bbdd():
     
         return modificado
 
-    def actualizaTabla(self,sql):
+    def actualizaTabla(self,sql,data=None):
         
         cur=self.conn.cursor()
-        cur.execute(sql)
+        if data == None:
+            cur.execute(sql)
+        else:
+            cur.execute(sql,data)
+        self.cur.execute("select currval('tb_net_id_net_seq')")
+        result=self.cur.fetchone()
         cur.close()
         self.confirma()
         
-        return
+        return result[0]
     
     def grabaSw(self,sw,id_serv):
         
