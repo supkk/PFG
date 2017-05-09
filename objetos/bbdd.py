@@ -210,6 +210,71 @@ class bbdd():
         cur.close()
         return code_id[0]
     
+    def retInstanciaSW(self,id_si):
+    
+        cur=self.conn.cursor()
+        cur.execute("select version, home, usuario,id_entorno from  tb_instanciasoftware where id_si=" + str(id_si))
+        code_id = cur.fetchone()
+        cur.close()
+        
+        return code_id
+    
+    def retInstanciaBD(self,id_si):
+    
+        cur=self.conn.cursor()
+        cur.execute("select admin from  tb_instanciasoftware where id_si=" + str(id_si))
+        code_id = cur.fetchone()
+        cur.close()
+        
+        return code_id
+    
+    
+    def retEsquemaDB(self,nombre, nombre_db):
+    
+        cur=self.conn.cursor()
+        data =(nombre,nombre_db)
+        cur.execute("select propietario,id_ebd from  tb_esquemabd where nombre=%s and nombre_db=%s",data)
+        code_id = cur.fetchone()
+        cur.close()
+        if code_id == None :
+            result = None
+            id_edb = None
+        else :       
+            result = (code_id[0])  
+            id_edb = code_id[1]
+        return result, id_edb
+    
+    def retTablaDB(self,nombre, id_edb):
+    
+        cur=self.conn.cursor()
+        data =(nombre,id_edb)
+        cur.execute("select tipo_id_tabla,id_tb from  tb_esquemabd where nombre=%s and id_edb=%s",data)
+        code_id = cur.fetchone()
+        cur.close()
+        if code_id == None :
+            result = None
+            id_tb = None
+        else :       
+            result = (code_id[0])  
+            id_tb = code_id[1]
+        return result, id_tb
+    
+    def retAttrTablaDB(self,nombre, id_tb):
+    
+        cur=self.conn.cursor()
+        data =(nombre,id_tb)
+        cur.execute("select indice,id_tb from  tb_atributotable where nombre=%s and id_tb=%s",data)
+        code_id = cur.fetchone()
+        cur.close()
+        if code_id == None :
+            result = None
+            id_attb = None
+        else :       
+            result = (code_id[0])  
+            id_attb = code_id[1]
+        return result, id_attb
+    
+    
     def existeServer(self,nombre):
         
         cur=self.conn.cursor()
@@ -264,6 +329,17 @@ class bbdd():
 
         self.cur.execute('DELETE FROM TB_soft_running WHERE id_serv = ' + str(id_serv))
         return
+    
+    def existeInstanciaSW(self,id_serv,id_sw,puerto):
+        cur=self.conn.cursor()
+        data = (id_serv,id_sw,puerto)
+        cur.execute("select i.id_si from tb_softwareInstancia i, tb_bd b where i.id_serv=%s and i.id_sw=%s and b.puerto=%s",data)
+        result = cur.fetchone()
+        id_si=None
+        if result <> None:
+            id_si = result[0]
+            
+        return id_si
     
     def borraInterfacesDisp(self,id_disp):
         if self.cur == None:

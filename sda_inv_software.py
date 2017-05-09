@@ -46,6 +46,10 @@ def descubreInstancia(n_proceso,ip,config):
         
     return datos_base
 
+def gestionaSIBorrados (conn, id_sw,id_serv):
+    sql = "update tb_soft_running set deleted = 'True', fsync='"+time.strftime("%c")+"' where id_serv="+str(id_serv)+ " and id_sw = "+str(id_sw) 
+    conn.actualizaTabla(sql)
+    return
 def descubreSoftware(arg,cnf):
     
     conf=cnf['BaseDatos']
@@ -72,12 +76,13 @@ def descubreSoftware(arg,cnf):
             instSoft = descubreInstancia(n_proceso,ip,cnf['conecta_ssh'])
             if instSoft == None:
                 print (time.strftime("%c")+"-- No he podido conectar con el servidor  "+nombreServ)
+                gestionaSIBorrados(conn,sw,idserv)
                 continue
             for user,port, home in instSoft: 
                 os = intSoft.intSoft(cs=cs,idserv=idserv,sw=sw[0],ent=ent,ip=ip,soft=n_proceso,user=user,port=port,home=home)
                 if os.o <> None:
                     os.descubre()
-                    os.grabaBBDD()
+                    os.grabaBBDD(conn)
                 else:
                     print (time.strftime("%c")+"-- El software de tipo "+cs +" no está soportado")  
         print (time.strftime("%c")+"-- Finalizo de procesar el servidor "+nombreServ)    

@@ -201,6 +201,7 @@ CREATE TABLE TB_SoftwareInstancia (
    home         varchar(100),
    Usuario      varchar(10),
    fsync        date,
+   deleted     boolean,
    CONSTRAINT PK_TB_SoftwareInstancia PRIMARY KEY(id_SI),
    CONSTRAINT fk_tb_SI_SR FOREIGN KEY(id_sw,id_serv) REFERENCES TB_soft_running(id_sw,id_serv),
    CONSTRAINT FK_TB_SofInst_Entorno FOREIGN KEY(id_entorno) REFERENCES TB_lkp_entorno(code)
@@ -213,6 +214,7 @@ CREATE TABLE TB_DB (
    puerto       int,
    admin		varchar(10),
    fsync       date,
+   deleted     boolean,
    CONSTRAINT PK_TB_DB PRIMARY KEY(id_DB),
    CONSTRAINT FK_TB_DB_SoftwareInstancia FOREIGN KEY(id_SI) REFERENCES TB_SoftwareInstancia(id_SI)
 );
@@ -224,7 +226,7 @@ CREATE TABLE TB_ServAplicaciones (
    JVM			varchar(100),
    puerto       int,
    fsync        date,
-   id_entorno   varchar(3),
+   deleted     boolean,
    CONSTRAINT PK_TB_ServAplicaciones PRIMARY KEY(id_SA),
    CONSTRAINT FK_TB_SA_SoftwareInstancia FOREIGN KEY(id_SI) REFERENCES TB_SoftwareInstancia(id_SI)
 );
@@ -235,6 +237,7 @@ CREATE TABLE TB_ServAplicaciones (
    id_SI        int	not null,
    urlAdmin     int,
    fsync        date,
+   deleted      boolean,
    CONSTRAINT PK_TB_ PRIMARY KEY(id_web),
    CONSTRAINT FK_TB_web_SoftwareInstancia FOREIGN KEY(id_SI) REFERENCES TB_SoftwareInstancia(id_SI)
 );
@@ -247,6 +250,7 @@ CREATE TABLE TB_EsquemaBD (
    propietario  varchar(10),
    nombre_db    varchar(50),
    fsync       date,
+   deleted      boolean,
    CONSTRAINT PK_TB_EsquemaDB PRIMARY KEY(id_EDB),
    CONSTRAINT FK_TB_EDB_BD FOREIGN KEY(id_DB) REFERENCES TB_DB(id_DB)
 );
@@ -258,6 +262,7 @@ CREATE TABLE TB_Tabla (
    nombre		   varchar(50),
    id_tipo_tabla   varchar(2),
    fsync           date,
+   deleted      boolean,
    CONSTRAINT PK_TB_Tabla PRIMARY KEY(id_TB),
    CONSTRAINT FK_TB_Tabla_EDB FOREIGN KEY(id_EDB) REFERENCES TB_EsquemaBD(id_EDB),
    CONSTRAINT FK_TB_lkp_tabla FOREIGN KEY(id_tipo_tabla) REFERENCES TB_lkp_tabla(code)
@@ -270,6 +275,7 @@ CREATE TABLE TB_AtributoTabla (
    nombre       varchar(20),
    indice       boolean,
    fsync       date,
+   deleted      boolean,
    CONSTRAINT PK_TB_AtributoTabla PRIMARY KEY(id_att),
    CONSTRAINT FK_TB_ATT_Tabla FOREIGN KEY(id_TB) REFERENCES TB_Tabla(id_TB)
 );
@@ -284,6 +290,7 @@ CREATE TABLE TB_VHost (
    rCert		boolean,
    rutaCert		varchar(200),
    fsync       date,
+   deleted      boolean,
    CONSTRAINT PK_TB_VHost PRIMARY KEY(id_VH),
    CONSTRAINT FK_TB_VH_WEB FOREIGN KEY(id_web) REFERENCES TB_ServWeb(id_web)
 );
@@ -295,6 +302,7 @@ CREATE TABLE TB_Aplicacion (
    nombre		varchar(20),
    version      varchar(20),
    fsync        date,
+   deleted      boolean,
    CONSTRAINT PK_TB_Aplicacion PRIMARY KEY(id_apl)
 );
 
@@ -313,6 +321,7 @@ CREATE TABLE TB_url (
    valor		varchar(100),	
    id_VH		int NOT NULL,
    fsync       date,
+   deleted      boolean,
    CONSTRAINT PK_TB_url PRIMARY KEY(id_url),
    CONSTRAINT FK_TB_Url_VH FOREIGN KEY(id_VH) REFERENCES TB_VHost(id_VH)
 );
@@ -333,7 +342,8 @@ CREATE TABLE TB_ConectorBD (
    id_EDB       int NOT NULL,
    usuario		varchar(10),
    nombre       varchar(20),
-   fsync       date,
+   fsync        date,
+   deleted      boolean,
    CONSTRAINT PK_TB_CBD PRIMARY KEY(id_CBD),
    CONSTRAINT FK_TB_CBD FOREIGN KEY(id_EDB) REFERENCES TB_EsquemaBD(id_EDB)
 );
