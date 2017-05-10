@@ -17,8 +17,8 @@
 	   "password":"juanito"
   },
   "conecta_bd":{
-	   "user":"user",
-	   "password":"user"
+	   "user":"postgres",
+	   "password":"postgres"
   },
   "CMDBuild":{
        "host":"192.168.1.20",

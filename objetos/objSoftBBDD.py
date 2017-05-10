@@ -31,8 +31,9 @@ class objSoftBBDD(objSi.objSi):
         
         modulo = "from plugins import "+self.soft + " as module"
         exec modulo
-        self.dic_BD = modulo.descubre(host=super(objSoftBBDD,self).ip,u=cnf['user'],p=cnf['password'],port=self.puerto)
-        super(objSoftBBDD,self).version = self.dicBD['version']
+        self.dic_BD = module.descubre(ip=self.ip,user=cnf['user'],password=cnf['password'],port=self.puerto)
+        self.version = self.dic_BD['version']
+
         return
     
     def actualizaInstancia(self,id_si,conn):
@@ -40,13 +41,13 @@ class objSoftBBDD(objSi.objSi):
         modificado=False
         
         di,id_db = conn.retInstanciaSW(id_si)
-        data = (self.dicBD['version'],super(objSoftBBDD,self).home,super(objSoftBBDD,self).user,super(objSoftBBDD,self).id_entorno)
+        data = (self.dic_BD['version'],super(objSoftBBDD,self).home,super(objSoftBBDD,self).user,super(objSoftBBDD,self).id_entorno)
         if data <> di :
             sql ="update tb_softwareinstancia set version=%s, home=%s,user=%s,id_entorno=%s, fsync="+time.strftime("%c")+"' where id_si="+str(id_si)
             conn.actualizaTabla(sql,data)
             modificado =True
         dbd= conn.retInstanciaBD(id_si)
-        data =(self.dicBD['admin'])
+        data =(self.dic_BD['admin'])
         if data <> dbd :
             sql ="update tb_bd set admin=%s, fsync="+time.strftime("%c")+"' where id_si="+str(id_si)
             conn.actualizaTabla(sql,data)
@@ -196,10 +197,10 @@ class objSoftBBDD(objSi.objSi):
     def grabaBBDD(self,conn):
         
         modificado = False
-        id_si = conn.existeInstanciaSW(super(objSoftBBDD,self).idserv,super(objSoftBBDD,self).id_sw,self.puerto) 
+        id_si = conn.existeInstanciaSW(self.id_serv,self.id_sw,self.puerto) 
         if id_si == None :
             id_si = super(objSoftBBDD,self).grabaBBDD(conn)
-            data = (id_si,self.puerto,self.dicBD['admin'],time.strftime("%c"))
+            data = (id_si,self.puerto,self.dic_BD['admin'],time.strftime("%c"))
             sql ='insert into tb_bd (id_si,puerto,admin,fsync) values(%s,%s,%s,%s)'
             id_db=conn.actualizaTabla(sql,data)
             if id_db <> None:

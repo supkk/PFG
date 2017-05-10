@@ -333,7 +333,7 @@ class bbdd():
     def existeInstanciaSW(self,id_serv,id_sw,puerto):
         cur=self.conn.cursor()
         data = (id_serv,id_sw,puerto)
-        cur.execute("select i.id_si from tb_softwareInstancia i, tb_bd b where i.id_serv=%s and i.id_sw=%s and b.puerto=%s",data)
+        cur.execute("select i.id_si from tb_softwareInstancia i, tb_db b where i.id_serv=%s and i.id_sw=%s and b.puerto=%s",data)
         result = cur.fetchone()
         id_si=None
         if result <> None:
@@ -517,11 +517,12 @@ class bbdd():
     def actualizaTabla(self,sql,data=None):
         
         cur=self.conn.cursor()
+        sql = sql 
         if data == None:
             cur.execute(sql)
         else:
             cur.execute(sql,data)
-        self.cur.execute("select currval('tb_net_id_net_seq')")
+        self.cur.execute("select lastval()")
         result=self.cur.fetchone()
         cur.close()
         self.confirma()

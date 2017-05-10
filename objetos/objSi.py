@@ -4,7 +4,7 @@ Created on 7 may. 2017
 
 @author: jose
 '''
-
+import time
 
 class objSi(object):
     '''
@@ -12,7 +12,7 @@ class objSi(object):
     '''
 
 
-    def __init__(self, _id='',id_si=0,id_sw=0,id_serv=0,id_entorno='PRO',version='',usuario='',ip='',user='',home=''):
+    def __init__(self, _id='',id_si=0,id_sw=0,id_serv=0,id_entorno='PRO',version='',ip='',user='',home=''):
         '''
         Constructor
         '''
@@ -23,7 +23,6 @@ class objSi(object):
         self.id_entorno=id_entorno
         self.version=version
         self.home=home
-        self.usuario=usuario
         self.ip = ip
         self.user=user
 
@@ -32,8 +31,9 @@ class objSi(object):
     
     def grabaBBDD(self,conn):
         
-        Modificado = True
-        
+        data=(self.id_sw,self.id_serv,self.id_entorno,self.version,self.home,self.user,time.strftime("%c"))
+        sql = 'insert into tb_softwareinstancia (id_sw,id_serv,id_entorno,version,home,usuario,fsync) values (%s,%s,%s,%s,%s,%s,%s)'
+        self.id_si=conn.actualizaTabla(sql,data)
        
-        return Modificado
+        return self.id_si
         
