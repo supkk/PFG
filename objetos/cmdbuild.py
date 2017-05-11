@@ -4,7 +4,7 @@ Created on 27 mar. 2017
 
 @author: jose
 '''
-import requests
+import requests 
 import simplejson as json
 
 class cmdbuild(object):

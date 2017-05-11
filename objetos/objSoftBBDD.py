@@ -27,10 +27,11 @@ class objSoftBBDD(objSi.objSi):
         self.id_si = 0
         
     
-    def descubre(self,cnf):
+    def descubre(self,cnf,param):
         
         modulo = "from plugins import "+self.soft + " as module"
         exec modulo
+        cnf=cnf['conecta_bd']
         self.dic_BD = module.descubre(ip=self.ip,user=cnf['user'],password=cnf['password'],port=self.puerto)
         self.version = self.dic_BD['version']
 

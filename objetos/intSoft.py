@@ -28,8 +28,8 @@ class intSoft(object):
         else :
             self.o=None
             
-    def descubre(self,cnf):
-        self.o.descubre(cnf)
+    def descubre(self,cnf,param):
+        self.o.descubre(cnf,param)
         return
     
     def grabaBBDD(self,conn):

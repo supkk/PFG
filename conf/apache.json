@@ -1,0 +1,18 @@
+{
+"Linux":
+      {
+	    "conf" :
+		  {"comando": " find /etc/httpd /opt/IBM /aytomad -name httpd.conf | grep conf | awk '{ print "--"$0"||"}' | grep -v backup",
+		   "regex": "--([^|]+)||"
+		  },
+		"principal" : 
+		  {"comando": "awk  '!/#/  {print $0}'  /etc/httpd/conf/httpd.conf | grep Listen",
+		   "regex": "(.*)"
+		  },
+        "virtualhost":
+		  {"comando":" awk '!/#/  {print $0}' <<<file>>>>|  awk '/VirtualHost /  {printf $0\";\"} /SSL/ {printf($0)} /KeyFile/ {printf $0} /<\/VirtualHost>/ {print \"||\"}'",
+ 		   "regex":"<VirtualHost([^|]+)"
+		   },
+		   
+		   URL -->  awk '!/#/  {print $0}' |   /etc/httpd/conf/httpd.conf |  awk '/ProxyPassReverse /  {printf $2} '
+}}

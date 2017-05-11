@@ -1,0 +1,14 @@
+{
+ "urladmin":"",
+ "vh":[{
+   "dns":"",
+   "puerto":"",
+   "ssl":"",
+   "rcert":"",
+   "rutacert":""
+ } ],
+ "url":[{
+   "nombre":"",
+   "valor":""
+ }]
+}

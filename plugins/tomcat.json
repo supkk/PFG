@@ -1,0 +1,28 @@
+Infraestructura
+
+{
+ "version":"",
+ "jvm":"",
+ "jdbc":[{
+   "esquema":"",
+   "usuario":"",
+   "nombre":""
+ }]
+}
+
+Aplicacion
+{
+"Aplicacion":[{
+  "acronimo":"",
+  "nombre":"",
+  "version":"",
+  "url":[{
+     "nombre":"",
+     "valor":"",
+  }} 
+  "jdbc_map":[{
+     "nombre":"" 
+  }]
+}]
+ 
+}

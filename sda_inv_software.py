@@ -18,13 +18,13 @@ def descubreInstanciaSSH(n_proceso,ip,config):
     try:
         datos_instancia = []
         conexSSH = objssh.objssh(ip,config['user'],config['password'])
-        comando = "ps -ef | grep " + n_proceso + " | awk '!/grep/{print $1\";\"$2\";\"$8}'"
-        sal_ps = conexSSH.enviaComando(comando, "([^;]+);([^;]+);([^\n]+)", 0)
-        for user,pid,home in sal_ps:
+        comando = "ps -ef | grep " + n_proceso + " | awk '!/grep/{print $1\";\"$2\";\"$8\";\"$0}'"
+        sal_ps = conexSSH.enviaComando(comando, "([^;]+);([^;]+);([^;]+);([^\n]+)?", 0)
+        for user,pid,home,param in sal_ps:
             comando= 'sudo -S netstat -puntl | grep ' + str(pid) +"| awk '{print $4}' "
             puertos = conexSSH.enviaComando(comando,".*:([^\n]+)",0)
             for port in puertos:
-                datos_instancia.append([user,port,home])
+                datos_instancia.append([user,port,home,param])
                         
     except Exception, error:
         print (time.strftime("%c")+"--"+"Error al conectar por SSH con --> "+ip )
@@ -78,10 +78,10 @@ def descubreSoftware(arg,cnf):
                 print (time.strftime("%c")+"-- No he podido conectar con el servidor  "+nombreServ)
                 gestionaSIBorrados(conn,sw,idserv)
                 continue
-            for user,port, home in instSoft: 
+            for user,port, home, param in instSoft: 
                 os = intSoft.intSoft(cs=cs,idserv=idserv,sw=sw[0],ent=ent,ip=ip,soft=n_proceso,user=user,port=port,home=home)
                 if os.o <> None:
-                    os.descubre(cnf['conecta_bd'])
+                    os.descubre(cnf,instSoft, param)
                     os.grabaBBDD(conn)
                 else:
                     print (time.strftime("%c")+"-- El software de tipo "+cs +" no está soportado")  
