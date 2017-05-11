@@ -21,7 +21,7 @@ class bbdd():
         try :
             self.conn = psycopg2.connect(database=bd, user=u, password=pw, host=h, port=p)
         except :
-            print ("Error de acceso a BBDD")  
+            print ("Error de acceso a BBDD nn")  
         return   
     
     def confirma(self):
@@ -213,7 +213,7 @@ class bbdd():
     def retInstanciaSW(self,id_si):
     
         cur=self.conn.cursor()
-        cur.execute("select version, home, usuario,id_entorno from  tb_instanciasoftware where id_si=" + str(id_si))
+        cur.execute("select version, home, usuario,id_entorno from  tb_softwareinstancia where id_si=" + str(id_si))
         code_id = cur.fetchone()
         cur.close()
         
@@ -222,18 +222,18 @@ class bbdd():
     def retInstanciaBD(self,id_si):
     
         cur=self.conn.cursor()
-        cur.execute("select admin from  tb_instanciasoftware where id_si=" + str(id_si))
+        cur.execute("select admin,id_db from  tb_db where id_si=" + str(id_si))
         code_id = cur.fetchone()
         cur.close()
         
-        return code_id
+        return (code_id[0]),code_id[1]
     
     
     def retEsquemaDB(self,nombre, nombre_db):
     
         cur=self.conn.cursor()
         data =(nombre,nombre_db)
-        cur.execute("select propietario,id_ebd from  tb_esquemabd where nombre=%s and nombre_db=%s",data)
+        cur.execute("select propietario,id_edb from  tb_esquemabd where nombre=%s and nombre_db=%s",data)
         code_id = cur.fetchone()
         cur.close()
         if code_id == None :
@@ -248,7 +248,7 @@ class bbdd():
     
         cur=self.conn.cursor()
         data =(nombre,id_edb)
-        cur.execute("select tipo_id_tabla,id_tb from  tb_esquemabd where nombre=%s and id_edb=%s",data)
+        cur.execute("select id_tipo_tabla,id_tb from  tb_tabla where nombre=%s and id_edb=%s",data)
         code_id = cur.fetchone()
         cur.close()
         if code_id == None :
@@ -263,7 +263,7 @@ class bbdd():
     
         cur=self.conn.cursor()
         data =(nombre,id_tb)
-        cur.execute("select indice,id_tb from  tb_atributotable where nombre=%s and id_tb=%s",data)
+        cur.execute("select indice,id_tb from  tb_atributotabla where nombre=%s and id_tb=%s",data)
         code_id = cur.fetchone()
         cur.close()
         if code_id == None :
@@ -333,7 +333,7 @@ class bbdd():
     def existeInstanciaSW(self,id_serv,id_sw,puerto):
         cur=self.conn.cursor()
         data = (id_serv,id_sw,puerto)
-        cur.execute("select i.id_si from tb_softwareInstancia i, tb_db b where i.id_serv=%s and i.id_sw=%s and b.puerto=%s",data)
+        cur.execute("select i.id_si from tb_softwareInstancia i inner join  tb_db b on i.id_si = b.id_si  where i.id_serv=%s and i.id_sw=%s and b.puerto=%s",data)
         result = cur.fetchone()
         id_si=None
         if result <> None:
@@ -517,13 +517,15 @@ class bbdd():
     def actualizaTabla(self,sql,data=None):
         
         cur=self.conn.cursor()
-        sql = sql 
         if data == None:
             cur.execute(sql)
         else:
             cur.execute(sql,data)
-        self.cur.execute("select lastval()")
-        result=self.cur.fetchone()
+        if "INSERT" in sql.upper():
+            self.cur.execute("select lastval()")
+            result=self.cur.fetchone()
+        else :
+            result=[None]
         cur.close()
         self.confirma()
         

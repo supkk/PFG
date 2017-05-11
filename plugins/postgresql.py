@@ -45,24 +45,25 @@ def obtenerPrincipal(ip,user,password,port):
 def descubre(ip,user,password,port):
     
     dic,lbd=obtenerPrincipal(ip,user,password,port)
-   
+    dic['Esquema']=[]
+    
     for bd in lbd:
         d={}
         try :
             conn = psycopg2.connect( database=bd[0],user=user, password=password, host=ip, port=port)
         except :
-            print ("Error de acceso a BBDD")
+            print ("Error de acceso a BBDD conexion " + bd[0])
             continue
         
         sql = "select distinct  table_schema from information_schema.columns WHERE table_schema not in ( 'pg_catalog', 'information_schema')"
         leqm= consulta(conn, sql)
-        dic['Esquema']=[]
+
         for eqm in leqm :
-            d['nombre_bd']=bd[0]
+            d['nombre_db']=bd[0]
             d['nombre']=eqm[0]
             d['propietario']=bd[1]
             d['Tablas']=[]
-            sql= "SELECT  c.relname, (c.relkind ) FROM pg_class c LEFT JOIN pg_namespace n ON n.oid = c.relnamespace where c.relkind not in ('i','t','s') and n.nspname='" +eqm[0]+"'"
+            sql= "SELECT  c.relname, (c.relkind ) FROM pg_class c LEFT JOIN pg_namespace n ON n.oid = c.relnamespace where c.relkind not in ('i','t','S') and n.nspname='" +eqm[0]+"'"
             l_tb=consulta(conn,sql)
             for tb in l_tb:
                 t={}
@@ -74,10 +75,10 @@ def descubre(ip,user,password,port):
                 for at in l_at:
                     a={}
                     a['nombre']= at[0]
-                    a['indice']='false'
-                    t['attTabla'].append(a)
-                d['Tablas'].append(t)
-            dic['Esquema'].append(d)  
+                    a['indice']='False'
+                    t['attTabla'].append(a.copy())
+                d['Tablas'].append(t.copy())
+            dic['Esquema'].append(d.copy())  
         conn.close() 
     return dic
 

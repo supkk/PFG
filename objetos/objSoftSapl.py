@@ -21,7 +21,7 @@ class objSoftSapl(objSi.objSi):
         self.puerto=port
         self.dic_SA = {}
     
-    def descubre(self,cnf):
+    def descubre(self,cnf,param):
 #        modulo = "from plugins import "+self.soft + " as module"
 #        exec modulo
 #        self.dic_SA = modulo.descubre(host=super(objSoftSapl,self).ip,u=cnf['user'],p=cnf['password'],port=self.puerto)

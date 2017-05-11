@@ -23,7 +23,7 @@ class objSoftWeb(objSi.objSi):
         self.puerto=port
         self.dic_Web= {}
 
-    def descubre(self,cnf):
+    def descubre(self,cnf,param):
 #        modulo = "from plugins import "+self.soft + " as module"
 #        exec modulo
 #        self.dic_Web = modulo.descubre(host=super(objSoftWeb,self).ip,u=cnf['user'],p=cnf['password'],port=self.puerto)

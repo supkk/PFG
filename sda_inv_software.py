@@ -81,7 +81,7 @@ def descubreSoftware(arg,cnf):
             for user,port, home, param in instSoft: 
                 os = intSoft.intSoft(cs=cs,idserv=idserv,sw=sw[0],ent=ent,ip=ip,soft=n_proceso,user=user,port=port,home=home)
                 if os.o <> None:
-                    os.descubre(cnf,instSoft, param)
+                    os.descubre(cnf,param)
                     os.grabaBBDD(conn)
                 else:
                     print (time.strftime("%c")+"-- El software de tipo "+cs +" no está soportado")  
