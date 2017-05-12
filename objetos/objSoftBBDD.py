@@ -35,18 +35,11 @@ class objSoftBBDD(objSi.objSi):
         self.dic_BD = module.descubre(ip=self.ip,user=cnf['user'],password=cnf['password'],port=self.puerto)
         self.version = self.dic_BD['version']
 
-        return
+        return self.dic_BD <> None
     
     def actualizaInstancia(self,id_si,conn):
         
-        modificado=False
-        
-        di = conn.retInstanciaSW(id_si)
-        data = (self.dic_BD['version'],self.home,self.user,self.id_entorno)
-        if data <> di :
-            sql ="update tb_softwareinstancia set version=%s, home=%s,user=%s,id_entorno=%s, fsync="+time.strftime("%c")+"' where id_si="+str(id_si)
-            conn.actualizaTabla(sql,data)
-            modificado =True
+        modificado = super(objSoftBBDD,self).actualizaInstancia(id_si, conn)
         dbd,id_db= conn.retInstanciaBD(id_si)
         data =(self.dic_BD['admin'])
         if data <> dbd :
@@ -112,10 +105,6 @@ class objSoftBBDD(objSi.objSi):
  
         return modificado,id_tb
     
-    def apuntaModificado (self, conn,tabla, id_nombre, id_valor):
-        sql = "update "+ tabla+ " set fsync ='"+time.strftime("%c")+"' where "+ id_nombre +"="+str(id_valor)
-        conn.actualizaTabla(sql)
-        return
     
     def marcarAttrTablaBorrados(self,conn,id_valor):
         
@@ -170,7 +159,7 @@ class objSoftBBDD(objSi.objSi):
     
     def marcarEqmBorrados(self,conn,id_valor):
         
-        sql = "update tb_EsquemaDB set deleted = 'True', fsync='"+time.strftime("%c")+"' where id_edb="+str(id_valor) 
+        sql = "update tb_EsquemaBD set deleted = 'True', fsync='"+time.strftime("%c")+"' where id_edb="+str(id_valor) 
         conn.actualizaTabla(sql)
         sql = "select id_tb from tb_Tabla where id_edb="+str(id_valor)
         ltablas =conn.consulta(sql)
@@ -187,11 +176,11 @@ class objSoftBBDD(objSi.objSi):
         for item in litem:
             encontrado = False
             for eqm in dic :
-                if item[1]== eqm['nombre'] and item[2] == eqm['nombre_bd']:
+                if item[1]== eqm['nombre'] and item[2] == eqm['nombre_db']:
                     encontrado =True
                     break
             if not encontrado :
-                self.marcarEmqBorrados(conn,item[0])
+                self.marcarEqmBorrados(conn,item[0])
                 modificado =True
                 
         return modificado
@@ -199,7 +188,7 @@ class objSoftBBDD(objSi.objSi):
     def grabaBBDD(self,conn):
         
         modificado = False
-        id_si = conn.existeInstanciaSW(self.id_serv,self.id_sw,self.puerto) 
+        id_si = conn.existeInstanciaSW(self.id_serv,self.id_sw,self.puerto,'tb_db') 
         if id_si == None :
             id_si = super(objSoftBBDD,self).grabaBBDD(conn)
             data = (id_si,self.puerto,self.dic_BD['admin'],time.strftime("%c"))
@@ -208,10 +197,10 @@ class objSoftBBDD(objSi.objSi):
             if id_db <> None:
                 modificado = True
                 for eqm in self.dic_BD['Esquema']:
-                    data = (id_db, eqm['nombre'],eqm['nombre_bd'],eqm['propietario'],time.strftime("%c"))
+                    data = (id_db, eqm['nombre'],eqm['nombre_db'],eqm['propietario'],time.strftime("%c"))
                     sql = 'insert into tb_esquemabd (id_db,nombre, nombre_db,propietario,fsync) values (%s,%s,%s,%s,%s)'
                     id_edb=conn.actualizaTabla(sql,data)
-                    print (time.strftime("%c")+"-- Insertada instancia BBDD "+eqm['nombre_bd']+ " con esquema "+eqm['nombre'])
+                    print (time.strftime("%c")+"-- Insertada instancia BBDD "+eqm['nombre_db']+ " con esquema "+eqm['nombre'])
                     if id_edb <>None:
                         for tb in eqm['Tablas']:
                             data = (id_edb,tb['nombre'],tb['tipo'],time.strftime("%c"))
@@ -238,12 +227,12 @@ class objSoftBBDD(objSi.objSi):
                     mod_atr = self.gestionaAttrTablaBorrados(conn,tb['attTabla'],id_tb) or mod_atr
                     if mod_atr == True:
                         modificado=True    
-                        self.apuntaModificado(conn,"tb_tabla","id_tb",id_tb)
+                        conn.apuntaModificado("tb_tabla","id_tb",id_tb)
                 mod_tb = self.gestionaTablaBorrados(conn,eqm['Tablas'],id_edb) or mod_tb
                 if mod_tb == True :
                     modificado = True
-                    self.apuntaModificado(conn, "tb_EsquemaBD","id_edb",id_edb)
-            modificado = self.gestionaEqmBorrados(conn,self.dic_BD['Esquema'],id_si) or modificado
+                    conn.apuntaModificado("tb_EsquemaBD","id_edb",id_edb)
+            modificado = self.gestionaEqmBorrados(conn,self.dic_BD['Esquema'], self.id_db) or modificado
             if modificado== True:
-                self.apuntaModificado(conn, "tb_db","id_si",id_si)
+                conn.apuntaModificado( "tb_db","id_si",id_si)
         return modificado

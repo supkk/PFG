@@ -4,6 +4,7 @@ Infraestructura
  "version":"",
  "jvm":"",
  "jdbc":[{
+   "nombre_db":"",
    "esquema":"",
    "usuario":"",
    "nombre":""

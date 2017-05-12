@@ -340,12 +340,14 @@ CREATE TABLE TB_ConectorBD (
    _id			int,
    id_CBD		serial NOT NULL,
    id_EDB       int NOT NULL,
+   id_SA        int not null
    usuario		varchar(10),
    nombre       varchar(20),
    fsync        date,
    deleted      boolean,
    CONSTRAINT PK_TB_CBD PRIMARY KEY(id_CBD),
-   CONSTRAINT FK_TB_CBD FOREIGN KEY(id_EDB) REFERENCES TB_EsquemaBD(id_EDB)
+   CONSTRAINT FK_TB_CBD FOREIGN KEY(id_EDB) REFERENCES TB_EsquemaBD(id_EDB),
+   CONSTRAINT fk_conector_sa FOREIGN KEY(id_sa) REFERENCES TB_servaplicaciones(id_sa)
 );
 
 CREATE TABLE TB_MAP_CBD_Apl (

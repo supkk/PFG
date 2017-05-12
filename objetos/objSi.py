@@ -29,6 +29,18 @@ class objSi(object):
         
         return
     
+    def actualizaInstancia(self, id_si,conn):
+        modificado=False
+        
+        di = conn.retInstanciaSW(id_si)
+        data = (self.version,self.home,self.user,self.id_entorno)
+        if data <> di :
+            sql ="update tb_softwareinstancia set version=%s, home=%s,user=%s,id_entorno=%s, fsync="+time.strftime("%c")+"' where id_si="+str(id_si)
+            conn.actualizaTabla(sql,data)
+            modificado =True
+            
+        return modificado
+    
     def grabaBBDD(self,conn):
         
         data=(self.id_sw,self.id_serv,self.id_entorno,self.version,self.home,self.user,time.strftime("%c"))

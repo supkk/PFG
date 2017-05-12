@@ -63,6 +63,11 @@ class bbdd():
         cur.close()
         return
     
+    def apuntaModificado (self, tabla, id_nombre, id_valor):
+        sql = "update "+ tabla+ " set fsync ='"+time.strftime("%c")+"' where "+ id_nombre +"="+str(id_valor)
+        self.actualizaTabla(sql)
+        return
+    
     def retIdFab(self,desc):
         
         cur=self.conn.cursor()
@@ -228,6 +233,15 @@ class bbdd():
         
         return (code_id[0]),code_id[1]
     
+    def retInstanciaSA(self,id_si):
+        
+        cur=self.conn.cursor()
+        cur.execute("select jvm,id_entorno,id_sa from  tb_servaplicaciones where id_si=" + str(id_si))
+        code_id = cur.fetchone()
+        cur.close()
+        
+        return (code_id[0], code_id[1]),code_id[2]
+    
     
     def retEsquemaDB(self,nombre, nombre_db):
     
@@ -273,6 +287,21 @@ class bbdd():
             result = (code_id[0])  
             id_attb = code_id[1]
         return result, id_attb
+    
+    def retInstanciaCDB(self,id_sa, nombre):
+        
+        cur=self.conn.cursor()
+        data=(nombre,id_sa)
+        cur.execute("select usuario,id_cbd from  tb_conectorbd where nombre=%s and id_sa=%s",data)
+        code_id = cur.fetchone()
+        cur.close()
+        if code_id == None :
+            result = None
+            id_cdb = None
+        else :       
+            result = (code_id[0])  
+            id_cdb = code_id[1]
+        return result,id_cdb
     
     
     def existeServer(self,nombre):
@@ -330,10 +359,10 @@ class bbdd():
         self.cur.execute('DELETE FROM TB_soft_running WHERE id_serv = ' + str(id_serv))
         return
     
-    def existeInstanciaSW(self,id_serv,id_sw,puerto):
+    def existeInstanciaSW(self,id_serv,id_sw,puerto,tabla):
         cur=self.conn.cursor()
         data = (id_serv,id_sw,puerto)
-        cur.execute("select i.id_si from tb_softwareInstancia i inner join  tb_db b on i.id_si = b.id_si  where i.id_serv=%s and i.id_sw=%s and b.puerto=%s",data)
+        cur.execute("select i.id_si from tb_softwareInstancia i inner join "+tabla+" b on i.id_si = b.id_si  where i.id_serv=%s and i.id_sw=%s and b.puerto=%s",data)
         result = cur.fetchone()
         id_si=None
         if result <> None:

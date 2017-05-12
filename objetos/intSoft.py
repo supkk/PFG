@@ -29,8 +29,8 @@ class intSoft(object):
             self.o=None
             
     def descubre(self,cnf,param):
-        self.o.descubre(cnf,param)
-        return
+        correcto=self.o.descubre(cnf,param)
+        return correcto
     
     def grabaBBDD(self,conn):
         self.o.grabaBBDD(conn)

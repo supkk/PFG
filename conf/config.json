@@ -25,5 +25,9 @@
        "port":"8080",
        "user":"admin",
        "password":"admin"   
+  },
+  "conecta_probe":{
+	   "user":"admin",
+	   "password":"t0psecret"
   }
 }

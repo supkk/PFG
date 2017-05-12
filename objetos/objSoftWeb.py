@@ -26,10 +26,17 @@ class objSoftWeb(objSi.objSi):
     def descubre(self,cnf,param):
 #        modulo = "from plugins import "+self.soft + " as module"
 #        exec modulo
-#        self.dic_Web = modulo.descubre(host=super(objSoftWeb,self).ip,u=cnf['user'],p=cnf['password'],port=self.puerto)
+#        self.dic_Web = modulo.descubre(host=self.ip,user=cnf['user'],password=cnf['password'],port=self.puerto)
         
         return
     
     def grabaBBDD(self,conn):
+        '''    modificado = False
+        id_si = conn.existeInstanciaSW(self.id_serv,self.id_sw,self.puerto) 
+        if id_si == None :
         
+        else:
+            
+            if modificado== True:
+                self.apuntaModificado(conn, "tb_db","id_si",id_si)  '''
         return

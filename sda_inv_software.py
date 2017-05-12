@@ -78,13 +78,18 @@ def descubreSoftware(arg,cnf):
                 print (time.strftime("%c")+"-- No he podido conectar con el servidor  "+nombreServ)
                 gestionaSIBorrados(conn,sw,idserv)
                 continue
+            lp=[]
             for user,port, home, param in instSoft: 
-                os = intSoft.intSoft(cs=cs,idserv=idserv,sw=sw[0],ent=ent,ip=ip,soft=n_proceso,user=user,port=port,home=home)
-                if os.o <> None:
-                    os.descubre(cnf,param)
-                    os.grabaBBDD(conn)
-                else:
-                    print (time.strftime("%c")+"-- El software de tipo "+cs +" no está soportado")  
+                if port not in lp:
+                    ent = conn.retEntorno(idserv)
+                    os = intSoft.intSoft(cs=cs,idserv=idserv,sw=sw[0],ent=ent,ip=ip,soft=n_proceso,user=user,port=port,home=home)
+                    if os.o <> None:
+                        correcto=os.descubre(cnf,param)
+                        if correcto :
+                           os.grabaBBDD(conn)
+                    else:
+                        print (time.strftime("%c")+"-- El software de tipo "+cs +" no está soportado")  
+                    lp.append(port)
         print (time.strftime("%c")+"-- Finalizo de procesar el servidor "+nombreServ)    
     conn.cierraDB()
     return
