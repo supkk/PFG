@@ -235,8 +235,9 @@ CREATE TABLE TB_ServAplicaciones (
    _id			int,
    id_web		serial NOT NULL,
    id_SI        int	not null,
-   urlAdmin     int,
+   urlAdmin     varchar(100),
    fsync        date,
+   puerto       int,
    deleted      boolean,
    CONSTRAINT PK_TB_ PRIMARY KEY(id_web),
    CONSTRAINT FK_TB_web_SoftwareInstancia FOREIGN KEY(id_SI) REFERENCES TB_SoftwareInstancia(id_SI)

@@ -41,6 +41,16 @@ def obtenerPrincipal(ip,user,password,port):
     conn.close()
     return dic,lbd
 
+def compruebaConexion(ip,puerto):
+    try :
+        conn = psycopg2.connect( user="u", password="p", host=ip, port=puerto)
+        
+    except psycopg2.OperationalError:
+        Correcto = True
+    except :
+        Correcto = False
+        
+    return Correcto
 
 def descubre(ip,user,password,port):
     

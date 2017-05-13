@@ -13,6 +13,20 @@ import simplejson as json
 import time
 from easysnmp import Session
 
+def compruebaConexionPuerto(n_proceso,ip,puerto):
+    
+    Correcto = False
+    modulo = "from plugins import "+n_proceso + " as module"
+    try :
+        exec modulo
+        Correcto = module.compruebaConexion(ip,puerto)
+    except Exception, error:
+        print error
+        print (time.strftime("%c")+"-- Error: No encuentro  plugin "+n_proceso)  
+        Correcto = False
+    
+    return Correcto
+
 
 def descubreInstanciaSSH(n_proceso,ip,config):
     try:
@@ -24,7 +38,8 @@ def descubreInstanciaSSH(n_proceso,ip,config):
             comando= 'sudo -S netstat -puntl | grep ' + str(pid) +"| awk '{print $4}' "
             puertos = conexSSH.enviaComando(comando,".*:([^\n]+)",0)
             for port in puertos:
-                datos_instancia.append([user,port,home,param])
+                if compruebaConexionPuerto(n_proceso,ip,port):
+                   datos_instancia.append([user,port,home,param])
                         
     except Exception, error:
         print (time.strftime("%c")+"--"+"Error al conectar por SSH con --> "+ip )
@@ -47,9 +62,10 @@ def descubreInstancia(n_proceso,ip,config):
     return datos_base
 
 def gestionaSIBorrados (conn, id_sw,id_serv):
-    sql = "update tb_soft_running set deleted = 'True', fsync='"+time.strftime("%c")+"' where id_serv="+str(id_serv)+ " and id_sw = "+str(id_sw) 
+    sql = "update tb_soft_running set deleted = 'True', fsync='"+time.strftime("%c")+"' where id_serv="+str(id_serv)+ " and id_sw = "+str(id_sw[0]) 
     conn.actualizaTabla(sql)
     return
+
 def descubreSoftware(arg,cnf):
     
     conf=cnf['BaseDatos']
@@ -62,6 +78,8 @@ def descubreSoftware(arg,cnf):
     
     print (time.strftime("%c")+"-- Inicio del inventario de software ")
     for id_disp,ip in datos :
+        lp=[]
+        lsi=[]
         if id_disp == None:
             print (time.strftime("%c")+"-- Debe inventariar primero el hardware ")
             exit
@@ -78,18 +96,18 @@ def descubreSoftware(arg,cnf):
                 print (time.strftime("%c")+"-- No he podido conectar con el servidor  "+nombreServ)
                 gestionaSIBorrados(conn,sw,idserv)
                 continue
-            lp=[]
             for user,port, home, param in instSoft: 
                 if port not in lp:
                     ent = conn.retEntorno(idserv)
                     os = intSoft.intSoft(cs=cs,idserv=idserv,sw=sw[0],ent=ent,ip=ip,soft=n_proceso,user=user,port=port,home=home)
                     if os.o <> None:
-                        correcto=os.descubre(cnf,param)
+                        si,correcto=os.descubre(cnf,param)
                         if correcto :
-                           os.grabaBBDD(conn)
+                            lp.append(os.grabaBBDD(conn))
+                            lsi.append (si)
                     else:
                         print (time.strftime("%c")+"-- El software de tipo "+cs +" no está soportado")  
-                    lp.append(port)
+        procesarSIBorrados()
         print (time.strftime("%c")+"-- Finalizo de procesar el servidor "+nombreServ)    
     conn.cierraDB()
     return

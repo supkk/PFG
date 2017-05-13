@@ -29,6 +29,8 @@ class objSoftSapl(objSi.objSi):
         modulo = "from plugins import "+self.soft + " as module"
         exec modulo
         self.dic_SA = module.descubre(host=self.ip,user=cnf['user'],password=cnf['password'],puerto=self.puerto)
+        if self.dic_SA <> None:
+            self.version = self.dic_SA['version']
         
         return self.dic_SA <> None
     
@@ -36,9 +38,10 @@ class objSoftSapl(objSi.objSi):
         
         modificado = super(objSoftSapl,self).actualizaInstancia(id_si, conn)
         dsa,id_sa = conn.retInstanciaSA(id_si)
-        data =(self.dic_SA['jvm'],self.id_entorno)
+        dsa=unicode(dsa,'utf-8')
+        data =(self.dic_SA['jvm'])
         if data <> dsa :
-            sql ="update tb_servaplicaciones set jvm=%s,id_entorno=%s, fsync='"+time.strftime("%c")+"' where id_si="+str(id_si)
+            sql ="update tb_servaplicaciones set jvm=%s, fsync='"+time.strftime("%c")+"' where id_si="+str(id_si)
             conn.actualizaTabla(sql,data)
             modificado = True
             
@@ -68,7 +71,7 @@ class objSoftSapl(objSi.objSi):
     
     def marcarCDBBorrados(self,conn,id_valor):
         
-        sql = "update tb_ConectorBD set deleted = 'True', fsync='"+time.strftime("%c")+"' where id_edb="+str(id_valor) 
+        sql = "update tb_ConectorBD set deleted = 'True', fsync='"+time.strftime("%c")+"' where id_cdb="+str(id_valor) 
         conn.actualizaTabla(sql)
         
         return
@@ -76,7 +79,7 @@ class objSoftSapl(objSi.objSi):
     def gestionaCDBBorrados(self, conn,dic, id_valor):
         
         modificado =False
-        sql= "select nombre from  TB_Conectorbd where id_sa=" + str(id_valor)
+        sql= "select nombre,id_cbd from  TB_Conectorbd where id_sa=" + str(id_valor)
         litem = conn.consulta(sql)
         for item in litem:
             encontrado = False
@@ -85,7 +88,7 @@ class objSoftSapl(objSi.objSi):
                     encontrado =True
                     break
             if not encontrado :
-                self.marcarCDBBorrados(conn,item[0])
+                self.marcarCDBBorrados(conn,item[1])
                 modificado =True
                 
         return modificado
@@ -101,10 +104,13 @@ class objSoftSapl(objSi.objSi):
             self.id_sa=conn.actualizaTabla(sql,data)
             if self.id_sa <> None:
                 for ds in self.dic_SA['jdbc']:
-                    p,id_edb=conn.retEsquemaDB(ds['nombre'],ds['nombre_bd'])
-                    data = (id_edb,ds['usuario'],ds['nombre'],time.strftime("%c"),self.id_sa)
-                    sql ="insert into tb_conectorbd (id_ebd,usuario,nombre,fsync,id_sa) values (%s,%s,%s,%s,%s)"
-                    conn.actualizaTabla(sql,data)
+                    p,id_edb=conn.retEsquemaDB(ds['esquema'],ds['nombre_bd'])
+                    if id_edb == None :
+                        print (time.strftime("%c")+"-- Error el esquema al que apunta el conector no existe "+ds['esquema']+"  "+ds['nombre_bd'])
+                    else:    
+                        data = (id_edb,ds['usuario'],ds['nombre'],time.strftime("%c"),self.id_sa)
+                        sql ="insert into tb_conectorbd (id_edb,usuario,nombre,fsync,id_sa) values (%s,%s,%s,%s,%s)"
+                        conn.actualizaTabla(sql,data)
             else:
                 print (time.strftime("%c")+"-- Error al insertar la instancia de Servidor aplicaciones "+self.dic['version'])
         else:
@@ -116,4 +122,4 @@ class objSoftSapl(objSi.objSi):
             if mod_cdb == True:
                 conn.apuntaModificado( "tb_servaplicaciones","id_sa",self.id_sa)
                 
-        return mod_cdb
+        return mod_cdb,self.puerto

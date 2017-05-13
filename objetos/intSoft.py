@@ -18,6 +18,8 @@ class intSoft(object):
         '''
         Constructor
         '''
+        self.id_sw=sw
+        self.id_serv=idserv
         
         if cs == 'SWEB' :
             self.o = objSoftWeb.objSoftWeb(idserv=idserv,sw=sw,ent=ent,ip=ip,soft=soft,user=user,port=port,home=home)
@@ -33,8 +35,13 @@ class intSoft(object):
         return correcto
     
     def grabaBBDD(self,conn):
-        self.o.grabaBBDD(conn)
-        return 
+        modificado,ports= self.o.grabaBBDD(conn)
+        id_si = self.o.id_si
+        if modificado:
+            conn.apuntaModificado( "tb_soft_running","id_sw",self.id_sw)
+            conn.apuntaModificado( "tb_Servidor","id_serv",self.id_serv)
+            conn.apuntaModificado( "tb_Disp","id_disp",conn.retIdDisp(self.id_serv))
+        return id_si,ports
 
 
                 

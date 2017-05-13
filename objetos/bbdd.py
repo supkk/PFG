@@ -236,12 +236,50 @@ class bbdd():
     def retInstanciaSA(self,id_si):
         
         cur=self.conn.cursor()
-        cur.execute("select jvm,id_entorno,id_sa from  tb_servaplicaciones where id_si=" + str(id_si))
+        cur.execute("select jvm,id_sa from  tb_servaplicaciones where id_si=" + str(id_si))
         code_id = cur.fetchone()
         cur.close()
         
-        return (code_id[0], code_id[1]),code_id[2]
+        return (code_id[0]),code_id[1]
     
+    def retInstanciaWeb(self,id_si):
+        
+        cur=self.conn.cursor()
+        cur.execute("select urladmin,id_web from  tb_servweb where id_si=" + str(id_si))
+        code_id = cur.fetchone()
+        cur.close()
+        
+        return (code_id[0]),code_id[1]
+
+    def retInstanciaVH(self,id_web,dns,puerto ):
+    
+        cur=self.conn.cursor()
+        data =(id_web,dns,puerto)
+        cur.execute("select ssl,rcert,rutacert,id_vh from tb_vhost where id_web=%s and dns=%s and puerto = %s",data)
+        code_id = cur.fetchone()
+        cur.close()
+        if code_id == None :
+            result = None
+            id_vh = None
+        else :       
+            result = (code_id[0],code_id[1],code_id[2])  
+            id_vh = code_id[3]
+        return result, id_vh
+    
+    def retInstanciaUrl(self,id_vh, nombre):
+        
+        cur=self.conn.cursor()
+        data=(nombre,id_vh)
+        cur.execute("select valor,id_url from  tb_url where nombre=%s and id_vh=%s",data)
+        code_id = cur.fetchone()
+        cur.close()
+        if code_id == None :
+            result = None
+            id_url = None
+        else :       
+            result = (code_id[0])  
+            id_url = code_id[1]
+        return result,id_url
     
     def retEsquemaDB(self,nombre, nombre_db):
     
@@ -304,6 +342,8 @@ class bbdd():
         return result,id_cdb
     
     
+    
+    
     def existeServer(self,nombre):
         
         cur=self.conn.cursor()
@@ -362,7 +402,8 @@ class bbdd():
     def existeInstanciaSW(self,id_serv,id_sw,puerto,tabla):
         cur=self.conn.cursor()
         data = (id_serv,id_sw,puerto)
-        cur.execute("select i.id_si from tb_softwareInstancia i inner join "+tabla+" b on i.id_si = b.id_si  where i.id_serv=%s and i.id_sw=%s and b.puerto=%s",data)
+        sql = "select i.id_si from tb_softwareInstancia i inner join "+tabla+" b on i.id_si = b.id_si  where i.id_serv=%s and i.id_sw=%s and b.puerto=%s"
+        cur.execute(sql,data)
         result = cur.fetchone()
         id_si=None
         if result <> None:

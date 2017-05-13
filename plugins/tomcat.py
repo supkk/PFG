@@ -8,6 +8,20 @@ from bs4 import BeautifulSoup
 import requests 
 import re
 
+
+def compruebaConexion(ip,puerto):
+    try :
+        url="http://"+ip.strip()+":"+puerto
+        conn = requests.get(url,data="HEAD")
+        Correcto= ("COYOTE" in conn.headers['Server'].upper() )
+             
+        
+    except Exception, error:
+        Correcto = False
+        
+    return Correcto
+
+
 def retBDyEqm(cad_conex):
     bd=''
     eqm=''
@@ -24,7 +38,7 @@ def descubre(host, user, password,puerto):
         html = BeautifulSoup(r.text, "html.parser")
         entradas = html.find_all('div',{'id':'contentBody'})
         dic['jvm'] = html.find('a', {'href':'http://java.oracle.com/'}).contents[0].replace('\r\n','').replace('\t','')
-        dic['version'] = entradas[0].contents[5].contents[4]
+        dic['version'] = entradas[0].contents[5].contents[4].strip()
         url = 'http://'+host+':'+puerto+'/probe/datasources.htm'
         r = requests.get(url,headers = cabeceras ,auth=(user,password))
         dic['jdbc']=[]

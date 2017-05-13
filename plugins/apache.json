@@ -1,14 +1,46 @@
-{
- "urladmin":"",
+{"urladmin":"i",
+ "version":"apache 2.0",
  "vh":[{
-   "dns":"",
-   "puerto":"",
-   "ssl":"",
-   "rcert":"",
-   "rutacert":""
- }],
- "url":[{
-   "nombre":"",
-   "valor":""
- }]
+   "dns":"www.prueba.com",
+   "puerto":"80",
+   "ssl":"False",
+   "rcert":"False",
+   "rutacert":"",
+   "url":[{
+	   "nombre":"app1",
+	   "valor":"/app1/login"
+	 },
+	 {
+	   "nombre":"app2",
+	   "valor":"/app2/login"
+	 }]
+ },
+   {"dns":"www.prueba.com",
+   "puerto":"443",
+   "ssl":"True",
+   "rcert":"False",
+   "rutacert":"",
+   "url":[{
+	   "nombre":"app1",
+	   "valor":"/app1/login"
+	 },
+	 {
+	   "nombre":"app2",
+	   "valor":"/app2/login"
+	 }]},
+   {
+   "dns":"www.prueba.com",
+   "puerto":"1443",
+   "ssl":"True",
+   "rcert":"True",
+   "rutacert":"/etc/apache/conf/key.kdb",
+   "url":[{
+	   "nombre":"app1",
+	   "valor":"/app1/login"
+	 },
+	 {
+	   "nombre":"app2",
+	   "valor":"/app2/login"
+	 }]
+    }]
 }

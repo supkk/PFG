@@ -33,7 +33,8 @@ class objSoftBBDD(objSi.objSi):
         exec modulo
         cnf=cnf['conecta_bd']
         self.dic_BD = module.descubre(ip=self.ip,user=cnf['user'],password=cnf['password'],port=self.puerto)
-        self.version = self.dic_BD['version']
+        if self.dic_BD <> None:
+            self.version = self.dic_BD['version']
 
         return self.dic_BD <> None
     
@@ -207,8 +208,8 @@ class objSoftBBDD(objSi.objSi):
                             print (time.strftime("%c")+"-- Insertada Tabla BBDD "+tb['nombre']+ " en esquema "+eqm['nombre'])
                             sql = 'insert into tb_tabla (id_edb,nombre,id_tipo_tabla,fsync) values (%s,%s,%s,%s)'
                             id_tb=conn.actualizaTabla(sql,data)
-                            for atb in tb['altTabla']:
-                                data=(id_tb,atb['nombre'],atb['tipo'],atb['indice'],time.strftime("%c"))
+                            for atb in tb['attTabla']:
+                                data=(id_tb,atb['nombre'],atb['indice'],time.strftime("%c"))
                                 sql ='insert into tb_atributotabla (id_tb,nombre,indice,fsync) values (%s,%s,%s,%s)'
                                 conn.actualizaTabla(sql,data)
         else :
@@ -235,4 +236,9 @@ class objSoftBBDD(objSi.objSi):
             modificado = self.gestionaEqmBorrados(conn,self.dic_BD['Esquema'], self.id_db) or modificado
             if modificado== True:
                 conn.apuntaModificado( "tb_db","id_si",id_si)
-        return modificado
+        return modificado,self.puerto
+    
+    
+    
+    
+    
