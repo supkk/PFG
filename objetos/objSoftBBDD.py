@@ -189,10 +189,10 @@ class objSoftBBDD(objSi.objSi):
     def grabaBBDD(self,conn):
         
         modificado = False
-        id_si = conn.existeInstanciaSW(self.id_serv,self.id_sw,self.puerto,'tb_db') 
-        if id_si == None :
-            id_si = super(objSoftBBDD,self).grabaBBDD(conn)
-            data = (id_si,self.puerto,self.dic_BD['admin'],time.strftime("%c"))
+        self.id_si = conn.existeInstanciaSW(self.id_serv,self.id_sw,self.puerto,'tb_db') 
+        if self.id_si == None :
+            self.id_si = super(objSoftBBDD,self).grabaBBDD(conn)
+            data = (self.id_si,self.puerto,self.dic_BD['admin'],time.strftime("%c"))
             sql ='insert into tb_db (id_si,puerto,admin,fsync) values(%s,%s,%s,%s)'
             id_db=conn.actualizaTabla(sql,data)
             if id_db <> None:
@@ -213,7 +213,7 @@ class objSoftBBDD(objSi.objSi):
                                 sql ='insert into tb_atributotabla (id_tb,nombre,indice,fsync) values (%s,%s,%s,%s)'
                                 conn.actualizaTabla(sql,data)
         else :
-            modificado, self.id_db = self.actualizaInstancia(id_si,conn)    
+            modificado, self.id_db = self.actualizaInstancia(self.id_si,conn)    
             for eqm in self.dic_BD['Esquema']:
                 mod,id_edb = self.actualizaEsquema(eqm,conn,self.id_db)    
                 modificado = mod or modificado
@@ -235,7 +235,7 @@ class objSoftBBDD(objSi.objSi):
                     conn.apuntaModificado("tb_EsquemaBD","id_edb",id_edb)
             modificado = self.gestionaEqmBorrados(conn,self.dic_BD['Esquema'], self.id_db) or modificado
             if modificado== True:
-                conn.apuntaModificado( "tb_db","id_si",id_si)
+                conn.apuntaModificado( "tb_db","id_si",self.id_si)
         return modificado,self.puerto
     
     

@@ -22,6 +22,7 @@ class objSoftSapl(objSi.objSi):
         self.puerto=port
         self.dic_SA = {}
         self.id_sa=0
+        self.id_si=0
     
     def descubre(self,cnf,param):
         
@@ -96,10 +97,10 @@ class objSoftSapl(objSi.objSi):
     def grabaBBDD(self,conn):
         
         mod_cdb = False
-        id_si = conn.existeInstanciaSW(self.id_serv,self.id_sw,self.puerto,'tb_servAplicaciones') 
-        if id_si == None :
-            id_si = super(objSoftSapl,self).grabaBBDD(conn)
-            data = (id_si,self.puerto,self.dic_SA['jvm'],time.strftime("%c"))
+        self.id_si = conn.existeInstanciaSW(self.id_serv,self.id_sw,self.puerto,'tb_servAplicaciones') 
+        if self.id_si == None :
+            self.id_si = super(objSoftSapl,self).grabaBBDD(conn)
+            data = (self.id_si,self.puerto,self.dic_SA['jvm'],time.strftime("%c"))
             sql ='insert into tb_servaplicaciones (id_si,puerto,jvm,fsync) values(%s,%s,%s,%s)'
             self.id_sa=conn.actualizaTabla(sql,data)
             if self.id_sa <> None:
@@ -114,7 +115,7 @@ class objSoftSapl(objSi.objSi):
             else:
                 print (time.strftime("%c")+"-- Error al insertar la instancia de Servidor aplicaciones "+self.dic['version'])
         else:
-            mod_cdb, self.id_sa = self.actualizaInstancia(id_si,conn)
+            mod_cdb, self.id_sa = self.actualizaInstancia(self.id_si,conn)
             for ds in self.dic_SA['jdbc']: 
                 mod, id_cdb = self.actualizaConector(ds,conn,self.id_sa)
                 mod_cdb = mod or mod_cdb

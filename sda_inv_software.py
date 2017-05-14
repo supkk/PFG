@@ -21,7 +21,6 @@ def compruebaConexionPuerto(n_proceso,ip,puerto):
         exec modulo
         Correcto = module.compruebaConexion(ip,puerto)
     except Exception, error:
-        print error
         print (time.strftime("%c")+"-- Error: No encuentro  plugin "+n_proceso)  
         Correcto = False
     
@@ -39,7 +38,7 @@ def descubreInstanciaSSH(n_proceso,ip,config):
             puertos = conexSSH.enviaComando(comando,".*:([^\n]+)",0)
             for port in puertos:
                 if compruebaConexionPuerto(n_proceso,ip,port):
-                   datos_instancia.append([user,port,home,param])
+                    datos_instancia.append([user,port,home,param])
                         
     except Exception, error:
         print (time.strftime("%c")+"--"+"Error al conectar por SSH con --> "+ip )
@@ -61,10 +60,41 @@ def descubreInstancia(n_proceso,ip,config):
         
     return datos_base
 
-def gestionaSIBorrados (conn, id_sw,id_serv):
-    sql = "update tb_soft_running set deleted = 'True', fsync='"+time.strftime("%c")+"' where id_serv="+str(id_serv)+ " and id_sw = "+str(id_sw[0]) 
-    conn.actualizaTabla(sql)
+def marcarSIBorrados (conn,cs, id_si):
+    Correcto = False
+    sql = "update tb_softwareInstancia set deleted = 'True', fsync='"+time.strftime("%c")+"' where id_si="+str(id_si)
+    conn.actualizaTabla(sql,confirma=False)
+    sql = "select id_serv,id_sw from tb_softwareinstancia where id_si="+str(id_si)
+    ids=conn.consulta(sql)[0]
+    sql = "update tb_soft_running set deleted = 'True', fsync='"+time.strftime("%c")+"' where id_serv=%s and id_sw=%s"
+    conn.actualizaTabla(sql,confirma=False,data=ids)
+    if cs =='SAPL':
+        Correcto=conn.borraConectoresDB(id_si)
+    elif cs =='BBDD':
+        Correcto=conn.borraBD(id_si)
+    elif cs == 'SWEB':
+        Correcto=conn.borraSWeb(id_si)
+    if Correcto : 
+        conn.confirma()
+    else :
+        conn.deshace()
     return
+
+def gestionaSIBorrados(conn,lsi,idserv):
+    modificado =False
+    sql= "select s.id_si,i.id_cat from tb_softwareinstancia s inner join tb_inv_software i on i.id_sw=s.id_sw where s.id_serv=" + str(idserv)
+    litem = conn.consulta(sql)
+    for item in litem:
+        encontrado = False
+        for si in lsi :
+            if item[0]== si :
+                encontrado =True
+                break
+        if not encontrado :
+            marcarSIBorrados(conn,item[1],item[0])
+            modificado = True         
+            
+    return modificado
 
 def descubreSoftware(arg,cnf):
     
@@ -94,20 +124,19 @@ def descubreSoftware(arg,cnf):
             instSoft = descubreInstancia(n_proceso,ip,cnf['conecta_ssh'])
             if instSoft == None:
                 print (time.strftime("%c")+"-- No he podido conectar con el servidor  "+nombreServ)
-                gestionaSIBorrados(conn,sw,idserv)
                 continue
             for user,port, home, param in instSoft: 
                 if port not in lp:
                     ent = conn.retEntorno(idserv)
                     os = intSoft.intSoft(cs=cs,idserv=idserv,sw=sw[0],ent=ent,ip=ip,soft=n_proceso,user=user,port=port,home=home)
                     if os.o <> None:
-                        si,correcto=os.descubre(cnf,param)
+                        correcto=os.descubre(cnf,param)
                         if correcto :
                             lp.append(os.grabaBBDD(conn))
-                            lsi.append (si)
+                            lsi.append (os.o.id_si)
                     else:
                         print (time.strftime("%c")+"-- El software de tipo "+cs +" no está soportado")  
-        procesarSIBorrados()
+        gestionaSIBorrados(conn,lsi,idserv)
         print (time.strftime("%c")+"-- Finalizo de procesar el servidor "+nombreServ)    
     conn.cierraDB()
     return

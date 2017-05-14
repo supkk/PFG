@@ -310,6 +310,7 @@ CREATE TABLE TB_Aplicacion (
 CREATE TABLE TB_Map_SA_AP(
    id_apl		int not NULL,
    id_SA		int not NULL,
+   deleted      boolean,
    CONSTRAINT PK_TB_MAP_apl_SA PRIMARY KEY(id_apl,id_SA),
    CONSTRAINT FK_TB_MAP_Apl FOREIGN KEY(id_apl) REFERENCES TB_Aplicacion(id_apl),
    CONSTRAINT FK_TB_MAP_SA FOREIGN KEY(id_SA) REFERENCES TB_ServAplicaciones(id_SA)
@@ -321,7 +322,7 @@ CREATE TABLE TB_url (
    nombre		varchar(20),
    valor		varchar(100),	
    id_VH		int NOT NULL,
-   fsync       date,
+   fsync        date,
    deleted      boolean,
    CONSTRAINT PK_TB_url PRIMARY KEY(id_url),
    CONSTRAINT FK_TB_Url_VH FOREIGN KEY(id_VH) REFERENCES TB_VHost(id_VH)
@@ -331,6 +332,7 @@ CREATE TABLE TB_Map_url_APL(
    id_apl		int not NULL,
    id_url		int not NULL,
    tipo_url		varchar(2) not NULL,
+   deleted      boolean,
    CONSTRAINT PK_TB_MAP_url_apl PRIMARY KEY(id_apl,id_url),
    CONSTRAINT FK_TB_MAPua_Apl FOREIGN KEY(id_apl) REFERENCES TB_Aplicacion(id_apl),
    CONSTRAINT FK_TB_MAPua_url FOREIGN KEY(id_url) REFERENCES TB_url(id_url),
@@ -355,6 +357,7 @@ CREATE TABLE TB_MAP_CBD_Apl (
    _id			int,
    id_apl		int NOT NULL,
    id_CBD	    int NOT NULL,
+   deleted      boolean,
    CONSTRAINT PK_TB_MAP_CBD_Apl PRIMARY KEY(id_apl,id_CBD),
    CONSTRAINT FK_TB_MAPCA_Apl FOREIGN KEY(id_apl) REFERENCES TB_Aplicacion(id_apl),
    CONSTRAINT FK_TB_MAPCA_CBD FOREIGN KEY(id_CBD) REFERENCES TB_ConectorBD(id_CBD)
@@ -384,6 +387,8 @@ INSERT INTO TB_LKP_URL VALUES('TS','TEST');
 INSERT INTO TB_LKP_URL VALUES('AC','ACCESO');
 INSERT INTO TB_LKP_URL VALUES('CC','COMPONENTE COMUN');
 INSERT INTO TB_LKP_URL VALUES('SE','SERVICIO EXTERNO');
+INSERT INTO tb_lkp_url VALUES ('UT','UTILIZA');
+
 
 INSERT INTO TB_LKP_INTERFACE VALUES('ETH-V','ETHERNET VIRTUAL');
 INSERT INTO TB_LKP_INTERFACE VALUES('ETH-C','ETHERNET CABLE');

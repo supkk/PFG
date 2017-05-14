@@ -6,7 +6,7 @@ Created on 9 may. 2017
 '''
 from bs4 import BeautifulSoup
 import requests 
-import re
+import simplejson as json
 
 
 def compruebaConexion(ip,puerto):
@@ -27,6 +27,8 @@ def retBDyEqm(cad_conex):
     eqm=''
     
     return bd, eqm
+
+
 def descubre(host, user, password,puerto):
     
     dic= {}
@@ -70,7 +72,11 @@ def descubre(host, user, password,puerto):
    
     return dic
 
-def aplicacion(host, puerto, user, password):
-    dic={}
+def descubreAplicacion(host,user, password,puerto):
+    
+    f= open('/home/jose/workspace/PFG/plugins/apl.json')
+    contenido=f.read()
+    dic = json.loads(contenido)
+    
     return dic
 

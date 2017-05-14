@@ -32,10 +32,13 @@ class bbdd():
         self.conn.rollback()
         return
     
-    def consulta (self,con):
+    def consulta (self,con, data=None):
         
         self.cur=self.conn.cursor()
-        self.cur.execute(con)
+        if data == None:
+            self.cur.execute(con)
+        else :
+            self.cur.execute(con,data)
         rows = self.cur.fetchall()
         
         return rows
@@ -266,7 +269,7 @@ class bbdd():
             id_vh = code_id[3]
         return result, id_vh
     
-    def retInstanciaUrl(self,id_vh, nombre):
+    def existeInstanciaUrl(self,id_vh, nombre):
         
         cur=self.conn.cursor()
         data=(nombre,id_vh)
@@ -280,6 +283,37 @@ class bbdd():
             result = (code_id[0])  
             id_url = code_id[1]
         return result,id_url
+    
+    def existeRelacionUrl(self,data):
+        
+        dt =(data[0],data[1],data[2])
+        sql="select id_apl from tb_map_url_apl where id_apl=%s and id_url=%s and tipo_url=%s"
+        Correcto=(len(self.consulta(sql, data=dt))> 0)
+        
+        return Correcto
+    
+    def existeRelacionCBD(self,data):
+        
+        sql="select id_cbd from tb_map_cbd_apl where id_apl=%s and id_cbd=%s"
+        Correcto=(len(self.consulta(sql, data=data))> 0)
+        
+        return Correcto
+    
+    def existeRelacionSA(self,data):
+        
+        sql="select id_apl from tb_map_sa_ap where id_apl=%s and id_sa=%s"
+        Correcto=(len(self.consulta(sql, data=data))> 0)
+        
+        return Correcto
+    
+    def retIdUrl(self, nombre):
+        
+        cur=self.conn.cursor()
+        cur.execute("select id_url from  tb_url where valor='"+nombre+"'")
+        code_id = cur.fetchall()
+        cur.close()
+       
+        return code_id
     
     def retEsquemaDB(self,nombre, nombre_db):
     
@@ -341,7 +375,13 @@ class bbdd():
             id_cdb = code_id[1]
         return result,id_cdb
     
-    
+    def retInstanciaApl(self,id_apl):
+        
+        cur=self.conn.cursor()
+        cur.execute("select acronimo,nombre,version from  tb_aplicacion where id_apl="+str(id_apl))
+        code_id = cur.fetchone()
+        cur.close()
+        return code_id
     
     
     def existeServer(self,nombre):
@@ -391,6 +431,20 @@ class bbdd():
         cur.close()
         
         return result
+    
+    def existeAplicacion(self,nombre,id_sa):
+        
+        cur=self.conn.cursor()
+        data = (id_sa,nombre)
+        cur.execute("select a.id_apl from tb_aplicacion a inner join tb_map_sa_ap m on a.id_apl=m.id_apl where m.id_sa = %s and a.nombre =%s",data)
+        result = cur.fetchone()
+        if result == None:
+            id_apl= None
+        else:
+            id_apl= result[0]
+        cur.close()
+        
+        return id_apl
     
     def borraSw(self,id_serv):
         if self.cur == None:
@@ -584,22 +638,61 @@ class bbdd():
     
         return modificado
 
-    def actualizaTabla(self,sql,data=None):
+    def actualizaTabla(self,sql,data=None,confirma=True, lastval=True):
         
         cur=self.conn.cursor()
         if data == None:
             cur.execute(sql)
         else:
             cur.execute(sql,data)
-        if "INSERT" in sql.upper():
+        if "INSERT" in sql.upper() and lastval:
             self.cur.execute("select lastval()")
             result=self.cur.fetchone()
         else :
             result=[None]
         cur.close()
-        self.confirma()
+        if confirma:
+            self.confirma()
         
         return result[0]
+    
+    
+    def borraConectoresDB(self,id_si):
+        
+        sql='select c.id_cbd from tb_servaplicaciones s inner join tb_Conectorbd c on c.id_sa = s.id_sa where s.id_si = ' + str(id_si)
+        lcon=self.consulta(sql)
+        for con in lcon:
+            sql = "update tb_conectorbd set deleted = 'True', fsync='"+time.strftime("%c")+"' where id_cdb="+str(con[0])
+            self.actualizaTabla(sql,confirma=False)
+    
+        return True
+    
+    def borraBD(self,id_si):
+        sql = 'select e.id_edb from tb_db d inner join tb_esquemabd e on e.id_db = d.id_db where d.id_si='+ str(id_si)
+        lcon=self.consulta(sql)
+        for con in lcon:
+            sql = "update tb_esquemabd set deleted = 'True', fsync='"+time.strftime("%c")+"' where id_edb="+str(con[0])
+            self.actualizaTabla(sql,confirma=False)
+            sql = "update tb_tabla set deleted = 'True', fsync='"+time.strftime("%c")+"' where id_edb="+str(con[0])
+            self.actualizaTabla(sql,confirma=False)
+            sql= "select id_tb from tb_tabla where id_edb="+ str(con)
+            ltb= self.consulta(sql)
+            for tb in ltb:
+                sql = "update tb_atributotabla set deleted = 'True', fsync='"+time.strftime("%c")+"' where id_tb="+str(tb[0])
+                self.actualizaTabla(sql,confirma=False) 
+        return True
+    
+    def borraSWeb(self,id_si):
+        sql = "select v.id_vh from tb_servweb s inner join tb_vhost v on v.id_web = s.id_web where s.id_si="+str(id_si)
+        lvh=self.consulta(sql)
+        for vh in lvh:
+            sql = "update tb_vhost set deleted = 'True', fsync='"+time.strftime("%c")+"' where id_vh="+str(vh[0])
+            self.actualizaTabla(sql,confirma=False)       
+            sql = "update tb_url set deleted = 'True', fsync='"+time.strftime("%c")+"' where id_vh="+str(vh[0])
+            self.actualizaTabla(sql,confirma=False) 
+ 
+        return True
+    
     
     def grabaSw(self,sw,id_serv):
         
@@ -620,4 +713,6 @@ class bbdd():
     
     def cierraDB(self):
         self.conn.close()
+        
+    
     

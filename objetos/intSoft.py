@@ -32,16 +32,17 @@ class intSoft(object):
             
     def descubre(self,cnf,param):
         correcto=self.o.descubre(cnf,param)
+
         return correcto
     
     def grabaBBDD(self,conn):
         modificado,ports= self.o.grabaBBDD(conn)
-        id_si = self.o.id_si
+
         if modificado:
             conn.apuntaModificado( "tb_soft_running","id_sw",self.id_sw)
             conn.apuntaModificado( "tb_Servidor","id_serv",self.id_serv)
             conn.apuntaModificado( "tb_Disp","id_disp",conn.retIdDisp(self.id_serv))
-        return id_si,ports
+        return ports
 
 
                 

@@ -23,6 +23,7 @@ class objSoftWeb(objSi.objSi):
         self.soft=soft
         self.puerto=port
         self.dic_Web= {}
+        self.id_si=0
 
     def descubre(self,cnf,param):
         
@@ -69,7 +70,7 @@ class objSoftWeb(objSi.objSi):
     def actualizaUrl(self,url,conn,id_vh):
         
         modificado= False
-        durl,id_url = conn.retInstanciaUrl(id_vh,url['nombre'])
+        durl,id_url = conn.existeInstanciaUrl(id_vh,url['nombre'])
         if id_url == None :
             data = (id_vh,url['nombre'],url['valor'],time.strftime("%c"))
             sql ="insert into tb_url (id_vh,nombre,valor,fsync) values (%s,%s,%s,%s)"
@@ -140,10 +141,10 @@ class objSoftWeb(objSi.objSi):
         
         modificado = False
         puertos =[]
-        id_si = conn.existeInstanciaSW(self.id_serv,self.id_sw,self.puerto,'tb_servweb') 
-        if id_si == None :
-            id_si = super(objSoftWeb,self).grabaBBDD(conn)
-            data = (id_si,self.dic_Web['urladmin'],self.puerto,time.strftime("%c"))
+        self.id_si = conn.existeInstanciaSW(self.id_serv,self.id_sw,self.puerto,'tb_servweb') 
+        if self.id_si == None :
+            self.id_si = super(objSoftWeb,self).grabaBBDD(conn)
+            data = (self.id_si,self.dic_Web['urladmin'],self.puerto,time.strftime("%c"))
             sql ='insert into tb_servweb (id_si,urladmin,puerto,fsync) values(%s,%s,%s,%s)'
             self.id_web=conn.actualizaTabla(sql,data)
             if self.id_si <> None:
@@ -162,7 +163,7 @@ class objSoftWeb(objSi.objSi):
             else:
                 print (time.strftime("%c")+"-- Error al insertar la instancia de Servidor web "+self.dic_Web['version'])
         else:
-            mod_web,self.id_web = self.actualizaInstancia(id_si,conn)
+            mod_web,self.id_web = self.actualizaInstancia(self.id_si,conn)
             for vh in self.dic_Web['vh']: 
                 mod, id_vh = self.actualizaVirtualHost(vh,conn,self.id_web)
                 mod_web = mod or mod_web
