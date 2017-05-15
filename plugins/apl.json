@@ -1,0 +1,17 @@
+{"apl":
+  [
+   {"acronimo":"cmdbuild",
+    "nombre":"cmdbuild.apl",
+    "version":"2.4.3",
+    "jdbc":["cmdbuild"],
+    "url":[{"valor":"/cmdbuild","tipo":"AC"}]
+    
+    },
+    {"acronimo":"shark",
+    "nombre":"cmdbuild.shark",
+    "version":"4.7",
+    "jdbc":["shark"],
+    "url":[{"valor":"/shark","tipo":"AC"},{"valor":"/cmdbuild","tipo":"UT"}]
+    }
+  ]  
+}

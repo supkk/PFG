@@ -24,6 +24,7 @@ class objSoftBBDD(objSi.objSi):
         self.puerto=port
         self.id_db = 0
         self.id_si = 0
+        self.fsync=fsync
         if id_si ==0:
             self.dic_BD = {}
         else:
@@ -33,14 +34,15 @@ class objSoftBBDD(objSi.objSi):
     
     def cargaSoftware(self,id_si,conn):
         
-        dic={}
+        dic=super(objSoftBBDD,self).cargaSoftware(conn)
         data=(id_si,self.fsync)
-        sql= "select  puerto,admin,id_db where sw.id_si=%s and and sw.fsync >=%s" 
+        sql= "select  puerto,admin,id_db,_id from tb_db where id_si=%s and fsync >=%s" 
         data = conn.consulta(sql,data)
-        dic['admin']= data[1]
-        dic['puerto']= data[0]
-        data = (data[2],self.fsync)
-        sql = "select nombre,propietario,nombre_db,id_edb  where id_db=%s and fsync >=%s"
+        dic['admin']= data[0][1]
+        dic['puerto']= data[0][0]
+        dic['_id']= data[0][3]
+        data = (data[0][2],self.fsync)
+        sql = "select nombre,propietario,nombre_db,id_edb,_id,deleted from tb_esquemabd  where id_db=%s and fsync >=%s"
         ledb = conn.consulta(sql,data)
         dic['esquema']=[]
         for edb in ledb:
@@ -48,24 +50,30 @@ class objSoftBBDD(objSi.objSi):
             d_edb['nombre']=edb[0]
             d_edb['propietario']=edb[1]
             d_edb['nombre_db']=edb[2]
+            d_edb['_id']=edb[4]
+            d_edb['deleted']=False if edb[5] == None else edb[5]
             data=(edb[3],self.fsync)
-            sql="select nombre,tipo_tabla,id_tb from tb_url where id_edb=%s and and fsync >=%s"
+            sql="select nombre,id_tipo_tabla,id_tb,_id,deleted from tb_tabla where id_edb=%s and fsync >=%s"
             ltb=conn.consulta(sql,data)
             d_edb['Tabla']=[]
             for tb in ltb:
                 d_tb={}
                 d_tb['nombre']=tb[0]
                 d_tb['tipo_tabla']=tb[1]
-                d_edb['Tabla'].append(d_tb.copy())
+                d_tb['_id']=tb[3]
+                d_tb['deleted']=False if tb[4] == None else tb[4]
                 data=(tb[2],self.fsync)
-                sql = "select nombre, indice from tb_atributotabla where id_tb=%s and and fsync >=%s "
+                sql = "select nombre, indice,_id,deleted from tb_atributotabla where id_tb=%s  and fsync >=%s "
                 latb=conn.consulta(sql,data)
                 d_tb['campos']=[]
                 for at in latb:
                     d_at={}
                     d_at['nombre']=at[0]
-                    d_at['indice']=tb[1]
+                    d_at['indice']=at[1]
+                    d_at['_id']=at[2]
+                    d_at['deleted']=False if at[3] == None else at[3]
                     d_tb['campos'].append(d_at.copy())
+                d_edb['Tabla'].append(d_tb.copy())
             dic['esquema'].append(d_edb.copy())
         
         return dic
@@ -282,7 +290,8 @@ class objSoftBBDD(objSi.objSi):
                 conn.apuntaModificado( "tb_db","id_si",self.id_si)
         return modificado,self.puerto
     
-    
+    def sincroniza(self,conn):
+        return
     
     
     

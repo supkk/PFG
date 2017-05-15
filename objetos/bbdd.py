@@ -225,10 +225,12 @@ class bbdd():
         id_si=self.consulta(sql, data)
         if len(id_si)>0:
             data = self.retInstanciaSW(id_si[0][0])
+            id_si = id_si[0][0]
         else:
             data=None
+            id_si=None
             
-        return data,id_si[0][0]
+        return data,id_si
     
     def retInstanciaSW(self,id_si):
     
@@ -344,12 +346,17 @@ class bbdd():
     
     def retidsEsquemaBD(self,id_edb):
         
-        sql="select nombre,nombre_db where id_edb="+str(id_edb)
+        sql="select nombre,nombre_db from tb_esquemabd where id_edb="+str(id_edb)
         result=self.consulta(sql)
         
         return result
     
+    def apuntaId(self,tabla,id_Class,clave,clave_valor):
     
+        sql = 'update into '+ tabla + 'set _id='+id_Class +' where '+ clave + "="+str(clave_valor)
+        self.actualizaTabla(sql)
+        
+        return
     
     def retTablaDB(self,nombre, id_edb):
     

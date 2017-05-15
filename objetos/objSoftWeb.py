@@ -23,6 +23,7 @@ class objSoftWeb(objSi.objSi):
         self.soft=soft
         self.puerto=port
         self.fsync=fsync
+        self.id_si=id_si
         if id_si ==0:
             self.dic_Web = {}
         else:
@@ -31,33 +32,41 @@ class objSoftWeb(objSi.objSi):
         return
     
     def cargaSoftware(self,id_si,conn):
-        dic={}
+        dic=super(objSoftWeb,self).cargaSoftware(conn)
         data=(id_si,self.fsync)
-        sql= "select sw.urladmin,si.version,sw.puerto, sw.id_web from tb_softwareInstancia si inner join tb_servweb sw on si.id_si = sw.id_si where sw.id_si=%s and and sw.fsync >=%s" 
+        sql= "select sw.urladmin,si.version,sw.puerto, sw.id_web,sw._id from tb_softwareInstancia si inner join tb_servweb sw on si.id_si = sw.id_si where sw.id_si=%s and sw.fsync >=%s" 
         data = conn.consulta(sql,data)
-        dic['urladmin']= data[0]
-        dic['version']= data[1]
-        dic['puerto']= data[2]
-        data = (data[3],self.fsync)
-        sql = "select id_vh,dns,puerto,ssl,rcert,rutacert from tb_vhost where id_web=%s and fsync >=%s"
+        dic['id_web']=data[0][4]
+        dic['urladmin']= data[0][0]
+        dic['version']= data[0][1]
+        dic['puerto']= data[0][2]
+        dic['_id']=data[0][4]
+        data = (data[0][3],self.fsync)
+        sql = "select id_vh,dns,puerto,ssl,rcert,rutacert, _id,deleted from tb_vhost where id_web=%s and fsync >=%s"
         lvh = conn.consulta(sql,data)
         dic['vh']=[]
         for vh in lvh:
             d_vh={}
+            d_vh['id_vh']=vh[0]
             d_vh['dns']=vh[1]
             d_vh['puerto']=vh[2]
             d_vh['ssl']=vh[3]
             d_vh['rcert']=vh[4]
             d_vh['rutacert']=vh[5]
-            data=(vh[1],self.fsync)
-            sql="select nombre,valor,tipo from tb_url where id_vh=%s and and fsync >=%s"
+            d_vh['_id']=vh[6]
+            d_vh['deleted']= False if vh[7] == None else vh[7]
+            data=(vh[0],self.fsync)
+            sql="select nombre,valor,id_tipo,_id,deleted,id_url from tb_url where id_vh=%s and fsync >=%s"
             lurl=conn.consulta(sql,data)
             d_vh['url']=[]
             for url in lurl:
                 d_url={}
+                d_url['id_url']=url[5]
                 d_url['nombre']=url[0]
                 d_url['valor']=url[1]
                 d_url['tipo']=url[2]
+                d_url['_id']=url[3]
+                d_url['deleted']=False if url[4] == None else url[4]
                 d_vh['url'].append(d_url.copy())
             dic['vh'].append(d_vh.copy())
         
@@ -219,5 +228,101 @@ class objSoftWeb(objSi.objSi):
                 modificado = False
                 
         return modificado,puertos
+    
+    def BorraSoftWebBMDB(self, clase,data, id_valor, api,clave,tabla,conn):
+
+        ok = True
+        if data['Code'] <> '' :
+            data = {'deleted':'True'}
+            ok = api.actualizaClase(clase,data,id_valor)
+        sql = "delete from "+tabla+" where "+ clave + "=" +str(id_valor)
+        conn.actualizaTabla(sql)
+        return
+    
+    def sincronizaUrl(self,api, url,conn):
+        
+        if not url['deleted']:
+            data = {'Code': str(url['id_url'])}
+            data['Estado']=api.retIdLookup('CI-Estado','NV')
+            data['Carga'] =api.retIdLookup('CI-TipoCarga',"AU")
+            data['Entorno']= self.dic_Web['Entorno']
+            data['nombre']=url['nombre']
+            data['valor']=url['valor'] 
+            data['Tipo']=url['tipo']
+            if url['_id']<> None:
+                id_class = api.creaClase('url',data)
+            else :
+                id_class = api.actualizaClase('url',data,url['id_url'])
+        else:
+            self.BorraSoftWebBMDB('url',data,url['id_url'],api,"id_url","tb_url",conn)
+        return id_class
+    
+    def sincronizaVH(self,api,vh,conn):
+        
+        if not vh['deleted']:
+            data = {'Code': str(vh['id_vh'])}
+            data['Estado']=api.retIdLookup('CI-Estado','NV')
+            data['Carga'] =api.retIdLookup('CI-TipoCarga',"AU")
+            data['Entorno']= self.dic_Web['Entorno']
+            data['DNS']=vh['dns']
+            data['puerto']=str(vh['puerto']) 
+            data['SSL']=str(vh['ssl'])
+            data['requiereCertificado']=str(vh['rcert'])
+            data['contCertificados']=vh['rutacert']
+            if vh['_id']<> None:
+                id_Class = api.creaClase('VirtualHost',data)
+            else :
+                id_Class = api.actualizaClase('VirtualHost',data,vh['id_vh'])
+        else:
+            self.BorraSoftWebBMDB('VirtualHost',data,vh['id_vh'],api,"id_vh","tb_vhost",conn)
+    
+        return id_Class
+    
+    
+    def sincroniza(self,conn,api,_idsw):
+        
+        Correcto = super(objSoftWeb,self).sincroniza(_idsw)
+        if Correcto:
+            data = {'Code': str(self.dic_Web['id_web'])}
+            if not self.dic_Web['deleted']:              
+                data['Estado']=api.retIdLookup('CI-Estado','NV')
+                data['Carga'] =api.retIdLookup('CI-TipoCarga',"AU")
+                data['Entorno']= self.dic_Web['Entorno']
+                data['Version']= self.dic_Web['version']
+                data['Home']= self.dic_Web['Home']
+                data['Usuario']= self.dic_Web['usuario']
+                data['urlAdmin']= self.dic_Web['urladmin']
+                if self.dic_Web['_id']<>None:
+                    id_Class = api.creaClase('ServWeb',data)
+                else :
+                    id_Class = api.actualizaClase('ServWeb',data,self.id_si)
+                if id_Class <> None:
+                    conn.apuntaId('tb_servaplicaciones',id_Class,'id_web',self.dic_Web['id_web'])
+                    for vh in self.dic_Web['vh']:
+                        id_class_vh = self.sincronizaVH(api, vh,conn)
+                        if id_class_vh <> None:
+                            conn.apuntaId('tb_Conectorbd',id_class_vh,'id_vh',vh['id_vh'])
+                            data = {}
+                            data['_sourceType'] = "ServWeb"
+                            data['_sourceId'] = id_Class
+                            data['_destinationId'] = id_class_vh
+                            data['_destinationType'] = "VirtualHost"
+                            api.creaRelacion('ServWebToVH',data)
+                            for url in vh['url']:
+                                id_class_url = self.sincronizaUrl(api, url,conn)
+                                if id_class_url <> None:
+                                    conn.apuntaId('tb_url',id_class_url,'id_url',vh['id_url'])
+                                    data = {}
+                                    data['_sourceType'] = "url"
+                                    data['_sourceId'] = id_class_url
+                                    data['_destinationId'] = id_class_vh
+                                    data['_destinationType'] = "VirtualHost"
+                                    api.creaRelacion('urlToVH',data)   
+            else:
+                self.BorraSoftWebBMDB('ServWeb',data,self.id_si,api,"id_si","tb_servweb",conn)
+        return
+    
+    
+    
       
       

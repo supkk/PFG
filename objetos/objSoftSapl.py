@@ -22,6 +22,7 @@ class objSoftSapl(objSi.objSi):
         self.puerto=port
         self.id_sa=0
         self.id_si=0
+        self.fsync=fsync
         
         if id_si ==0:
             self.dic_SA = {}
@@ -31,15 +32,17 @@ class objSoftSapl(objSi.objSi):
         return
     
     def cargaSoftware(self,id_si,conn):
-        dic={}
+        
+        dic=super(objSoftSapl,self).cargaSoftware(conn)
         data=(id_si,self.fsync)
-        sql= "select id_sa,jvm,puerto,id_entorno where id_si=%s and fsync >=%s" 
+        sql= "select id_sa,jvm,puerto,id_entorno,_id from tb_servaplicaciones where id_si=%s and fsync >=%s" 
         data = conn.consulta(sql,data)
-        dic['jvm']= data[1]
-        dic['puerto']= data[2]
-        dic['id_entorno']= data[3]
-        data = (data[0],self.fsync)
-        sql = "select id_edb,usuario,nombre where id_sa=%s and fsync >=%s"
+        dic['jvm']= data[0][1]
+        dic['puerto']= data[0][2]
+        dic['id_entorno']= data[0][3]
+        dic['_id']=data[0][4]
+        data = (data[0][0],self.fsync)
+        sql = "select id_edb,usuario,nombre,_id,deleted from tb_conectorbd where id_sa=%s and fsync >=%s"
         lcdb = conn.consulta(sql,data)
         dic['jdbc']=[]
         for cdb in lcdb:
@@ -47,8 +50,10 @@ class objSoftSapl(objSi.objSi):
             d_cdb['usuario']=cdb[1]
             d_cdb['nombre']=cdb[2]
             ddb=conn.retidsEsquemaBD(cdb[0])
-            d_cdb['nombre_db']=ddb[0]
-            d_cdb['esquema']=ddb[1]
+            d_cdb['nombre_db']=ddb[0][0]
+            d_cdb['esquema']=ddb[0][1]
+            d_cdb['_id']=cdb[3]
+            d_cdb['deleted']= False if cdb[4] == None else cdb[4]
             dic['jdbc'].append(d_cdb.copy())
         
         return dic
@@ -153,3 +158,9 @@ class objSoftSapl(objSi.objSi):
                 conn.apuntaModificado( "tb_servaplicaciones","id_sa",self.id_sa)
                 
         return mod_cdb,self.puerto
+    
+    def sincroniza(self,conn):
+        return
+    
+    
+    

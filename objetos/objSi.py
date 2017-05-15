@@ -25,9 +25,53 @@ class objSi(object):
         self.home=home
         self.ip = ip
         self.user=user
+        self.dic_si={}
 
         
         return
+    
+    def cargaSoftware(self,conn):
+        dic={}
+        sql = 'select id_entorno,version,home,usuario,deleted,_id from tb_softwareinstancia where id_si='+str(self.id_si)
+        lsi=conn.consulta(sql)
+        dic['entorno']=lsi[0][0]
+        dic['version']=lsi[0][1]
+        dic['home']=lsi[0][2]
+        dic['usuario']=lsi[0][3]
+        dic['deleted']=False if lsi[0][4] == None else lsi[0][4]
+        self.dic_si=dic
+        self._id=lsi[0][5]
+        
+        return dic
+    
+    def sincroniza(self,conn,api,idsw):
+        
+        Correcto=False
+        if not self.dic_si['deleted']:
+            data = {'Code': str(self.id_si)}
+            data['Estado'] = api.retIdLookup('CI-Estado','NV')
+            data['Carga'] = api.retIdLookup('CI-TipoCarga',"AU")
+            data['Entorno']= self.dic_si['Entorno']
+            data['Version']= self.dic_si['version']
+            data['Home']=self.dic_si['home']
+            data['usuario']=self.dic_si['usuario']
+            if self._id <> None:
+                id_Class = api.creaClase('SoftwareInstancia',data)
+            else :
+                id_Class = api.actualizaClase('SoftwareInstancia',data,self._id)
+            
+            data = {}
+            data['_sourceType'] = "SoftwareInstalado"
+            data['_sourceId'] = str(idsw)
+            data['_destinationId'] = id_Class
+            data['_destinationType'] = "SoftwareInstancia"
+            api.creaRelacion('SItoSoftInstancia',data)
+        else:
+            self.BorraSoftWebBMDB('SoftwareInstancia',data,self._id,api,"id_si","tb_softwareinstancia",conn)
+            
+        Correcto=True
+        
+        return Correcto
     
     def actualizaInstancia(self, id_si,conn):
         

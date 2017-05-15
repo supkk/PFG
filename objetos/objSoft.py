@@ -5,7 +5,7 @@ Created on 1 abr. 2017
 @author: jose
 '''
 import time
-import intSoft
+from objetos import intSoft
 from objetos import bbdd
  
 
@@ -27,7 +27,7 @@ class objSoft(object):
         if idserv <> 0:
             dt,id_si = conn.retSofInstancia(idsw,idserv)
             if dt <> None:
-                self.iswf=intSoft.intSoft(cs=conn.retCatSoftware(idsw)[0],idserv=idserv,sw=idsw,ent=dt[3],user=dt[2],home=dt[1],id_si=id_si,conn,fsync=fsync)
+                self.iswf=intSoft.intSoft(cs=conn.retCatSoftware(idsw)[0],idserv=idserv,sw=idsw,ent=dt[3],user=dt[2],home=dt[1],id_si=id_si,conn=conn,fsync=fsync)
             else:
                 self.iswf= None
         return
@@ -86,4 +86,6 @@ class objSoft(object):
         else:
             self.borraSwCMDB(api, conn,id_serv)
             print (time.strftime("%c")+"-- Borrado el  Software "+ nombre )
+        if self.iswf <> None:
+            self.iswf.sincroniza(conn,api, self._id)
         return

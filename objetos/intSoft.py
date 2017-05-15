@@ -7,6 +7,7 @@ Created on 7 may. 2017
 from objetos import objSoftWeb
 from objetos import objSoftBBDD
 from objetos import objSoftSapl
+import time
 
 class intSoft(object):
     '''
@@ -20,13 +21,14 @@ class intSoft(object):
         '''
         self.id_sw=sw
         self.id_serv=idserv
+        self.cs=cs
         
         if cs == 'SWEB' :
-            self.o = objSoftWeb.objSoftWeb(idserv=idserv,sw=sw,ent=ent,ip=ip,soft=soft,user=user,port=port,home=home,id_si,conn=conn,fsync=fsync)                             
+            self.o = objSoftWeb.objSoftWeb(idserv=idserv,sw=sw,ent=ent,ip=ip,soft=soft,user=user,port=port,home=home,id_si=id_si,conn=conn,fsync=fsync)                             
         elif cs == 'SAPL':
-            self.o = objSoftSapl.objSoftSapl(idserv=idserv,sw=sw,ent=ent,ip=ip,soft=soft,user=user,port=port,home=home,id_si,conn=conn,fsync=fsync)
+            self.o = objSoftSapl.objSoftSapl(idserv=idserv,sw=sw,ent=ent,ip=ip,soft=soft,user=user,port=port,home=home,id_si=id_si,conn=conn,fsync=fsync)
         elif cs == 'BBDD':
-            self.o = objSoftBBDD.objSoftBBDD(idserv=idserv,sw=sw,ent=ent,ip=ip,soft=soft,user=user,port=port,home=home,id_si,conn=conn,fsync=fsync)
+            self.o = objSoftBBDD.objSoftBBDD(idserv=idserv,sw=sw,ent=ent,ip=ip,soft=soft,user=user,port=port,home=home,id_si=id_si,conn=conn,fsync=fsync)
         else :
             self.o=None
             
@@ -34,6 +36,10 @@ class intSoft(object):
         correcto=self.o.descubre(cnf,param)
 
         return correcto
+    
+    def sincroniza(self,conn,api,_idsw):
+        self.o.sincroniza(conn,_idsw)
+        return
     
     def grabaBBDD(self,conn):
         modificado,ports= self.o.grabaBBDD(conn)
