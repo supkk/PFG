@@ -324,8 +324,10 @@ CREATE TABLE TB_url (
    id_VH		int NOT NULL,
    fsync        date,
    deleted      boolean,
+   id_tipo	    varchar(2),
    CONSTRAINT PK_TB_url PRIMARY KEY(id_url),
-   CONSTRAINT FK_TB_Url_VH FOREIGN KEY(id_VH) REFERENCES TB_VHost(id_VH)
+   CONSTRAINT FK_TB_Url_VH FOREIGN KEY(id_VH) REFERENCES TB_VHost(id_VH),
+   CONSTRAINT FK_TIPO_URL FOREINGN KEY (ID_TIPO) REFERENCES TB_LKP_URL(CODE)
 );
 
 CREATE TABLE TB_Map_url_APL(

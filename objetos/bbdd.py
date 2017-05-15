@@ -218,6 +218,18 @@ class bbdd():
         cur.close()
         return code_id[0]
     
+    def retSofInstancia(self,id_sw,id_serv):
+        
+        data= (id_sw,id_serv)
+        sql = "select id_si from tb_softwareinstancia where id_sw=%s and id_serv=%s"
+        id_si=self.consulta(sql, data)
+        if len(id_si)>0:
+            data = self.retInstanciaSW(id_si[0][0])
+        else:
+            data=None
+            
+        return data,id_si[0][0]
+    
     def retInstanciaSW(self,id_si):
     
         cur=self.conn.cursor()
@@ -273,15 +285,15 @@ class bbdd():
         
         cur=self.conn.cursor()
         data=(nombre,id_vh)
-        cur.execute("select valor,id_url from  tb_url where nombre=%s and id_vh=%s",data)
+        cur.execute("select valor,id_tipo,id_url from  tb_url where nombre=%s and id_vh=%s",data)
         code_id = cur.fetchone()
         cur.close()
         if code_id == None :
             result = None
             id_url = None
         else :       
-            result = (code_id[0])  
-            id_url = code_id[1]
+            result = (code_id[0],code_id[1])  
+            id_url = code_id[2]
         return result,id_url
     
     def existeRelacionUrl(self,data):
@@ -329,6 +341,15 @@ class bbdd():
             result = (code_id[0])  
             id_edb = code_id[1]
         return result, id_edb
+    
+    def retidsEsquemaBD(self,id_edb):
+        
+        sql="select nombre,nombre_db where id_edb="+str(id_edb)
+        result=self.consulta(sql)
+        
+        return result
+    
+    
     
     def retTablaDB(self,nombre, id_edb):
     

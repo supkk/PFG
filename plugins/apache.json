@@ -8,11 +8,13 @@
    "rutacert":"",
    "url":[{
 	   "nombre":"app1",
-	   "valor":"/app1/login"
+	   "valor":"/app1/login",
+	   "tipo":"AC"
 	 },
 	 {
 	   "nombre":"app2",
-	   "valor":"/app2/login"
+	   "valor":"/app2/login",
+	   "tipo":"CC"
 	 }]
  },
    {"dns":"www.prueba.com",
@@ -22,11 +24,13 @@
    "rutacert":"",
    "url":[{
 	   "nombre":"app1",
-	   "valor":"/app1/login"
+	   "valor":"/app1/login",
+	   "tipo":"AC"
 	 },
 	 {
 	   "nombre":"app2",
-	   "valor":"/app2/login"
+	   "valor":"/app2/login",
+	   "tipo":"CC"
 	 }]},
    {
    "dns":"www.prueba.com",
@@ -36,11 +40,13 @@
    "rutacert":"/etc/apache/conf/key.kdb",
    "url":[{
 	   "nombre":"app1",
-	   "valor":"/app1/login"
+	   "valor":"/app1/login",
+	   "tipo":"CC"
 	 },
 	 {
 	   "nombre":"app2",
-	   "valor":"/app2/login"
+	   "valor":"/app2/login",
+	   "tipo":"CC"
 	 }]
     }]
 }

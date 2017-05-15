@@ -14,7 +14,7 @@ class intSoft(object):
     '''
 
 
-    def __init__(self, cs='', idserv=0,sw=0,ent='PRO',ip='',soft='',user='',port=0,home=''):
+    def __init__(self, cs='', idserv=0,sw=0,ent='PRO',ip='',soft='',user='',port=0,home='',id_si=0,conn=None,fsync=None):
         '''
         Constructor
         '''
@@ -22,11 +22,11 @@ class intSoft(object):
         self.id_serv=idserv
         
         if cs == 'SWEB' :
-            self.o = objSoftWeb.objSoftWeb(idserv=idserv,sw=sw,ent=ent,ip=ip,soft=soft,user=user,port=port,home=home)
+            self.o = objSoftWeb.objSoftWeb(idserv=idserv,sw=sw,ent=ent,ip=ip,soft=soft,user=user,port=port,home=home,id_si,conn=conn,fsync=fsync)                             
         elif cs == 'SAPL':
-            self.o = objSoftSapl.objSoftSapl(idserv=idserv,sw=sw,ent=ent,ip=ip,soft=soft,user=user,port=port,home=home)
+            self.o = objSoftSapl.objSoftSapl(idserv=idserv,sw=sw,ent=ent,ip=ip,soft=soft,user=user,port=port,home=home,id_si,conn=conn,fsync=fsync)
         elif cs == 'BBDD':
-            self.o = objSoftBBDD.objSoftBBDD(idserv=idserv,sw=sw,ent=ent,ip=ip,soft=soft,user=user,port=port,home=home)
+            self.o = objSoftBBDD.objSoftBBDD(idserv=idserv,sw=sw,ent=ent,ip=ip,soft=soft,user=user,port=port,home=home,id_si,conn=conn,fsync=fsync)
         else :
             self.o=None
             

@@ -20,7 +20,7 @@ def compruebaConexionPuerto(n_proceso,ip,puerto):
     try :
         exec modulo
         Correcto = module.compruebaConexion(ip,puerto)
-    except Exception, error:
+    except :
         print (time.strftime("%c")+"-- Error: No encuentro  plugin "+n_proceso)  
         Correcto = False
     

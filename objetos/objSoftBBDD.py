@@ -15,17 +15,61 @@ class objSoftBBDD(objSi.objSi):
     classdocs
     '''
 
-    def __init__(self, idserv=0, sw=0, ent='PRO',ip='',soft='',user='',port=0,home=''):
+    def __init__(self, idserv=0, sw=0, ent='PRO',ip='',soft='',user='',port=0,home='',id_si='0',conn=None,fsync=None):
         '''
         Constructor
         '''
-        super(objSoftBBDD,self).__init__(id_serv=idserv,id_sw=sw,id_entorno=ent,ip=ip,user=user,home=home)
+        super(objSoftBBDD,self).__init__(id_serv=idserv,id_sw=sw,id_entorno=ent,ip=ip,user=user,home=home,id_si=id_si)
         self.soft=soft
         self.puerto=port
-        self.dic_BD={}
         self.id_db = 0
         self.id_si = 0
+        if id_si ==0:
+            self.dic_BD = {}
+        else:
+            self.dic_BD = self.cargaSoftware(id_si,conn)
         
+        return
+    
+    def cargaSoftware(self,id_si,conn):
+        
+        dic={}
+        data=(id_si,self.fsync)
+        sql= "select  puerto,admin,id_db where sw.id_si=%s and and sw.fsync >=%s" 
+        data = conn.consulta(sql,data)
+        dic['admin']= data[1]
+        dic['puerto']= data[0]
+        data = (data[2],self.fsync)
+        sql = "select nombre,propietario,nombre_db,id_edb  where id_db=%s and fsync >=%s"
+        ledb = conn.consulta(sql,data)
+        dic['esquema']=[]
+        for edb in ledb:
+            d_edb={}
+            d_edb['nombre']=edb[0]
+            d_edb['propietario']=edb[1]
+            d_edb['nombre_db']=edb[2]
+            data=(edb[3],self.fsync)
+            sql="select nombre,tipo_tabla,id_tb from tb_url where id_edb=%s and and fsync >=%s"
+            ltb=conn.consulta(sql,data)
+            d_edb['Tabla']=[]
+            for tb in ltb:
+                d_tb={}
+                d_tb['nombre']=tb[0]
+                d_tb['tipo_tabla']=tb[1]
+                d_edb['Tabla'].append(d_tb.copy())
+                data=(tb[2],self.fsync)
+                sql = "select nombre, indice from tb_atributotabla where id_tb=%s and and fsync >=%s "
+                latb=conn.consulta(sql,data)
+                d_tb['campos']=[]
+                for at in latb:
+                    d_at={}
+                    d_at['nombre']=at[0]
+                    d_at['indice']=tb[1]
+                    d_tb['campos'].append(d_at.copy())
+            dic['esquema'].append(d_edb.copy())
+        
+        return dic
+
     
     def descubre(self,cnf,param):
         

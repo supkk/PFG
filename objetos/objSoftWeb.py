@@ -15,15 +15,53 @@ class objSoftWeb(objSi.objSi):
     classdocs
     '''
 
-    def __init__(self, idserv=0,sw=0,ent='PRO',ip='',soft='',user='',port=0,home=''):
+    def __init__(self, idserv=0,sw=0,ent='PRO',ip='',soft='',user='',port=0,home='',id_si=0,conn=None,fsync=None):
         '''
         Constructor
         '''
-        super(objSoftWeb,self).__init__(id_serv=idserv,id_sw=sw,id_entorno=ent,ip=ip,user=user,home=home)
+        super(objSoftWeb,self).__init__(id_serv=idserv,id_sw=sw,id_entorno=ent,ip=ip,user=user,home=home,id_si=0)
         self.soft=soft
         self.puerto=port
-        self.dic_Web= {}
-        self.id_si=0
+        self.fsync=fsync
+        if id_si ==0:
+            self.dic_Web = {}
+        else:
+            self.dic_Web= self.cargaSoftware(id_si,conn)
+        
+        return
+    
+    def cargaSoftware(self,id_si,conn):
+        dic={}
+        data=(id_si,self.fsync)
+        sql= "select sw.urladmin,si.version,sw.puerto, sw.id_web from tb_softwareInstancia si inner join tb_servweb sw on si.id_si = sw.id_si where sw.id_si=%s and and sw.fsync >=%s" 
+        data = conn.consulta(sql,data)
+        dic['urladmin']= data[0]
+        dic['version']= data[1]
+        dic['puerto']= data[2]
+        data = (data[3],self.fsync)
+        sql = "select id_vh,dns,puerto,ssl,rcert,rutacert from tb_vhost where id_web=%s and fsync >=%s"
+        lvh = conn.consulta(sql,data)
+        dic['vh']=[]
+        for vh in lvh:
+            d_vh={}
+            d_vh['dns']=vh[1]
+            d_vh['puerto']=vh[2]
+            d_vh['ssl']=vh[3]
+            d_vh['rcert']=vh[4]
+            d_vh['rutacert']=vh[5]
+            data=(vh[1],self.fsync)
+            sql="select nombre,valor,tipo from tb_url where id_vh=%s and and fsync >=%s"
+            lurl=conn.consulta(sql,data)
+            d_vh['url']=[]
+            for url in lurl:
+                d_url={}
+                d_url['nombre']=url[0]
+                d_url['valor']=url[1]
+                d_url['tipo']=url[2]
+                d_vh['url'].append(d_url.copy())
+            dic['vh'].append(d_vh.copy())
+        
+        return dic
 
     def descubre(self,cnf,param):
         
@@ -72,14 +110,14 @@ class objSoftWeb(objSi.objSi):
         modificado= False
         durl,id_url = conn.existeInstanciaUrl(id_vh,url['nombre'])
         if id_url == None :
-            data = (id_vh,url['nombre'],url['valor'],time.strftime("%c"))
-            sql ="insert into tb_url (id_vh,nombre,valor,fsync) values (%s,%s,%s,%s)"
+            data = (id_vh,url['nombre'],url['valor'],url['tipo'],time.strftime("%c"))
+            sql ="insert into tb_url (id_vh,nombre,valor,id_tipo,fsync) values (%s,%s,%s,%s,%s)"
             conn.actualizaTabla(sql,data)
             modificado =True
         else:
-            data =(url['valor'])
+            data =(url['valor'],url['tipo'])
             if data <> durl :
-                sql ="update tb_url set valor=%s, fsync='"+time.strftime("%c")+"' where id_vh="+str(id_vh)+ " and nombre ='" + url['nombre'] + "'"
+                sql ="update tb_url set valor=%s, id_tipo=%s,fsync='"+time.strftime("%c")+"' where id_vh="+str(id_vh)+ " and nombre ='" + url['nombre'] + "'"
                 conn.actualizaTabla(sql,data)
                 modificado = True
             
@@ -155,8 +193,8 @@ class objSoftWeb(objSi.objSi):
                     if id_vh <> None :
                         puertos.append(vh['puerto'])
                         for url in vh['url']:
-                            data = (id_vh,url['nombre'],url['valor'],time.strftime("%c"))
-                            sql ="insert into tb_url (id_vh,nombre,valor,fsync) values (%s,%s,%s,%s)"
+                            data = (id_vh,url['nombre'],url['valor'],url['tipo'],time.strftime("%c"))
+                            sql ="insert into tb_url (id_vh,nombre,valor,id_tipo,fsync) values (%s,%s,%s,%s,%s)"
                             conn.actualizaTabla(sql,data)
                     else :
                         print (time.strftime("%c")+"-- Error al insertar el virtualhost "+self.dic_Web['dns']+":"+str(self.dic_Web['puerto']))   

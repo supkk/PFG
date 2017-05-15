@@ -13,16 +13,45 @@ class objSoftSapl(objSi.objSi):
     '''
 
 
-    def __init__( self,idserv=0,sw=0,ent='PRO',ip='',soft='',user='',port=0,home=''):
+    def __init__( self,idserv=0,sw=0,ent='PRO',ip='',soft='',user='',port=0,home='',id_si=0,conn=None,fsync=None):
         '''
         Constructor
         '''
-        super(objSoftSapl,self).__init__(id_serv=idserv,id_sw=sw,id_entorno=ent,ip=ip,user=user,home=home)
+        super(objSoftSapl,self).__init__(id_serv=idserv,id_sw=sw,id_entorno=ent,ip=ip,user=user,home=home,id_si=id_si)
         self.soft=soft
         self.puerto=port
-        self.dic_SA = {}
         self.id_sa=0
         self.id_si=0
+        
+        if id_si ==0:
+            self.dic_SA = {}
+        else:
+            self.dic_SA = self.cargaSoftware(id_si,conn)
+        
+        return
+    
+    def cargaSoftware(self,id_si,conn):
+        dic={}
+        data=(id_si,self.fsync)
+        sql= "select id_sa,jvm,puerto,id_entorno where id_si=%s and fsync >=%s" 
+        data = conn.consulta(sql,data)
+        dic['jvm']= data[1]
+        dic['puerto']= data[2]
+        dic['id_entorno']= data[3]
+        data = (data[0],self.fsync)
+        sql = "select id_edb,usuario,nombre where id_sa=%s and fsync >=%s"
+        lcdb = conn.consulta(sql,data)
+        dic['jdbc']=[]
+        for cdb in lcdb:
+            d_cdb={}
+            d_cdb['usuario']=cdb[1]
+            d_cdb['nombre']=cdb[2]
+            ddb=conn.retidsEsquemaBD(cdb[0])
+            d_cdb['nombre_db']=ddb[0]
+            d_cdb['esquema']=ddb[1]
+            dic['jdbc'].append(d_cdb.copy())
+        
+        return dic
     
     def descubre(self,cnf,param):
         
