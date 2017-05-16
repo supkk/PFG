@@ -45,7 +45,11 @@ class cmdbuild(object):
         data = str(attr)
         data = data.replace('\'', '"')
         r = requests.put(uri,headers = self.cabeceras, data=data)
-        return r.ok
+        result = None
+        if r.ok :
+            result = idclass
+            
+        return result
     
     def creaRelacion(self,dominio,attr):
         
@@ -53,7 +57,11 @@ class cmdbuild(object):
         data = str(attr)
         data = data.replace('\'', '"')
         r = requests.post(uri,headers = self.cabeceras, data=data)
-        return json.loads(r.text)['data']
+        if r.ok :
+            result = json.loads(r.text)['data']
+        else :   
+            result = -1
+        return result
     
     def actualizaRelacion(self,dominio,attr,idomain): 
         

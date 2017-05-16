@@ -290,7 +290,129 @@ class objSoftBBDD(objSi.objSi):
                 conn.apuntaModificado( "tb_db","id_si",self.id_si)
         return modificado,self.puerto
     
-    def sincroniza(self,conn):
+    def BorraSoftBBDD(self, clase,data, id_valor, api):
+
+        ok = True
+        if data['Code'] <> '' :
+            data = {'deleted':'True'}
+            id_Class = api.actualizaClase(clase,data,id_valor)
+
+        return id_Class
+    
+    def sincronizaTabla(self,tb,api):
+        
+        if tb['deleted']:
+            data = {'Code': tb['nombre']} 
+            data['Estado']=api.retIdLookup('CI-Estado','NV')
+            data['Carga'] =api.retIdLookup('CI-TipoCarga',"AU")
+            data['Entorno']= api.retIdLookup('CI-Entorno',self.dic_BBDD['entorno'])
+            data['Nombre']= tb['nombre']
+            data['Tipo']= api.retIdLookup('Tabla-Tipo',tb['tipo'])
+            if tb['_id']==None:
+                id_Class_tb = api.creaClase('Tabla',data)
+            else :
+                id_Class_tb = api.actualizaClase('Tabla',data,tb['_id'])
+        else:
+            id_Class_tb = self.BorraSoftBBDD('Tabla',data,tb['_id'],api)
+            
+        return id_Class_tb
+    
+    def sincronizaEsquema(self,eqm,api):
+        
+        if eqm['deleted']:
+            data = {'Code': eqm['nombre']} 
+            data['Estado']=api.retIdLookup('CI-Estado','NV')
+            data['Carga'] =api.retIdLookup('CI-TipoCarga',"AU")
+            data['Entorno']= api.retIdLookup('CI-Entorno',self.dic_BBDD['entorno'])
+            data['nombre']= eqm['nombre']
+            data['nombre_bd']= eqm['nombre_bd']
+            data['propietario']= eqm['propietario']
+            if eqm['_id']==None:
+                id_Class_eqm = api.creaClase('EsquemaBD',data)
+            else :
+                id_Class_eqm = api.actualizaClase('EsquemaBD',data,eqm['_id'])
+        else:
+            id_Class_eqm=self.BorraSoftBBDD('EsquemaBD',data,eqm['_id'],api)
+                
+        return id_Class_eqm
+    
+    def sincronizaAtributo(self,at,api):
+        
+        if at['deleted']:
+            data = {'Code': at['nombre']} 
+            data['Estado']=api.retIdLookup('CI-Estado','NV')
+            data['Carga'] =api.retIdLookup('CI-TipoCarga',"AU")
+            data['Entorno']= api.retIdLookup('CI-Entorno',self.dic_BBDD['entorno'])
+            data['Nombre']= at['nombre']
+            data['Indice']= at['indice']
+            if tb['_id']==None:
+                id_Class_at = api.creaClase('CamposTabla',data)
+            else :
+                id_Class_at = api.actualizaClase('CamposTabla',data,at['_id'])
+        else :
+            id_Class_at=self.BorraSoftBBDD('CamposTabla',data,at['_id'],api)
+            
+        return id_Class_at
+    
+    def sincroniza(self,conn,api,_idsw):
+        
+        if not self.dic_BBDD['deleted']:    
+            data = {'Code': "BBDD"+str(self.dic_BBDD['id_db'])}          
+            data['Estado']=api.retIdLookup('CI-Estado','NV')
+            data['Carga'] =api.retIdLookup('CI-TipoCarga',"AU")
+            data['Entorno']= api.retIdLookup('CI-Entorno',self.dic_BBDD['entorno'])
+            data['Version']= self.dic_BBDD['version']
+            data['Home']= self.dic_BBDD['home']
+            data['Usuario']= self.dic_BBDD['usuario']
+            data['admin']= self.dic_BBDD['admin']
+            data['puerto']= self.dic_BBDD['puerto']
+            if self.dic_BBDD['_id']==None:
+                id_Class = api.creaClase('BD',data)
+            else :
+                id_Class = api.actualizaClase('BD',data,self.dic_BBDD['_id'])
+            if id_Class <> None:
+                conn.apuntaId('tb_BD',id_Class,'id_si',self.id_si)
+                conn.apuntaId('tb_softwareinstancia',id_Class,'id_si',self.id_si)
+                data = {}
+                data['_sourceType'] = "SoftwareInstalado"
+                data['_sourceId'] = str(_idsw)
+                data['_destinationId'] = id_Class
+                data['_destinationType'] = "BD"
+                api.creaRelacion('SItoSoftInstancia',data)
+                for eqm in self.dic_BBDD['esquema']:
+                    id_Class_eqm=self.sincronizaEsquema(eqm,api)
+                    if id_Class_eqm > 0 :
+                        conn.apuntaId('tb_EsquemaDB',id_Class,'id_edb',eqm['id_edb'])
+                        data = {}
+                        data['_sourceType'] = "BD"
+                        data['_sourceId'] = str(self.dic_BBDD['_id'])
+                        data['_destinationId'] = id_Class_eqm
+                        data['_destinationType'] = "EsquemaBD"
+                        api.creaRelacion('BDToEsquemaDB',data)
+                        for tb in eqm['Tabla']:
+                            id_Class_tb=self.sincronizaTabla(tb,api)
+                            if id_Class_tb > 0 :
+                                conn.apuntaId('tb_Tabla',id_Class,'id_tb',tb['id_tb'])
+                                data = {}
+                                data['_sourceType'] = "EsquemaDB"
+                                data['_sourceId'] = id_Class_eqm
+                                data['_destinationId'] = id_Class_tb
+                                data['_destinationType'] = "Tabla"
+                                api.creaRelacion('EsquemaDBToTabla',data)
+                                for at in tb['Campos']:
+                                    id_Class_at=self.sincronizaAtributo(at,api)
+                                    if id_Class > 0 :
+                                        conn.apuntaId('tb_AtributoTabla',id_Class,'id_attr',tb['id_attr'])
+                                        data = {}
+                                        data['_sourceType'] = "Tabla"
+                                        data['_sourceId'] = id_Class_tb
+                                        data['_destinationId'] = id_Class_at
+                                        data['_destinationType'] = "CamposTabla"
+                                        api.creaRelacion('TablaToCamposTabla',data)
+        else :
+            id_Class_at=self.BorraSoftBBDD('BD',data,self.dic_BD['_id'],api)
+                        
+                        
         return
     
     

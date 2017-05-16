@@ -51,7 +51,7 @@ class objFS(object):
             data['Capacidad'] = int(self.size)
             data['Estado'] = api.retIdLookup('CI-Estado','NV')
             data['TipoM'] = api.retIdLookup('FileSystemTipoAlmacenamiento',self.tipoAl)
-            data['TipoFS'] = api.retIdLookup('FileSystemTipo',self.tipoFs)
+            data['TipoFS'] = api.retIdLookup('FileSystem-Tipo',self.tipoFs)
             data['Carga'] =api.retIdLookup('CI-TipoCarga',"AU")
             
             if not self.estaCargado():

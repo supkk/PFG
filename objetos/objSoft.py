@@ -45,8 +45,8 @@ class objSoft(object):
         if self._id <> '' :
             data = {'deleted':'True'}
             ok = api.actualizaClase('SoftwareInstalado',data,self._id)
-        sql = "delete from tb_soft_running where id_sw="+str(self.idsw)+ " and id_serv="+str(id_serv)
-        conn.actualizaTabla(sql)
+#        sql = "delete from tb_soft_running where id_sw="+str(self.idsw)+ " and id_serv="+str(id_serv)
+#        conn.actualizaTabla(sql)
     
         return ok
       

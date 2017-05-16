@@ -91,7 +91,7 @@ def main ():
         print (time.strftime("%c")+"-- Iniciando la sincronizacion del servidor  "+ serv.nombre)
         serv.sincroniza(api,conn,ultimaSync)
         print (time.strftime("%c")+"-- Terminada la sincronizacion del servidor  "+ serv.nombre)
-    actualizaFSync(conn)
+#    actualizaFSync(conn)
     print (time.strftime("%c")+"-- Fin del proceso de sincronización")
     return
     

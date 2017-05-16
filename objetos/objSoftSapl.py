@@ -39,7 +39,7 @@ class objSoftSapl(objSi.objSi):
         data = conn.consulta(sql,data)
         dic['jvm']= data[0][1]
         dic['puerto']= data[0][2]
-        dic['id_entorno']= data[0][3]
+        dic['entorno']= data[0][3]
         dic['_id']=data[0][4]
         data = (data[0][0],self.fsync)
         sql = "select id_edb,usuario,nombre,_id,deleted from tb_conectorbd where id_sa=%s and fsync >=%s"
@@ -159,7 +159,80 @@ class objSoftSapl(objSi.objSi):
                 
         return mod_cdb,self.puerto
     
-    def sincroniza(self,conn):
+    
+    def BorraSoftSA(self, clase,data, id_valor, api):
+
+        ok = True
+        if data['Code'] <> '' :
+            data = {'deleted':'True'}
+            id_Class = api.actualizaClase(clase,data,id_valor)
+
+        return id_Class
+    
+    def sincronizaJDBC(self,jdbc,api):
+        
+        if jdbc['deleted']:
+            data = {'Code': jdbc['nombre']} 
+            data['Estado']=api.retIdLookup('CI-Estado','NV')
+            data['Carga'] =api.retIdLookup('CI-TipoCarga',"AU")
+            data['Entorno']= api.retIdLookup('CI-Entorno',self.dic_SA['entorno'])
+            data['nombre']= jdbc['nombre']
+            data['usuario']= jdbc['usuario']
+            if jdbc['_id']==None:
+                id_Class = api.creaClase('ConectorJDBC',data)
+            else :
+                id_Class = api.actualizaClase('ConectorJDBC',data,jdbc['_id'])
+        else:
+            id_Class = self.BorraSoftSA('ConectorJDBC',data,jdbc['_id'],api)
+            
+        return id_Class
+    
+    def sincroniza(self,conn,api,_idsw):
+        
+        if not self.dic_SA['deleted']:    
+            data = {'Code': "SA"+str(self.dic_SA['id_SA'])}          
+            data['Estado']=api.retIdLookup('CI-Estado','NV')
+            data['Carga'] =api.retIdLookup('CI-TipoCarga',"AU")
+            data['Entorno']= api.retIdLookup('CI-Entorno',self.dic_SA['entorno'])
+            data['Version']= self.dic_SA['version']
+            data['Home']= self.dic_SA['home']
+            data['JVM'] = self.dic_SA['JVM']
+            data['usuario']= self.dic_SA['usuario']
+            data['puerto']= self.dic_SA['puerto']
+            if self.dic_SA['_id']==None:
+                id_Class = api.creaClase('ServAplicaciones',data)
+            else :
+                id_Class = api.actualizaClase('ServAplicaciones',data,self.dic_SA['_id'])
+            if id_Class <> None:
+                conn.apuntaId('tb_servweb',id_Class,'id_si',self.id_si)
+                conn.apuntaId('tb_softwareinstancia',id_Class,'id_si',self.id_si)
+                data = {}
+                data['_sourceType'] = "SoftwareInstalado"
+                data['_sourceId'] = str(_idsw)
+                data['_destinationId'] = id_Class
+                data['_destinationType'] = "ServAplicaciones"
+                api.creaRelacion('SItoSoftInstancia',data)
+                for jdbc in self.dic_SA['jdbc']:
+                    id_class_jdbc = self.sincronizaJDBC(api, jdbc, conn)
+                    if id_class_jdbc <> None:
+                        conn.apuntaId('tb_ConectorBD',id_class_jdbc,'id_cdb',jdbc['id_cdb'])
+                        data = {}
+                        data['_sourceType'] = "ServAplicaciones"
+                        data['_sourceId'] = id_Class
+                        data['_destinationId'] = id_class_jdbc
+                        data['_destinationType'] = "ConectorJDBC"
+                        api.creaRelacion('ConJDBCToSA',data)
+                        id_Class_eqm=conn.ret_IdEsquemaBD(jdbc['nombre'],jdbc['nombre_db'])
+                        if id_Class_eqm <> None:
+                            data = {}
+                            data['_sourceType'] = "EsquemaDB"
+                            data['_sourceId'] = id_Class_eqm
+                            data['_destinationId'] = id_class_jdbc
+                            data['_destinationType'] = "ConectorJDBC"
+                            api.creaRelacion('ConJDBCToSA',data)
+        else:
+            id_Class=self.BorraSoftSA('BD',data,self.dic_SA['_id'],api)
+            
         return
     
     

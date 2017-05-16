@@ -36,7 +36,7 @@ class objSoftWeb(objSi.objSi):
         data=(id_si,self.fsync)
         sql= "select sw.urladmin,si.version,sw.puerto, sw.id_web,sw._id from tb_softwareInstancia si inner join tb_servweb sw on si.id_si = sw.id_si where sw.id_si=%s and sw.fsync >=%s" 
         data = conn.consulta(sql,data)
-        dic['id_web']=data[0][4]
+        dic['id_web']=data[0][3]
         dic['urladmin']= data[0][0]
         dic['version']= data[0][1]
         dic['puerto']= data[0][2]
@@ -229,97 +229,103 @@ class objSoftWeb(objSi.objSi):
                 
         return modificado,puertos
     
-    def BorraSoftWebBMDB(self, clase,data, id_valor, api,clave,tabla,conn):
+    def BorraSoftWeb(self, clase,data, id_valor, api):
 
         ok = True
         if data['Code'] <> '' :
             data = {'deleted':'True'}
-            ok = api.actualizaClase(clase,data,id_valor)
-        sql = "delete from "+tabla+" where "+ clave + "=" +str(id_valor)
-        conn.actualizaTabla(sql)
-        return
+            id_Class = api.actualizaClase(clase,data,id_valor)
+
+        return id_Class
     
     def sincronizaUrl(self,api, url,conn):
         
         if not url['deleted']:
-            data = {'Code': str(url['id_url'])}
+            data= {}
+            data['Tipo']= api.retIdLookup('url-Tipo',url['tipo'])
+            data['Code']= "URL_"+url['tipo']+"_"+str(url['id_url'])
             data['Estado']=api.retIdLookup('CI-Estado','NV')
             data['Carga'] =api.retIdLookup('CI-TipoCarga',"AU")
-            data['Entorno']= self.dic_Web['Entorno']
+            data['Entorno']= api.retIdLookup('CI-Entorno',self.dic_Web['entorno'])
             data['nombre']=url['nombre']
             data['valor']=url['valor'] 
-            data['Tipo']=url['tipo']
-            if url['_id']<> None:
+            if url['_id'] == None:
                 id_class = api.creaClase('url',data)
             else :
-                id_class = api.actualizaClase('url',data,url['id_url'])
+                id_class = api.actualizaClase('url',data,url['_id'])
         else:
-            self.BorraSoftWebBMDB('url',data,url['id_url'],api,"id_url","tb_url",conn)
+            self.BorraSoftWeb('url',data,url['_id'],api)
         return id_class
     
     def sincronizaVH(self,api,vh,conn):
         
         if not vh['deleted']:
-            data = {'Code': str(vh['id_vh'])}
+            data = {'Code': "VH"+str(vh['id_vh'])}
             data['Estado']=api.retIdLookup('CI-Estado','NV')
             data['Carga'] =api.retIdLookup('CI-TipoCarga',"AU")
-            data['Entorno']= self.dic_Web['Entorno']
+            data['Entorno']= api.retIdLookup('CI-Entorno',self.dic_Web['entorno'])
             data['DNS']=vh['dns']
             data['puerto']=str(vh['puerto']) 
             data['SSL']=str(vh['ssl'])
             data['requiereCertificado']=str(vh['rcert'])
             data['contCertificados']=vh['rutacert']
-            if vh['_id']<> None:
+            if vh['_id'] == None:
                 id_Class = api.creaClase('VirtualHost',data)
             else :
-                id_Class = api.actualizaClase('VirtualHost',data,vh['id_vh'])
+                id_Class = api.actualizaClase('VirtualHost',data,vh['_id'])
         else:
-            self.BorraSoftWebBMDB('VirtualHost',data,vh['id_vh'],api,"id_vh","tb_vhost",conn)
+            self.BorraSoftWeb('VirtualHost',data,vh['_id'],api)
     
         return id_Class
     
     
     def sincroniza(self,conn,api,_idsw):
         
-        Correcto = super(objSoftWeb,self).sincroniza(_idsw)
-        if Correcto:
-            data = {'Code': str(self.dic_Web['id_web'])}
-            if not self.dic_Web['deleted']:              
-                data['Estado']=api.retIdLookup('CI-Estado','NV')
-                data['Carga'] =api.retIdLookup('CI-TipoCarga',"AU")
-                data['Entorno']= self.dic_Web['Entorno']
-                data['Version']= self.dic_Web['version']
-                data['Home']= self.dic_Web['Home']
-                data['Usuario']= self.dic_Web['usuario']
-                data['urlAdmin']= self.dic_Web['urladmin']
-                if self.dic_Web['_id']<>None:
-                    id_Class = api.creaClase('ServWeb',data)
-                else :
-                    id_Class = api.actualizaClase('ServWeb',data,self.id_si)
-                if id_Class <> None:
-                    conn.apuntaId('tb_servaplicaciones',id_Class,'id_web',self.dic_Web['id_web'])
-                    for vh in self.dic_Web['vh']:
-                        id_class_vh = self.sincronizaVH(api, vh,conn)
-                        if id_class_vh <> None:
-                            conn.apuntaId('tb_Conectorbd',id_class_vh,'id_vh',vh['id_vh'])
-                            data = {}
-                            data['_sourceType'] = "ServWeb"
-                            data['_sourceId'] = id_Class
-                            data['_destinationId'] = id_class_vh
-                            data['_destinationType'] = "VirtualHost"
-                            api.creaRelacion('ServWebToVH',data)
-                            for url in vh['url']:
-                                id_class_url = self.sincronizaUrl(api, url,conn)
-                                if id_class_url <> None:
-                                    conn.apuntaId('tb_url',id_class_url,'id_url',vh['id_url'])
-                                    data = {}
-                                    data['_sourceType'] = "url"
-                                    data['_sourceId'] = id_class_url
-                                    data['_destinationId'] = id_class_vh
-                                    data['_destinationType'] = "VirtualHost"
-                                    api.creaRelacion('urlToVH',data)   
-            else:
-                self.BorraSoftWebBMDB('ServWeb',data,self.id_si,api,"id_si","tb_servweb",conn)
+        if not self.dic_Web['deleted']:    
+            data = {'Code': "WEB"+str(self.dic_Web['id_web'])}          
+            data['Estado']=api.retIdLookup('CI-Estado','NV')
+            data['Carga'] =api.retIdLookup('CI-TipoCarga',"AU")
+            data['Entorno']= api.retIdLookup('CI-Entorno',self.dic_Web['entorno'])
+            data['Version']= self.dic_Web['version']
+            data['Home']= self.dic_Web['home']
+            data['Usuario']= self.dic_Web['usuario']
+            data['urlAdmin']= self.dic_Web['urladmin']
+            if self.dic_Web['_id']==None:
+                id_Class = api.creaClase('ServWeb',data)
+                
+            else :
+                id_Class = api.actualizaClase('ServWeb',data,self.dic_Web['_id'])
+            if id_Class <> None:
+                conn.apuntaId('tb_servweb',id_Class,'id_si',self.id_si)
+                conn.apuntaId('tb_softwareinstancia',id_Class,'id_si',self.id_si)
+                data = {}
+                data['_sourceType'] = "SoftwareInstalado"
+                data['_sourceId'] = str(_idsw)
+                data['_destinationId'] = id_Class
+                data['_destinationType'] = "ServWeb"
+                api.creaRelacion('SItoSoftInstancia',data)
+                for vh in self.dic_Web['vh']:
+                    id_class_vh = self.sincronizaVH(api, vh,conn)
+                    if id_class_vh <> None:
+                        conn.apuntaId('tb_vhost',id_class_vh,'id_vh',vh['id_vh'])
+                        data = {}
+                        data['_sourceType'] = "ServWeb"
+                        data['_sourceId'] = id_Class
+                        data['_destinationId'] = id_class_vh
+                        data['_destinationType'] = "VirtualHost"
+                        api.creaRelacion('ServWebToVH',data)
+                        for url in vh['url']:
+                            id_class_url = self.sincronizaUrl(api, url,conn)
+                            if id_class_url <> None:
+                                conn.apuntaId('tb_url',id_class_url,'id_url',url['id_url'])
+                                data = {}
+                                data['_sourceType'] = "url"
+                                data['_sourceId'] = id_class_url
+                                data['_destinationId'] = id_class_vh
+                                data['_destinationType'] = "VirtualHost"
+                                api.creaRelacion('urlToVH',data)   
+        else:
+            self.BorraSoftWeb('ServWeb',data,self.dic_Web['_id'],api)
         return
     
     

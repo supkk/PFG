@@ -38,7 +38,7 @@ class intSoft(object):
         return correcto
     
     def sincroniza(self,conn,api,_idsw):
-        self.o.sincroniza(conn,_idsw)
+        self.o.sincroniza(conn, api,_idsw)
         return
     
     def grabaBBDD(self,conn):

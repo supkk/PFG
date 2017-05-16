@@ -351,9 +351,18 @@ class bbdd():
         
         return result
     
+    def ret_IdEsquemaBD(self,nombre,nombre_db):
+        
+        data =(nombre,nombre_db)
+        
+        sql="select _id from tb_esquemabd where nombre= %s and nombre_db=%s"
+        result=self.consulta(sql,data)
+        
+        return result[0][0]
+    
     def apuntaId(self,tabla,id_Class,clave,clave_valor):
     
-        sql = 'update into '+ tabla + 'set _id='+id_Class +' where '+ clave + "="+str(clave_valor)
+        sql = 'update '+ tabla + ' set _id='+str(id_Class) +' where '+ clave + "="+str(clave_valor)
         self.actualizaTabla(sql)
         
         return
