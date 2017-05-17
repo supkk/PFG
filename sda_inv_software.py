@@ -101,7 +101,7 @@ def descubreSoftware(arg,cnf):
     conf=cnf['BaseDatos']
     conn=bbdd.bbdd(bd=conf['bd'],u=conf['user'],pw=conf['password'],h=conf['host'],p=conf['port'])
     if type(arg.ip) <> str:
-        sql = 'select id_disp from TB_Dispositivos'
+        sql = 'select id_disp,ip from TB_Dispositivos'
     else :
         sql = "select id_disp,ip from TB_Dispositivos where ip='"+arg.ip+"'"
     datos=conn.consulta(sql)

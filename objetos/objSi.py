@@ -39,7 +39,6 @@ class objSi(object):
         dic['home']=lsi[0][2]
         dic['usuario']=lsi[0][3]
         dic['deleted']=False if lsi[0][4] == None else lsi[0][4]
-        dic['_id']=lsi[0][5]
         self.dic_si=dic
 
         

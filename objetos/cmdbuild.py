@@ -6,6 +6,7 @@ Created on 27 mar. 2017
 '''
 import requests 
 import simplejson as json
+import time
 
 class cmdbuild(object):
     '''
@@ -31,10 +32,14 @@ class cmdbuild(object):
         uri = self.url+"classes/"+clase+"/cards/"
         data = str(attr)
         data = data.replace('\'', '"')
+        data = data.replace('False','false')
+        data = data.replace('True','true')
         r = requests.post(uri,headers = self.cabeceras, data=data)
         if r.ok :
             result = json.loads(r.text)['data']
+            print (time.strftime("%c")+"-- Nueva clase "+ clase + " CODIGO " + data )
         else :   
+            print (time.strftime("%c")+"-- Error al sincronizar la Nueva clase "+ clase + " CODIGO " + data )
             result = -1
             
         return result
@@ -44,10 +49,16 @@ class cmdbuild(object):
         uri = self.url+"classes/"+clase+"/cards/"+str(idclass)
         data = str(attr)
         data = data.replace('\'', '"')
+        data = data.replace('False','false')
+        data = data.replace('True','true')
         r = requests.put(uri,headers = self.cabeceras, data=data)
-        result = None
+        
         if r.ok :
+            print (time.strftime("%c")+"-- Actualizada clase "+ clase + " CODIGO "+str(idclass) )
             result = idclass
+        else:
+            print (time.strftime("%c")+"-- Error al Actualizar la  clase "+ clase + " CODIGO "+str(idclass) )
+            result = None
             
         return result
     
@@ -59,7 +70,8 @@ class cmdbuild(object):
         r = requests.post(uri,headers = self.cabeceras, data=data)
         if r.ok :
             result = json.loads(r.text)['data']
-        else :   
+            print (time.strftime("%c")+"-- Creada relacion con "+attr['_destinationType']  )
+        else :  
             result = -1
         return result
     

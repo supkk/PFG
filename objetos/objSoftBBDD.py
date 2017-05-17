@@ -23,7 +23,7 @@ class objSoftBBDD(objSi.objSi):
         self.soft=soft
         self.puerto=port
         self.id_db = 0
-        self.id_si = 0
+        self.id_si = id_si
         self.fsync=fsync
         if id_si ==0:
             self.dic_BD = {}
@@ -40,8 +40,10 @@ class objSoftBBDD(objSi.objSi):
         data = conn.consulta(sql,data)
         dic['admin']= data[0][1]
         dic['puerto']= data[0][0]
-        dic['_id']= data[0][3]
+        dic['_id']= data[0][3]                
+        dic['id_db']= data[0][2]
         data = (data[0][2],self.fsync)
+
         sql = "select nombre,propietario,nombre_db,id_edb,_id,deleted from tb_esquemabd  where id_db=%s and fsync >=%s"
         ledb = conn.consulta(sql,data)
         dic['esquema']=[]
@@ -51,6 +53,7 @@ class objSoftBBDD(objSi.objSi):
             d_edb['propietario']=edb[1]
             d_edb['nombre_db']=edb[2]
             d_edb['_id']=edb[4]
+            d_edb['id_edb']=edb[3]
             d_edb['deleted']=False if edb[5] == None else edb[5]
             data=(edb[3],self.fsync)
             sql="select nombre,id_tipo_tabla,id_tb,_id,deleted from tb_tabla where id_edb=%s and fsync >=%s"
@@ -61,9 +64,10 @@ class objSoftBBDD(objSi.objSi):
                 d_tb['nombre']=tb[0]
                 d_tb['tipo_tabla']=tb[1]
                 d_tb['_id']=tb[3]
+                d_tb['id_tb']=tb[2]
                 d_tb['deleted']=False if tb[4] == None else tb[4]
                 data=(tb[2],self.fsync)
-                sql = "select nombre, indice,_id,deleted from tb_atributotabla where id_tb=%s  and fsync >=%s "
+                sql = "select nombre, indice,_id,deleted,id_att from tb_atributotabla where id_tb=%s  and fsync >=%s "
                 latb=conn.consulta(sql,data)
                 d_tb['campos']=[]
                 for at in latb:
@@ -72,6 +76,7 @@ class objSoftBBDD(objSi.objSi):
                     d_at['indice']=at[1]
                     d_at['_id']=at[2]
                     d_at['deleted']=False if at[3] == None else at[3]
+                    d_at['id_at']=at[4]
                     d_tb['campos'].append(d_at.copy())
                 d_edb['Tabla'].append(d_tb.copy())
             dic['esquema'].append(d_edb.copy())
@@ -290,88 +295,86 @@ class objSoftBBDD(objSi.objSi):
                 conn.apuntaModificado( "tb_db","id_si",self.id_si)
         return modificado,self.puerto
     
-    def BorraSoftBBDD(self, clase,data, id_valor, api):
+    def BorraSoftBBDD(self, clase, id_valor, api):
 
-        ok = True
-        if data['Code'] <> '' :
-            data = {'deleted':'True'}
-            id_Class = api.actualizaClase(clase,data,id_valor)
+        data = {'deleted':'True'}
+        id_Class = api.actualizaClase(clase,data,id_valor)
 
         return id_Class
     
     def sincronizaTabla(self,tb,api):
         
-        if tb['deleted']:
+        if not tb['deleted']:
             data = {'Code': tb['nombre']} 
             data['Estado']=api.retIdLookup('CI-Estado','NV')
             data['Carga'] =api.retIdLookup('CI-TipoCarga',"AU")
-            data['Entorno']= api.retIdLookup('CI-Entorno',self.dic_BBDD['entorno'])
+            data['Entorno']= api.retIdLookup('CI-Entorno',self.dic_BD['entorno'])
             data['Nombre']= tb['nombre']
-            data['Tipo']= api.retIdLookup('Tabla-Tipo',tb['tipo'])
+            data['Tipo']= api.retIdLookup('Tabla-Tipo',tb['tipo_tabla'])
             if tb['_id']==None:
                 id_Class_tb = api.creaClase('Tabla',data)
             else :
                 id_Class_tb = api.actualizaClase('Tabla',data,tb['_id'])
         else:
-            id_Class_tb = self.BorraSoftBBDD('Tabla',data,tb['_id'],api)
+            id_Class_tb = self.BorraSoftBBDD('Tabla',tb['_id'],api)
             
         return id_Class_tb
     
     def sincronizaEsquema(self,eqm,api):
         
-        if eqm['deleted']:
+        if not eqm['deleted']:
             data = {'Code': eqm['nombre']} 
             data['Estado']=api.retIdLookup('CI-Estado','NV')
             data['Carga'] =api.retIdLookup('CI-TipoCarga',"AU")
-            data['Entorno']= api.retIdLookup('CI-Entorno',self.dic_BBDD['entorno'])
+            data['Entorno']= api.retIdLookup('CI-Entorno',self.dic_BD['entorno'])
             data['nombre']= eqm['nombre']
-            data['nombre_bd']= eqm['nombre_bd']
+            data['nombre_db']= eqm['nombre_db']
             data['propietario']= eqm['propietario']
             if eqm['_id']==None:
                 id_Class_eqm = api.creaClase('EsquemaBD',data)
             else :
                 id_Class_eqm = api.actualizaClase('EsquemaBD',data,eqm['_id'])
         else:
-            id_Class_eqm=self.BorraSoftBBDD('EsquemaBD',data,eqm['_id'],api)
+            id_Class_eqm=self.BorraSoftBBDD('EsquemaBD', eqm['_id'],api)
                 
         return id_Class_eqm
     
     def sincronizaAtributo(self,at,api):
         
-        if at['deleted']:
+        if not at['deleted']:
             data = {'Code': at['nombre']} 
             data['Estado']=api.retIdLookup('CI-Estado','NV')
             data['Carga'] =api.retIdLookup('CI-TipoCarga',"AU")
-            data['Entorno']= api.retIdLookup('CI-Entorno',self.dic_BBDD['entorno'])
-            data['Nombre']= at['nombre']
+            data['Entorno']= api.retIdLookup('CI-Entorno',self.dic_BD['entorno'])
+            data['nombre']= at['nombre']
             data['Indice']= at['indice']
-            if tb['_id']==None:
+            if at['_id']==None:
                 id_Class_at = api.creaClase('CamposTabla',data)
             else :
                 id_Class_at = api.actualizaClase('CamposTabla',data,at['_id'])
         else :
-            id_Class_at=self.BorraSoftBBDD('CamposTabla',data,at['_id'],api)
+            id_Class_at=self.BorraSoftBBDD('CamposTabla',at['_id'],api)
             
         return id_Class_at
     
     def sincroniza(self,conn,api,_idsw):
         
-        if not self.dic_BBDD['deleted']:    
-            data = {'Code': "BBDD"+str(self.dic_BBDD['id_db'])}          
+        if not self.dic_BD['deleted']:    
+            data = {'Code': "BBDD_"+str(self.dic_BD['id_db'])}          
             data['Estado']=api.retIdLookup('CI-Estado','NV')
             data['Carga'] =api.retIdLookup('CI-TipoCarga',"AU")
-            data['Entorno']= api.retIdLookup('CI-Entorno',self.dic_BBDD['entorno'])
-            data['Version']= self.dic_BBDD['version']
-            data['Home']= self.dic_BBDD['home']
-            data['Usuario']= self.dic_BBDD['usuario']
-            data['admin']= self.dic_BBDD['admin']
-            data['puerto']= self.dic_BBDD['puerto']
-            if self.dic_BBDD['_id']==None:
+            data['Entorno']= api.retIdLookup('CI-Entorno',self.dic_BD['entorno'])
+            data['Version']= self.dic_BD['version']
+            data['Home']= self.dic_BD['home']
+            data['Usuario']= self.dic_BD['usuario']
+            data['admin']= self.dic_BD['admin']
+            data['puerto']= self.dic_BD['puerto']
+            if self.dic_BD['_id']==None:
                 id_Class = api.creaClase('BD',data)
             else :
-                id_Class = api.actualizaClase('BD',data,self.dic_BBDD['_id'])
+                id_Class = api.actualizaClase('BD',data,self.dic_BD['_id'])
             if id_Class <> None:
-                conn.apuntaId('tb_BD',id_Class,'id_si',self.id_si)
+                conn.apuntaId('tb_DB',id_Class,'id_si',self.id_si)
                 conn.apuntaId('tb_softwareinstancia',id_Class,'id_si',self.id_si)
                 data = {}
                 data['_sourceType'] = "SoftwareInstalado"
@@ -379,30 +382,30 @@ class objSoftBBDD(objSi.objSi):
                 data['_destinationId'] = id_Class
                 data['_destinationType'] = "BD"
                 api.creaRelacion('SItoSoftInstancia',data)
-                for eqm in self.dic_BBDD['esquema']:
+                for eqm in self.dic_BD['esquema']:
                     id_Class_eqm=self.sincronizaEsquema(eqm,api)
                     if id_Class_eqm > 0 :
-                        conn.apuntaId('tb_EsquemaDB',id_Class,'id_edb',eqm['id_edb'])
+                        conn.apuntaId('tb_EsquemaBD',id_Class_eqm,'id_edb',eqm['id_edb'])
                         data = {}
                         data['_sourceType'] = "BD"
-                        data['_sourceId'] = str(self.dic_BBDD['_id'])
+                        data['_sourceId'] = str(self.dic_BD['_id'])
                         data['_destinationId'] = id_Class_eqm
                         data['_destinationType'] = "EsquemaBD"
-                        api.creaRelacion('BDToEsquemaDB',data)
+                        api.creaRelacion('BDtoEsquemaDB',data)
                         for tb in eqm['Tabla']:
                             id_Class_tb=self.sincronizaTabla(tb,api)
                             if id_Class_tb > 0 :
-                                conn.apuntaId('tb_Tabla',id_Class,'id_tb',tb['id_tb'])
+                                conn.apuntaId('tb_Tabla',id_Class_tb,'id_tb',tb['id_tb'])
                                 data = {}
-                                data['_sourceType'] = "EsquemaDB"
+                                data['_sourceType'] = "EsquemaBD"
                                 data['_sourceId'] = id_Class_eqm
                                 data['_destinationId'] = id_Class_tb
                                 data['_destinationType'] = "Tabla"
                                 api.creaRelacion('EsquemaDBToTabla',data)
-                                for at in tb['Campos']:
+                                for at in tb['campos']:
                                     id_Class_at=self.sincronizaAtributo(at,api)
                                     if id_Class > 0 :
-                                        conn.apuntaId('tb_AtributoTabla',id_Class,'id_attr',tb['id_attr'])
+                                        conn.apuntaId('tb_AtributoTabla',id_Class_at,'id_att',at['id_at'])
                                         data = {}
                                         data['_sourceType'] = "Tabla"
                                         data['_sourceId'] = id_Class_tb
@@ -410,7 +413,7 @@ class objSoftBBDD(objSi.objSi):
                                         data['_destinationType'] = "CamposTabla"
                                         api.creaRelacion('TablaToCamposTabla',data)
         else :
-            id_Class_at=self.BorraSoftBBDD('BD',data,self.dic_BD['_id'],api)
+            id_Class_at=self.BorraSoftBBDD('BD',self.dic_BD['_id'],api)
                         
                         
         return

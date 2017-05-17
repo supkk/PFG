@@ -6,6 +6,7 @@ Created on 7 may. 2017
 '''
 from objetos import objSi
 import time
+import re
 
 class objSoftSapl(objSi.objSi):
     '''
@@ -21,7 +22,7 @@ class objSoftSapl(objSi.objSi):
         self.soft=soft
         self.puerto=port
         self.id_sa=0
-        self.id_si=0
+        self.id_si=id_si
         self.fsync=fsync
         
         if id_si ==0:
@@ -35,14 +36,14 @@ class objSoftSapl(objSi.objSi):
         
         dic=super(objSoftSapl,self).cargaSoftware(conn)
         data=(id_si,self.fsync)
-        sql= "select id_sa,jvm,puerto,id_entorno,_id from tb_servaplicaciones where id_si=%s and fsync >=%s" 
+        sql= "select id_sa,jvm,puerto,_id from tb_servaplicaciones where id_si=%s and fsync >=%s" 
         data = conn.consulta(sql,data)
+        dic['id_SA']=data[0][0]
         dic['jvm']= data[0][1]
         dic['puerto']= data[0][2]
-        dic['entorno']= data[0][3]
-        dic['_id']=data[0][4]
+        dic['_id']=data[0][3]
         data = (data[0][0],self.fsync)
-        sql = "select id_edb,usuario,nombre,_id,deleted from tb_conectorbd where id_sa=%s and fsync >=%s"
+        sql = "select id_edb,usuario,nombre,_id,deleted,id_cbd from tb_conectorbd where id_sa=%s and fsync >=%s"
         lcdb = conn.consulta(sql,data)
         dic['jdbc']=[]
         for cdb in lcdb:
@@ -50,9 +51,10 @@ class objSoftSapl(objSi.objSi):
             d_cdb['usuario']=cdb[1]
             d_cdb['nombre']=cdb[2]
             ddb=conn.retidsEsquemaBD(cdb[0])
-            d_cdb['nombre_db']=ddb[0][0]
-            d_cdb['esquema']=ddb[0][1]
+            d_cdb['nombre_db']=ddb[0][1]
+            d_cdb['esquema']=ddb[0][0]
             d_cdb['_id']=cdb[3]
+            d_cdb['id_cbd']=cdb[5]
             d_cdb['deleted']= False if cdb[4] == None else cdb[4]
             dic['jdbc'].append(d_cdb.copy())
         
@@ -171,7 +173,7 @@ class objSoftSapl(objSi.objSi):
     
     def sincronizaJDBC(self,jdbc,api):
         
-        if jdbc['deleted']:
+        if not jdbc['deleted']:
             data = {'Code': jdbc['nombre']} 
             data['Estado']=api.retIdLookup('CI-Estado','NV')
             data['Carga'] =api.retIdLookup('CI-TipoCarga',"AU")
@@ -190,13 +192,13 @@ class objSoftSapl(objSi.objSi):
     def sincroniza(self,conn,api,_idsw):
         
         if not self.dic_SA['deleted']:    
-            data = {'Code': "SA"+str(self.dic_SA['id_SA'])}          
+            data = {'Code': "SA_"+str(self.dic_SA['id_SA'])}          
             data['Estado']=api.retIdLookup('CI-Estado','NV')
             data['Carga'] =api.retIdLookup('CI-TipoCarga',"AU")
             data['Entorno']= api.retIdLookup('CI-Entorno',self.dic_SA['entorno'])
             data['Version']= self.dic_SA['version']
             data['Home']= self.dic_SA['home']
-            data['JVM'] = self.dic_SA['JVM']
+            data['JVM'] = str(self.dic_SA['jvm'].decode('ASCII','ignore')).split('-')[0]
             data['usuario']= self.dic_SA['usuario']
             data['puerto']= self.dic_SA['puerto']
             if self.dic_SA['_id']==None:
@@ -213,16 +215,16 @@ class objSoftSapl(objSi.objSi):
                 data['_destinationType'] = "ServAplicaciones"
                 api.creaRelacion('SItoSoftInstancia',data)
                 for jdbc in self.dic_SA['jdbc']:
-                    id_class_jdbc = self.sincronizaJDBC(api, jdbc, conn)
+                    id_class_jdbc = self.sincronizaJDBC( jdbc,api)
                     if id_class_jdbc <> None:
-                        conn.apuntaId('tb_ConectorBD',id_class_jdbc,'id_cdb',jdbc['id_cdb'])
+                        conn.apuntaId('tb_ConectorBD',id_class_jdbc,'id_cbd',jdbc['id_cbd'])
                         data = {}
-                        data['_sourceType'] = "ServAplicaciones"
-                        data['_sourceId'] = id_Class
-                        data['_destinationId'] = id_class_jdbc
-                        data['_destinationType'] = "ConectorJDBC"
+                        data['_sourceType'] = "ConectorJDBC"
+                        data['_sourceId'] = id_class_jdbc
+                        data['_destinationId'] = id_Class
+                        data['_destinationType'] = "ServAplicaciones"
                         api.creaRelacion('ConJDBCToSA',data)
-                        id_Class_eqm=conn.ret_IdEsquemaBD(jdbc['nombre'],jdbc['nombre_db'])
+                        id_Class_eqm=conn.ret_IdEsquemaBD(jdbc['esquema'],jdbc['nombre_db'])
                         if id_Class_eqm <> None:
                             data = {}
                             data['_sourceType'] = "EsquemaDB"

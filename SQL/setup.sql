@@ -197,7 +197,7 @@ CREATE TABLE TB_SoftwareInstancia (
    id_sw        int NOT NULL,
    id_serv      int NOT NULL,
    id_entorno   varchar(3),
-   version      varchar(20),
+   version      varchar(100),
    home         varchar(100),
    Usuario      varchar(10),
    fsync        date,
@@ -327,7 +327,7 @@ CREATE TABLE TB_url (
    id_tipo	    varchar(2),
    CONSTRAINT PK_TB_url PRIMARY KEY(id_url),
    CONSTRAINT FK_TB_Url_VH FOREIGN KEY(id_VH) REFERENCES TB_VHost(id_VH),
-   CONSTRAINT FK_TIPO_URL FOREINGN KEY (ID_TIPO) REFERENCES TB_LKP_URL(CODE)
+   CONSTRAINT FK_TIPO_URL FOREIGN KEY (ID_TIPO) REFERENCES TB_LKP_URL(CODE)
 );
 
 CREATE TABLE TB_Map_url_APL(
@@ -345,7 +345,7 @@ CREATE TABLE TB_ConectorBD (
    _id			int,
    id_CBD		serial NOT NULL,
    id_EDB       int NOT NULL,
-   id_SA        int not null
+   id_SA        int not null,
    usuario		varchar(10),
    nombre       varchar(20),
    fsync        date,
