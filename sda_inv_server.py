@@ -252,7 +252,7 @@ def descubreOtros(ip):
 
 def parametros():
     parser = argparse.ArgumentParser()
-    parser.add_argument("-v", "--verbose", help="Descubre elementos de red", action="store_true")
+
     parser.add_argument("-i", "--ip" ,help="Descubre solo una IP" )
     parser.add_argument("-c","--conf",help="ruta del fichero de configuración",default='./conf/config.json')
     args = parser.parse_args()  

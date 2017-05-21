@@ -5,6 +5,7 @@ Created on 9 may. 2017
 @author: jose
 '''
 import psycopg2
+import time
 
 def consulta (conn,sql):
     
@@ -28,17 +29,16 @@ def obtenerPrincipal(ip,user,password,port):
     dic={}
     try :
         conn = psycopg2.connect( user=user, password=password, host=ip, port=port)
-        
+        buf=consulta(conn,"select version()")
+        dic['version']=buf[0][0].split(',')[0]
+        buf=consulta(conn,"SELECT user from pg_shadow where usesuper='t';")
+        dic['admin']=buf[0][0]
+        dic['Esquema']=[]
+        lbd = consulta (conn, "select d.datname,u.usename from pg_database d,pg_user u where u.usesysid=d.datdba")
+        conn.close()
     except :
-        print ("Error de acceso a BBDD")
-          
-    buf=consulta(conn,"select version()")
-    dic['version']=buf[0][0].split(',')[0]
-    buf=consulta(conn,"SELECT user from pg_shadow where usesuper='t';")
-    dic['admin']=buf[0][0]
-    dic['Esquema']=[]
-    lbd = consulta (conn, "select d.datname,u.usename from pg_database d,pg_user u where u.usesysid=d.datdba")
-    conn.close()
+        print (time.strftime("%c")+"-- Error al conectar a la instancia de BBDD en la IP "+ ip)      
+
     return dic,lbd
 
 def compruebaConexion(ip,puerto):
@@ -62,7 +62,7 @@ def descubre(ip,user,password,port):
         try :
             conn = psycopg2.connect( database=bd[0],user=user, password=password, host=ip, port=port)
         except :
-            print ("Error de acceso a BBDD conexion " + bd[0])
+            print (time.strftime("%c")+"-- Error de acceso a  la instancia de BBDD " + bd[0]) 
             continue
         
         sql = "select distinct  table_schema from information_schema.columns WHERE table_schema not in ( 'pg_catalog', 'information_schema')"

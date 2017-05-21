@@ -20,7 +20,7 @@ def compruebaConexionPuerto(n_proceso,ip,puerto):
     try :
         exec modulo
         Correcto = module.compruebaConexion(ip,puerto)
-    except :
+    except Exception, error :
         print (time.strftime("%c")+"-- Error: No encuentro  plugin "+n_proceso)  
         Correcto = False
     
@@ -143,7 +143,6 @@ def descubreSoftware(arg,cnf):
 
 def parametros():
     parser = argparse.ArgumentParser()
-    parser.add_argument("-v", "--verbose", help="Descubre elementos de red", action="store_true")
     parser.add_argument("-i", "--ip" ,help="Inventaria el software de un servidor" )
     parser.add_argument("-c","--conf",help="ruta del fichero de configuración",default='./conf/config.json')
     args = parser.parse_args()  

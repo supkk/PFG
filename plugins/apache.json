@@ -44,9 +44,14 @@
 	   "tipo":"CC"
 	 },
 	 {
-	   "nombre":"app2",
-	   "valor":"/app2/login",
-	   "tipo":"CC"
+	   "nombre":"shark",
+	   "valor":"/shark",
+	   "tipo":"AC"
+	 },
+	 {
+	   "nombre":"cmdbuild",
+	   "valor":"/cmdbuild",
+	   "tipo":"AC"
 	 }]
     }]
 }

@@ -99,8 +99,7 @@ def descubreApl(arg,cnf):
 
 def parametros():
     parser = argparse.ArgumentParser()
-    parser.add_argument("-v", "--verbose", help="Descubre elementos de red", action="store_true")
-    parser.add_argument("-i", "--ip" ,help="Inventaria aplicaciones de un servidor" )
+    parser.add_argument("-i", "--ip" ,help="Inventaría aplicaciones de un servidor" )
     parser.add_argument("-c","--conf",help="ruta del fichero de configuración",default='./conf/config.json')
     args = parser.parse_args()  
     cnf =  json.loads(open(args.conf).read())

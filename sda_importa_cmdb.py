@@ -59,10 +59,10 @@ def actualizaFSync(conn):
     
     sql = "update tb_sda_config set fsync = '"+time.strftime("%c")+"'"
     conn.actualizaTabla(sql)
-    
+    return
+
 def parametros():
     parser = argparse.ArgumentParser()
-    parser.add_argument("-v", "--verbose", help="Sincroniza sda con cmdbuild", action="store_true")
     parser.add_argument("-n", "--nombre" ,help="Sincroniza solo un servidor" )
     parser.add_argument("-c","--conf",help="ruta del fichero de configuración",default='./conf/config.json')
     args = parser.parse_args()  
