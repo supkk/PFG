@@ -5,7 +5,6 @@
     "version":"2.4.3",
     "jdbc":["cmdbuild"],
     "url":[{"valor":"/cmdbuild","tipo":"AC"}]
-    
     },
     {"acronimo":"shark",
     "nombre":"cmdbuild.shark",

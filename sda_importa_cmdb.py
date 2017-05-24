@@ -88,9 +88,9 @@ def main ():
     lServidores = conn.consulta(sql)
     print (time.strftime("%c")+"-- Iniciando proceso de syncronización. La última fue   "+ str(config[0][1]))
     for s in lServidores:
-        serv = objServidor.objServidor(id_disp=s[0],id_serv=s[1],conn=conn)
+        serv = objServidor.objServidor(id_disp=s[0],id_serv=s[1],conn=conn,ultimasync=config[0][1])
         print (time.strftime("%c")+"-- Iniciando la sincronizacion del servidor  "+ serv.nombre)
-        serv.sincroniza(api,conn,ultimaSync)
+        serv.sincroniza(api,conn,config[0][1])
         print (time.strftime("%c")+"-- Terminada la sincronizacion del servidor  "+ serv.nombre)
     actualizaFSync(conn)
     print (time.strftime("%c")+"-- Fin del proceso de sincronización")

@@ -15,7 +15,7 @@ class objSoft(object):
     '''
 
 
-    def __init__(self,idsw='',cadRunning='',_id=None, deleted=False,fsync='01/01/01',idserv=0,conn=None):
+    def __init__(self,idsw='',cadRunning='',_id=None, deleted=False,fsync='01/01/01',idserv=0,conn=None,ultimasync='01/01/01'):
         '''
         Constructor
         '''
@@ -27,7 +27,7 @@ class objSoft(object):
         if idserv <> 0:
             dt,id_si = conn.retSofInstancia(idsw,idserv)
             if dt <> None:
-                self.iswf=intSoft.intSoft(cs=conn.retCatSoftware(idsw)[0],idserv=idserv,sw=idsw,ent=dt[3],user=dt[2],home=dt[1],id_si=id_si,conn=conn,fsync=fsync)
+                self.iswf=intSoft.intSoft(cs=conn.retCatSoftware(idsw)[0],idserv=idserv,sw=idsw,ent=dt[3],user=dt[2],home=dt[1],id_si=id_si,conn=conn,fsync=ultimasync)
             else:
                 self.iswf= None
         return

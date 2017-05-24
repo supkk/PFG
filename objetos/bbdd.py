@@ -329,6 +329,34 @@ class bbdd():
        
         return code_id
     
+    def retidClassUrl(self, id_url):
+        
+        cur=self.conn.cursor()
+        cur.execute("select _id from  tb_url where id_url="+str(id_url))
+        code_id = cur.fetchall()
+        cur.close()
+       
+        return code_id[0]
+    
+    def retidClassConectorJDBC(self, id_cbd):
+        
+        cur=self.conn.cursor()
+        cur.execute("select _id from  tb_conectorbd where id_cbd="+str(id_cbd))
+        code_id = cur.fetchall()
+        cur.close()
+       
+        return code_id[0]
+    
+    def retidClassSA(self, id_SA):
+        
+        cur=self.conn.cursor()
+        cur.execute("select _id from  tb_ServAplicaciones where id_sa="+str(id_SA))
+        code_id = cur.fetchall()
+        cur.close()
+       
+        return code_id[0]
+        
+    
     def retEsquemaDB(self,nombre, nombre_db):
     
         cur=self.conn.cursor()

@@ -229,10 +229,10 @@ class objSoftWeb(objSi.objSi):
                 
         return modificado,puertos
     
-    def BorraSoftWeb(self, clase,data, id_valor, api):
+    def BorraSoftWeb(self, clase, id_valor, api):
 
         ok = True
-        if data['Code'] <> '' :
+        if id_valor <> '' :
             data = {'deleted':'True'}
             id_Class = api.actualizaClase(clase,data,id_valor)
 
@@ -240,41 +240,44 @@ class objSoftWeb(objSi.objSi):
     
     def sincronizaUrl(self,api, url,conn):
         
+        
+        data= {}
+        data['Tipo']= api.retIdLookup('url-Tipo',url['tipo'])
+        data['Code']= "URL_"+url['tipo']+"_"+str(url['id_url'])
+        data['Estado']=api.retIdLookup('CI-Estado','NV')
+        data['Carga'] =api.retIdLookup('CI-TipoCarga',"AU")
+        data['Entorno']= api.retIdLookup('CI-Entorno',self.dic_Web['entorno'])
+        data['nombre']=url['nombre']
+        data['valor']=url['valor'] 
         if not url['deleted']:
-            data= {}
-            data['Tipo']= api.retIdLookup('url-Tipo',url['tipo'])
-            data['Code']= "URL_"+url['tipo']+"_"+str(url['id_url'])
-            data['Estado']=api.retIdLookup('CI-Estado','NV')
-            data['Carga'] =api.retIdLookup('CI-TipoCarga',"AU")
-            data['Entorno']= api.retIdLookup('CI-Entorno',self.dic_Web['entorno'])
-            data['nombre']=url['nombre']
-            data['valor']=url['valor'] 
             if url['_id'] == None:
                 id_class = api.creaClase('url',data)
             else :
                 id_class = api.actualizaClase('url',data,url['_id'])
         else:
-            self.BorraSoftWeb('url',data,url['_id'],api)
+            id_class = self.BorraSoftWeb('url',url['_id'],api)
+            
         return id_class
     
     def sincronizaVH(self,api,vh,conn):
         
+       
+        data = {'Code': "VH"+str(vh['id_vh'])}
+        data['Estado']=api.retIdLookup('CI-Estado','NV')
+        data['Carga'] =api.retIdLookup('CI-TipoCarga',"AU")
+        data['Entorno']= api.retIdLookup('CI-Entorno',self.dic_Web['entorno'])
+        data['DNS']=vh['dns']
+        data['puerto']=str(vh['puerto']) 
+        data['SSL']=str(vh['ssl'])
+        data['requiereCertificado']=str(vh['rcert'])
+        data['contCertificados']=vh['rutacert']
         if not vh['deleted']:
-            data = {'Code': "VH"+str(vh['id_vh'])}
-            data['Estado']=api.retIdLookup('CI-Estado','NV')
-            data['Carga'] =api.retIdLookup('CI-TipoCarga',"AU")
-            data['Entorno']= api.retIdLookup('CI-Entorno',self.dic_Web['entorno'])
-            data['DNS']=vh['dns']
-            data['puerto']=str(vh['puerto']) 
-            data['SSL']=str(vh['ssl'])
-            data['requiereCertificado']=str(vh['rcert'])
-            data['contCertificados']=vh['rutacert']
             if vh['_id'] == None:
                 id_Class = api.creaClase('VirtualHost',data)
             else :
                 id_Class = api.actualizaClase('VirtualHost',data,vh['_id'])
         else:
-            self.BorraSoftWeb('VirtualHost',data,vh['_id'],api)
+            id_Class = self.BorraSoftWeb('VirtualHost',vh['_id'],api)
     
         return id_Class
     
@@ -325,7 +328,7 @@ class objSoftWeb(objSi.objSi):
                                 data['_destinationType'] = "VirtualHost"
                                 api.creaRelacion('urlToVH',data)   
         else:
-            self.BorraSoftWeb('ServWeb',data,self.dic_Web['_id'],api)
+            self.BorraSoftWeb('ServWeb',self.dic_Web['_id'],api)
         return
     
     

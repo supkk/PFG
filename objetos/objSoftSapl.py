@@ -206,7 +206,7 @@ class objSoftSapl(objSi.objSi):
             else :
                 id_Class = api.actualizaClase('ServAplicaciones',data,self.dic_SA['_id'])
             if id_Class <> None:
-                conn.apuntaId('tb_servweb',id_Class,'id_si',self.id_si)
+                conn.apuntaId('tb_servaplicaciones',id_Class,'id_si',self.id_si)
                 conn.apuntaId('tb_softwareinstancia',id_Class,'id_si',self.id_si)
                 data = {}
                 data['_sourceType'] = "SoftwareInstalado"

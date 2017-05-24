@@ -18,7 +18,7 @@ class objServidor(object):
     '''
 
     
-    def __init__(self, id_disp=0,id_serv=0,nombre='',so='',ram=0,cpu='',ncpu=0,cores=0,sn='',gw='',v_os='',id_marca='',id_entorno='',virtual=False,conn=None):
+    def __init__(self, id_disp=0,id_serv=0,nombre='',so='',ram=0,cpu='',ncpu=0,cores=0,sn='',gw='',v_os='',id_marca='',id_entorno='',virtual=False,conn=None,ultimasync='01/01/01'):
         '''
         Constructor
         '''
@@ -45,7 +45,7 @@ class objServidor(object):
         self.virtual=virtual
         
         if id_serv <> 0 :
-            self.cargaServidor(id_disp,id_serv,conn)
+            self.cargaServidor(id_disp,id_serv,conn,ultimasync)
             
     def recEntorno(self):
         nombre= self.nombre.lower()
@@ -74,7 +74,7 @@ class objServidor(object):
         
         return self._id <> None
     
-    def cargaServidor(self,id_disp,id_serv,c):
+    def cargaServidor(self,id_disp,id_serv,c,ultimasync):
         
         sql = 'select s._id,d.nombre, s.ram, s.tipo_cpu, s.n_cpu, s.n_cores, d.sn, s.gw, s.version_os, s.id_so, d._id, s.deleted,s.fsync,d.id_marca,s.id_entorno,s.virtual from tb_disp d inner join tb_servidor s on d.id_disp=s.id_disp where id_serv=' + str(id_serv)
         s=c.consulta(sql)
@@ -107,7 +107,7 @@ class objServidor(object):
         sql='select _id,id_sw,deleted,fsync from tb_soft_running where id_serv='+str(id_serv)
         sws= c.consulta(sql)
         for sw in sws:
-            self.anade_SW(objSoft.objSoft(sw[1],c.retCadSoftware(sw[1]),sw[0],sw[2],sw[3],id_serv,c))    
+            self.anade_SW(objSoft.objSoft(sw[1],c.retCadSoftware(sw[1]),sw[0],sw[2],sw[3],id_serv,c,ultimasync))    
         
         return 
     
