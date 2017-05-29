@@ -11,12 +11,26 @@ import re
 class objSoftSapl(objSi.objSi):
     '''
     classdocs
+    Representa una Instancia de servidor de aplicaciones
+    
     '''
 
 
     def __init__( self,idserv=0,sw=0,ent='PRO',ip='',soft='',user='',port=0,home='',id_si=0,conn=None,fsync=None):
         '''
         Constructor
+        
+        idserv: identificador del servidor
+        sw: identificador del software
+        ent: Entorno donde se ha instalado
+        ip: Ip donde ha sido descubierto
+        soft: Cadena de software
+        user:Usuario propietario del proceso
+        port: Puerto de escucha
+        home: Directorio de instalacion del software
+        id_si: Identificador de Instancia software
+        conn: Conexión a la BD SDA_DB
+        fsync: Fecha de la última sincronizacion
         '''
         super(objSoftSapl,self).__init__(id_serv=idserv,id_sw=sw,id_entorno=ent,ip=ip,user=user,home=home,id_si=id_si)
         self.soft=soft
@@ -28,13 +42,13 @@ class objSoftSapl(objSi.objSi):
         if id_si ==0:
             self.dic_SA = {}
         else:
-            self.dic_SA = self.cargaSoftware(id_si,conn)
+            self.dic_SA = self._cargaSoftware(id_si,conn)
         
         return
     
-    def cargaSoftware(self,id_si,conn):
+    def _cargaSoftware(self,id_si,conn):
         
-        dic=super(objSoftSapl,self).cargaSoftware(conn)
+        dic=super(objSoftSapl,self)._cargaSoftware(conn)
         data=(id_si,self.fsync)
         sql= "select id_sa,jvm,puerto,_id from tb_servaplicaciones where id_si=%s and fsync >=%s" 
         data = conn.consulta(sql,data)
@@ -62,6 +76,19 @@ class objSoftSapl(objSi.objSi):
     
     def descubre(self,cnf,param):
         
+        '''
+        Prueba a descubrir un tipo de software
+        
+        Parametro
+        
+        cnf: Diccionario de configuración
+        param: Parametros del script
+        
+        Salida 
+        
+        Indica si el descubrimiento ha ido bien
+        '''
+        
         cnf=cnf['conecta_probe']
         modulo = "from plugins import "+self.soft + " as module"
         exec modulo
@@ -71,9 +98,9 @@ class objSoftSapl(objSi.objSi):
         
         return self.dic_SA <> None
     
-    def actualizaInstancia(self, id_si,conn):
+    def _actualizaInstancia(self, id_si,conn):
         
-        modificado = super(objSoftSapl,self).actualizaInstancia(id_si, conn)
+        modificado = super(objSoftSapl,self)._actualizaInstancia(id_si, conn)
         dsa,id_sa = conn.retInstanciaSA(id_si)
         dsa=unicode(dsa,'utf-8')
         data =(self.dic_SA['jvm'])
@@ -84,7 +111,7 @@ class objSoftSapl(objSi.objSi):
             
         return modificado, id_sa
     
-    def actualizaConector(self,ds,conn,id_sa):
+    def _actualizaConector(self,ds,conn,id_sa):
         
         modificado= False
         dcbd,id_cdb = conn.retInstanciaCDB(id_sa,ds['nombre'])
@@ -106,14 +133,14 @@ class objSoftSapl(objSi.objSi):
             
         return modificado, id_cdb
     
-    def marcarCDBBorrados(self,conn,id_valor):
+    def _marcarCDBBorrados(self,conn,id_valor):
         
         sql = "update tb_ConectorBD set deleted = 'True', fsync='"+time.strftime("%c")+"' where id_cdb="+str(id_valor) 
         conn.actualizaTabla(sql)
         
         return
     
-    def gestionaCDBBorrados(self, conn,dic, id_valor):
+    def _gestionaCDBBorrados(self, conn,dic, id_valor):
         
         modificado =False
         sql= "select nombre,id_cbd from  TB_Conectorbd where id_sa=" + str(id_valor)
@@ -125,12 +152,22 @@ class objSoftSapl(objSi.objSi):
                     encontrado =True
                     break
             if not encontrado :
-                self.marcarCDBBorrados(conn,item[1])
+                self._marcarCDBBorrados(conn,item[1])
                 modificado =True
                 
         return modificado
     
     def grabaBBDD(self,conn):
+      
+        '''
+        Graba un objeto instancia de software en la BD SDA_DB
+        Parametro
+        
+        conn :Conexión con BD
+        
+        Salida
+        port: Puertos de la instancia procesados
+        '''
         
         mod_cdb = False
         self.id_si = conn.existeInstanciaSW(self.id_serv,self.id_sw,self.puerto,'tb_servAplicaciones') 
@@ -151,18 +188,18 @@ class objSoftSapl(objSi.objSi):
             else:
                 print (time.strftime("%c")+"-- Error al insertar la instancia de Servidor aplicaciones "+self.dic['version'])
         else:
-            mod_cdb, self.id_sa = self.actualizaInstancia(self.id_si,conn)
+            mod_cdb, self.id_sa = self._actualizaInstancia(self.id_si,conn)
             for ds in self.dic_SA['jdbc']: 
-                mod, id_cdb = self.actualizaConector(ds,conn,self.id_sa)
+                mod, id_cdb = self._actualizaConector(ds,conn,self.id_sa)
                 mod_cdb = mod or mod_cdb
-            mod_cdb = self.gestionaCDBBorrados(conn,self.dic_SA['jdbc'],self.id_sa) or mod_cdb
+            mod_cdb = self._gestionaCDBBorrados(conn,self.dic_SA['jdbc'],self.id_sa) or mod_cdb
             if mod_cdb == True:
                 conn.apuntaModificado( "tb_servaplicaciones","id_sa",self.id_sa)
                 
         return mod_cdb,self.puerto
     
     
-    def BorraSoftSA(self, clase,data, id_valor, api):
+    def _borraSoftSA(self, clase,data, id_valor, api):
 
         ok = True
         if data['Code'] <> '' :
@@ -171,7 +208,7 @@ class objSoftSapl(objSi.objSi):
 
         return id_Class
     
-    def sincronizaJDBC(self,jdbc,api):
+    def _sincronizaJDBC(self,jdbc,api):
         
         if not jdbc['deleted']:
             data = {'Code': jdbc['nombre']} 
@@ -185,7 +222,7 @@ class objSoftSapl(objSi.objSi):
             else :
                 id_Class = api.actualizaClase('ConectorJDBC',data,jdbc['_id'])
         else:
-            id_Class = self.BorraSoftSA('ConectorJDBC',data,jdbc['_id'],api)
+            id_Class = self._borraSoftSA('ConectorJDBC',data,jdbc['_id'],api)
             
         return id_Class
     
@@ -215,7 +252,7 @@ class objSoftSapl(objSi.objSi):
                 data['_destinationType'] = "ServAplicaciones"
                 api.creaRelacion('SItoSoftInstancia',data)
                 for jdbc in self.dic_SA['jdbc']:
-                    id_class_jdbc = self.sincronizaJDBC( jdbc,api)
+                    id_class_jdbc = self._sincronizaJDBC( jdbc,api)
                     if id_class_jdbc <> None:
                         conn.apuntaId('tb_ConectorBD',id_class_jdbc,'id_cbd',jdbc['id_cbd'])
                         data = {}
@@ -233,7 +270,7 @@ class objSoftSapl(objSi.objSi):
                             data['_destinationType'] = "ConectorJDBC"
                             api.creaRelacion('ConJDBCToSA',data)
         else:
-            id_Class=self.BorraSoftSA('BD',data,self.dic_SA['_id'],api)
+            id_Class=self._borraSoftSA('BD',data,self.dic_SA['_id'],api)
             
         return
     

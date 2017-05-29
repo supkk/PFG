@@ -13,11 +13,24 @@ import time
 class objSoftBBDD(objSi.objSi):
     '''
     classdocs
+    Representa una instancia de BD
     '''
 
     def __init__(self, idserv=0, sw=0, ent='PRO',ip='',soft='',user='',port=0,home='',id_si='0',conn=None,fsync=None):
         '''
         Constructor
+        
+        idserv: identificador del servidor
+        sw: identificador del software
+        ent: Entorno donde se ha instalado
+        ip: Ip donde ha sido descubierto
+        soft: Cadena de software
+        user:Usuario propietario del proceso
+        port: Puerto de escucha
+        home: Directorio de instalacion del software
+        id_si: Identificador de Instancia software
+        conn: Conexión a la BD SDA_DB
+        fsync: Fecha de la última sincronizacion
         '''
         super(objSoftBBDD,self).__init__(id_serv=idserv,id_sw=sw,id_entorno=ent,ip=ip,user=user,home=home,id_si=id_si)
         self.soft=soft
@@ -28,11 +41,11 @@ class objSoftBBDD(objSi.objSi):
         if id_si ==0:
             self.dic_BD = {}
         else:
-            self.dic_BD = self.cargaSoftware(id_si,conn)
+            self.dic_BD = self._cargaSoftware(id_si,conn)
         
         return
     
-    def cargaSoftware(self,id_si,conn):
+    def _cargaSoftware(self,id_si,conn):
         
         dic=super(objSoftBBDD,self).cargaSoftware(conn)
         data=(id_si,self.fsync)
@@ -85,6 +98,18 @@ class objSoftBBDD(objSi.objSi):
 
     
     def descubre(self,cnf,param):
+        '''
+        Prueba a descubrir un tipo de software
+        
+        Parametro
+        
+        cnf: Diccionario de configuración
+        param: Parametros del script
+        
+        Salida 
+        
+        Indica si el descubrimiento ha ido bien
+        '''
         
         modulo = "from plugins import "+self.soft + " as module"
         exec modulo
@@ -95,9 +120,9 @@ class objSoftBBDD(objSi.objSi):
 
         return self.dic_BD <> None
     
-    def actualizaInstancia(self,id_si,conn):
+    def _actualizaInstancia(self,id_si,conn):
         
-        modificado = super(objSoftBBDD,self).actualizaInstancia(id_si, conn)
+        modificado = super(objSoftBBDD,self)._actualizaInstancia(id_si, conn)
         dbd,id_db= conn.retInstanciaBD(id_si)
         data =(self.dic_BD['admin'])
         if data <> dbd :
@@ -107,12 +132,12 @@ class objSoftBBDD(objSi.objSi):
         
         return modificado,id_db
     
-    def actualizaEsquema(self,eqm,conn,id_db):
+    def _actualizaEsquema(self,eqm,conn,id_db):
         
         modificado =False
         de,id_edb = conn.retEsquemaDB(eqm['nombre'],eqm['nombre_db'])
         data = (eqm['propietario'])
-        if id_edb <> None :
+        if not id_edb is None :
             if de <> data :
                 sql ="update tb_bd set propietario=%s, fsync="+time.strftime("%c")+"' where id_si="+str(id_edb)
                 conn.actualizaTabla(sql,data)
@@ -127,7 +152,7 @@ class objSoftBBDD(objSi.objSi):
  
         return modificado,id_edb
     
-    def actualizaTabla(self,tb,conn,id_edb):
+    def _actualizaTabla(self,tb,conn,id_edb):
         
         modificado =False
         dt,id_tb = conn.retTablaDB(tb['nombre'],id_edb)
@@ -145,7 +170,7 @@ class objSoftBBDD(objSi.objSi):
  
         return modificado,id_tb
     
-    def actualizaAtrTabla(self,attb,conn,id_tb):
+    def _actualizaAtrTabla(self,attb,conn,id_tb):
         
         modificado =False
         datt,id_atr = conn.retAttrTablaDB(attb['nombre'],id_tb)
@@ -164,13 +189,13 @@ class objSoftBBDD(objSi.objSi):
         return modificado,id_tb
     
     
-    def marcarAttrTablaBorrados(self,conn,id_valor):
+    def _marcarAttrTablaBorrados(self,conn,id_valor):
         
         sql = "update tb_AtributoTabla set deleted = 'True', fsync='"+time.strftime("%c")+"' where id_att="+str(id_valor) 
         conn.actualizaTabla(sql)
         return
     
-    def gestionaAttrTablaBorrados(self, conn,dic, id_valor):
+    def _gestionaAttrTablaBorrados(self, conn,dic, id_valor):
         
         modificado =False
         sql= "select id_att,nombre from  TB_atributoTabla where id_tb=" + str(id_valor)
@@ -182,23 +207,23 @@ class objSoftBBDD(objSi.objSi):
                     encontrado =True
                     break
             if not encontrado :
-                self.marcarAttrTablaBorrados(conn,item[0])
+                self._marcarAttrTablaBorrados(conn,item[0])
                 modificado = True         
                 
         return modificado
     
-    def marcarTablaBorrados(self,conn,id_valor):
+    def _marcarTablaBorrados(self,conn,id_valor):
         
         sql = "update tb_Tabla set deleted = 'True', fsync='"+time.strftime("%c")+"' where id_tb="+str(id_valor) 
         conn.actualizaTabla(sql)
         sql = "select id_att from tb_atributoTabla where id_tb="+str(id_valor)
         lattrtablas =conn.consulta(sql)
         for attb in lattrtablas :
-            self.marcarAttrTablaBorrados(conn,attb[0])
+            self._marcarAttrTablaBorrados(conn,attb[0])
         
         return
     
-    def gestionaTablaBorrados(self, conn,dic, id_valor):
+    def _gestionaTablaBorrados(self, conn,dic, id_valor):
         
         modificado =False
         sql= "select id_tb,nombre from  TB_Tabla where id_edb=" + str(id_valor)
@@ -210,23 +235,23 @@ class objSoftBBDD(objSi.objSi):
                     encontrado =True
                     break
             if not encontrado :
-                self.marcarTablaBorrados(conn,item[0])
+                self._marcarTablaBorrados(conn,item[0])
                 modificado = True         
                 
         return modificado
     
-    def marcarEqmBorrados(self,conn,id_valor):
+    def _marcarEqmBorrados(self,conn,id_valor):
         
         sql = "update tb_EsquemaBD set deleted = 'True', fsync='"+time.strftime("%c")+"' where id_edb="+str(id_valor) 
         conn.actualizaTabla(sql)
         sql = "select id_tb from tb_Tabla where id_edb="+str(id_valor)
         ltablas =conn.consulta(sql)
         for tb in ltablas :
-            self.marcarTablaBorrados(conn,tb[0])
+            self._marcarTablaBorrados(conn,tb[0])
         
         return
     
-    def gestionaEqmBorrados(self, conn,dic, id_valor):
+    def _gestionaEqmBorrados(self, conn,dic, id_valor):
         
         modificado =False
         sql= "select id_edb,nombre,nombre_db from  TB_EsquemaBD where id_db=" + str(id_valor)
@@ -238,12 +263,22 @@ class objSoftBBDD(objSi.objSi):
                     encontrado =True
                     break
             if not encontrado :
-                self.marcarEqmBorrados(conn,item[0])
+                self._marcarEqmBorrados(conn,item[0])
                 modificado =True
                 
         return modificado
     
     def grabaBBDD(self,conn):
+        '''
+        Graba un objeto instancia de software en la BD SDA_DB
+        Parametro
+        
+        conn :Conexión con BD
+        
+        Salida
+        port: Puertos de la instancia procesados
+        modificado: Indica si se ha modificado
+        '''
         
         modificado = False
         self.id_si = conn.existeInstanciaSW(self.id_serv,self.id_sw,self.puerto,'tb_db') 
@@ -270,39 +305,39 @@ class objSoftBBDD(objSi.objSi):
                                 sql ='insert into tb_atributotabla (id_tb,nombre,indice,fsync) values (%s,%s,%s,%s)'
                                 conn.actualizaTabla(sql,data)
         else :
-            modificado, self.id_db = self.actualizaInstancia(self.id_si,conn)    
+            modificado, self.id_db = self._actualizaInstancia(self.id_si,conn)    
             for eqm in self.dic_BD['Esquema']:
-                mod,id_edb = self.actualizaEsquema(eqm,conn,self.id_db)    
+                mod,id_edb = self._actualizaEsquema(eqm,conn,self.id_db)    
                 modificado = mod or modificado
                 mod_tb=False
                 for tb in eqm['Tablas']:
-                    mod, id_tb = self.actualizaTabla(tb,conn,id_edb)    
+                    mod, id_tb = self._actualizaTabla(tb,conn,id_edb)    
                     mod_tb = mod or mod_tb
                     mod_atr=False
                     for atb in tb['attTabla']:
-                        mod = self.actualizaAtrTabla(atb,conn,id_tb)   
+                        mod = self._actualizaAtrTabla(atb,conn,id_tb)   
                         mod_atr = mod or mod_atr
-                    mod_atr = self.gestionaAttrTablaBorrados(conn,tb['attTabla'],id_tb) or mod_atr
+                    mod_atr = self._gestionaAttrTablaBorrados(conn,tb['attTabla'],id_tb) or mod_atr
                     if mod_atr == True:
                         modificado=True    
                         conn.apuntaModificado("tb_tabla","id_tb",id_tb)
-                mod_tb = self.gestionaTablaBorrados(conn,eqm['Tablas'],id_edb) or mod_tb
+                mod_tb = self._gestionaTablaBorrados(conn,eqm['Tablas'],id_edb) or mod_tb
                 if mod_tb == True :
                     modificado = True
                     conn.apuntaModificado("tb_EsquemaBD","id_edb",id_edb)
-            modificado = self.gestionaEqmBorrados(conn,self.dic_BD['Esquema'], self.id_db) or modificado
+            modificado = self._gestionaEqmBorrados(conn,self.dic_BD['Esquema'], self.id_db) or modificado
             if modificado== True:
                 conn.apuntaModificado( "tb_db","id_si",self.id_si)
         return modificado,self.puerto
     
-    def BorraSoftBBDD(self, clase, id_valor, api):
+    def _BorraSoftBBDD(self, clase, id_valor, api):
 
         data = {'deleted':'True'}
         id_Class = api.actualizaClase(clase,data,id_valor)
 
         return id_Class
     
-    def sincronizaTabla(self,tb,api):
+    def _sincronizaTabla(self,tb,api):
         
         if not tb['deleted']:
             data = {'Code': tb['nombre']} 
@@ -316,11 +351,11 @@ class objSoftBBDD(objSi.objSi):
             else :
                 id_Class_tb = api.actualizaClase('Tabla',data,tb['_id'])
         else:
-            id_Class_tb = self.BorraSoftBBDD('Tabla',tb['_id'],api)
+            id_Class_tb = self._BorraSoftBBDD('Tabla',tb['_id'],api)
             
         return id_Class_tb
     
-    def sincronizaEsquema(self,eqm,api):
+    def _sincronizaEsquema(self,eqm,api):
         
         if not eqm['deleted']:
             data = {'Code': eqm['nombre']} 
@@ -335,11 +370,11 @@ class objSoftBBDD(objSi.objSi):
             else :
                 id_Class_eqm = api.actualizaClase('EsquemaBD',data,eqm['_id'])
         else:
-            id_Class_eqm=self.BorraSoftBBDD('EsquemaBD', eqm['_id'],api)
+            id_Class_eqm=self._BorraSoftBBDD('EsquemaBD', eqm['_id'],api)
                 
         return id_Class_eqm
     
-    def sincronizaAtributo(self,at,api):
+    def _sincronizaAtributo(self,at,api):
         
         if not at['deleted']:
             data = {'Code': at['nombre']} 
@@ -353,11 +388,20 @@ class objSoftBBDD(objSi.objSi):
             else :
                 id_Class_at = api.actualizaClase('CamposTabla',data,at['_id'])
         else :
-            id_Class_at=self.BorraSoftBBDD('CamposTabla',at['_id'],api)
+            id_Class_at=self._BorraSoftBBDD('CamposTabla',at['_id'],api)
             
         return id_Class_at
     
     def sincroniza(self,conn,api,_idsw):
+        
+        '''
+        Sincroniza un CI con CMDBuild
+        
+        Parametro
+        conn:  Objeto de conexion con la BD SDA_DB
+        api:  Objeto de conexion con CMDBuild
+        _idws: Identificador en CMDBuild de la instancia de software
+        '''
         
         if not self.dic_BD['deleted']:    
             data = {'Code': "BBDD_"+str(self.dic_BD['id_db'])}          
@@ -383,7 +427,7 @@ class objSoftBBDD(objSi.objSi):
                 data['_destinationType'] = "BD"
                 api.creaRelacion('SItoSoftInstancia',data)
                 for eqm in self.dic_BD['esquema']:
-                    id_Class_eqm=self.sincronizaEsquema(eqm,api)
+                    id_Class_eqm=self._sincronizaEsquema(eqm,api)
                     if id_Class_eqm > 0 :
                         conn.apuntaId('tb_EsquemaBD',id_Class_eqm,'id_edb',eqm['id_edb'])
                         data = {}
@@ -393,7 +437,7 @@ class objSoftBBDD(objSi.objSi):
                         data['_destinationType'] = "EsquemaBD"
                         api.creaRelacion('BDtoEsquemaDB',data)
                         for tb in eqm['Tabla']:
-                            id_Class_tb=self.sincronizaTabla(tb,api)
+                            id_Class_tb=self._sincronizaTabla(tb,api)
                             if id_Class_tb > 0 :
                                 conn.apuntaId('tb_Tabla',id_Class_tb,'id_tb',tb['id_tb'])
                                 data = {}
@@ -403,7 +447,7 @@ class objSoftBBDD(objSi.objSi):
                                 data['_destinationType'] = "Tabla"
                                 api.creaRelacion('EsquemaDBToTabla',data)
                                 for at in tb['campos']:
-                                    id_Class_at=self.sincronizaAtributo(at,api)
+                                    id_Class_at=self._sincronizaAtributo(at,api)
                                     if id_Class > 0 :
                                         conn.apuntaId('tb_AtributoTabla',id_Class_at,'id_att',at['id_at'])
                                         data = {}
@@ -413,7 +457,7 @@ class objSoftBBDD(objSi.objSi):
                                         data['_destinationType'] = "CamposTabla"
                                         api.creaRelacion('TablaToCamposTabla',data)
         else :
-            id_Class_at=self.BorraSoftBBDD('BD',self.dic_BD['_id'],api)
+            id_Class_at=self._BorraSoftBBDD('BD',self.dic_BD['_id'],api)
                         
                         
         return

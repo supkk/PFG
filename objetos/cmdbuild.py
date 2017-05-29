@@ -10,13 +10,17 @@ import time
 
 class cmdbuild(object):
     '''
-    classdocs
+    Clase que se encarga de la comunicacion con CMDBuild
     '''
 
 
     def __init__(self, host,puerto, user, password):
         '''
         Constructor
+        host: Ip de la Instancia de CMDBUild
+        puerto: Puerto de escucha
+        user: usuario de acceso a CMDBuild
+        password: password del usuario
         '''
         self.cabeceras = { 'Accept': '*/*','Content-Type': 'application/json' }
         data = '{"username":"'+user+'","password":"'+password+'"}'
@@ -28,6 +32,18 @@ class cmdbuild(object):
         return
     
     def creaClase(self,clase,attr):
+        '''
+        Crea una instancia de una clase en CMDBuild
+        
+        Parametro
+        
+        clase: Nombre de la clase
+        attr: Atributos de la clase
+        
+        salida 
+        
+        Identificador de la clase en CMDBuild, si falla -1
+        '''
         
         uri = self.url+"classes/"+clase+"/cards/"
         data = str(attr)
@@ -46,6 +62,20 @@ class cmdbuild(object):
     
     def actualizaClase(self,clase,attr,idclass):
         
+        '''
+        Actualiza una instancia de una clase en CMDBuild
+        
+        Parametro
+        
+        clase: Nombre de la clase
+        attr: Atributos de la clase
+        idclass :: Identificador de la clase a actualizar
+        
+        salida 
+        
+        Identificador de la clase en CMDBuild, si falla None
+        '''
+        
         uri = self.url+"classes/"+clase+"/cards/"+str(idclass)
         data = str(attr)
         data = data.replace('\'', '"')
@@ -63,6 +93,18 @@ class cmdbuild(object):
         return result
     
     def creaRelacion(self,dominio,attr):
+        '''
+        Crea una relacion entre dos clases en CMDBuild
+        
+        Parametro
+        
+        dominio: Nombre de la relacion
+        attr: Atributos de la relacion
+        
+        salida 
+        
+        Identificador de la clase en CMDBuild, si falla -1
+        '''
         
         uri = self.url+"domains/" + dominio + "/relations/"
         data = str(attr)
@@ -77,6 +119,20 @@ class cmdbuild(object):
     
     def actualizaRelacion(self,dominio,attr,idomain): 
         
+        '''
+        Actualiza una relacion entre dos clases en CMDBuild
+        
+        Parametro
+        
+        dominio: Nombre de la relacion
+        attr: Atributos de la relacion
+        idomain: Identificador de dominio
+        
+        salida 
+        
+        Correcto (true )o No (False
+        '''
+        
         uri = self.url+"domains/"+dominio+"/relations/"+str(idomain)
         data = str(attr)
         data = data.replace('\'', '"')
@@ -85,6 +141,19 @@ class cmdbuild(object):
         return r.ok
     
     def  retIdLookup(self,name, ele):
+        
+        '''
+        Retorna el identificador, en CMDBuild, atributo de tipo lookup
+        
+        Parametro
+        
+        name: Nombre del tipo Lookup
+        ele : Elemento a buscar
+        
+        Salida
+        
+        Identificador del elemento en CMDBuild
+        '''
         
         idLookup=''
         uri = self.url+"lookup_types/"+name+"/values"

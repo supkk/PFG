@@ -16,16 +16,21 @@ class objApl(object):
     def __init__(self, dic_apl={},id_sa=0,id_apl=0,conn=None):
         '''
         Constructor
+        
+        dic_apl : Diccionario que almacena los atributos de la aplicacion
+        id_sa: Identificador de Servidor de Aplicaciones
+        id_apl: Identificador de aplicacion
+        conn: Conexión con SDA_DB
         '''
         self.dic_apl=dic_apl
         self.id_sa=id_sa
         self.id_apl=id_apl
         if id_apl<> 0:
-            self.__cargaAplicacion__(conn)
+            self._cargaAplicacion(conn)
         
         return
     
-    def __cargaAplicacion__(self,conn):
+    def _cargaAplicacion(self,conn):
         sql ="select acronimo,nombre,version,deleted,_id,fsync from tb_aplicacion where id_apl=" + str(self.id_apl)
         r = conn.consulta(sql)
         self.dic_apl['acronimo']=r[0][0]
@@ -62,10 +67,10 @@ class objApl(object):
 
         return 
     
-    def __estaCargado__(self):
+    def _estaCargado(self):
         return (self.dic_apl['_id']>0)
     
-    def __actualizaAplicacion__(self,conn):
+    def _actualizaAplicacion(self,conn):
         
         modificado = False
         dapl=conn.retInstanciaApl(self.id_apl)
@@ -108,7 +113,7 @@ class objApl(object):
                     
         return modificado
     
-    def __BorraSoftApl__(self, clase, id_valor, api):
+    def _BorraSoftApl(self, clase, id_valor, api):
 
         data = {'deleted':'True'}
         id_Class = api.actualizaClase(clase,data,id_valor)
@@ -116,6 +121,16 @@ class objApl(object):
         return id_Class
     
     def sincroniza(self,api,conn, ultimaSync):
+        
+        '''
+        Sincroniza un CI con CMDBuild
+        
+        Parametro
+        conn:  Objeto de conexion con la BD SDA_DB
+        api:  Objeto de conexion con CMDBuild
+        ultimaSync : Fecha de la ultima sincronizacion de aplicaciones con CMDBuild
+        '''
+        
         if not self.dic_apl['deleted']:
             data={}
             data['Code']=self.dic_apl['nombre']
@@ -131,7 +146,7 @@ class objApl(object):
             data['nombre']=self.dic_apl['nombre']
             data['version']=self.dic_apl['version']
             data['acronimo']=self.dic_apl['acronimo']
-            if not self.__estaCargado__():
+            if not self._estaCargado():
                 id_class = api.creaClase('Aplicacion',data)
                 print (time.strftime("%c")+"-- Creada la aplicacion " + self.dic_apl['nombre'] ) 
             else :
@@ -166,10 +181,20 @@ class objApl(object):
                     data['_destinationType'] = "Aplicacion"
                     api.creaRelacion('ServAplToApl',data)
         else:
-            id_class = self.__BorraSoftApl__('Aplicacion',self.dic_apl['_id'],api)        
+            id_class = self._BorraSoftApl('Aplicacion',self.dic_apl['_id'],api)        
         return
     
     def grabaBBDD(self,conn):
+        
+        '''
+        Graba un objeto instancia de software en la BD SDA_DB
+        Parametro
+        
+        conn :Conexión con BD
+        
+        Salida
+        port: Puertos de la instancia procesados
+        '''
         
         mod_apl=False
         self.id_apl=conn.existeAplicacion(self.dic_apl['nombre'],self.id_sa)
@@ -203,7 +228,7 @@ class objApl(object):
                     print (time.strftime("%c")+"-- No se ha podido encontrar el controlador "+jdbc)
             
         else:
-            mod_apl=self.__actualizaAplicacion__(conn)
+            mod_apl=self._actualizaAplicacion(conn)
             if mod_apl:
                 conn.apuntaModificado( "tb_aplicacion","id_apl",self.id_apl)
             

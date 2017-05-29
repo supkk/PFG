@@ -13,11 +13,26 @@ import time
 class objSoftWeb(objSi.objSi):
     '''
     classdocs
+    
+    Representa una instancia de servidor web
+    
     '''
 
     def __init__(self, idserv=0,sw=0,ent='PRO',ip='',soft='',user='',port=0,home='',id_si=0,conn=None,fsync=None):
         '''
         Constructor
+        
+        idserv: identificador del servidor
+        sw: identificador del software
+        ent: Entorno donde se ha instalado
+        ip: Ip donde ha sido descubierto
+        soft: Cadena de software
+        user:Usuario propietario del proceso
+        port: Puerto de escucha
+        home: Directorio de instalacion del software
+        id_si: Identificador de Instancia software
+        conn: Conexión a la BD SDA_DB
+        fsync: Fecha de la última sincronizacion
         '''
         super(objSoftWeb,self).__init__(id_serv=idserv,id_sw=sw,id_entorno=ent,ip=ip,user=user,home=home,id_si=0)
         self.soft=soft
@@ -27,12 +42,13 @@ class objSoftWeb(objSi.objSi):
         if id_si ==0:
             self.dic_Web = {}
         else:
-            self.dic_Web= self.cargaSoftware(id_si,conn)
+            self.dic_Web= self._cargaSoftware(id_si,conn)
         
         return
     
-    def cargaSoftware(self,id_si,conn):
-        dic=super(objSoftWeb,self).cargaSoftware(conn)
+    def _cargaSoftware(self,id_si,conn):
+        
+        dic=super(objSoftWeb,self)._cargaSoftware(conn)
         data=(id_si,self.fsync)
         sql= "select sw.urladmin,si.version,sw.puerto, sw.id_web,sw._id from tb_softwareInstancia si inner join tb_servweb sw on si.id_si = sw.id_si where sw.id_si=%s and sw.fsync >=%s" 
         data = conn.consulta(sql,data)
@@ -74,6 +90,19 @@ class objSoftWeb(objSi.objSi):
 
     def descubre(self,cnf,param):
         
+        '''
+        Prueba a descubrir un tipo de software
+        
+        Parametro
+        
+        cnf: Diccionario de configuración
+        param: Parametros del script
+        
+        Salida 
+        
+        Indica si el descubrimiento ha ido bien
+        '''
+        
         modulo = "from plugins import "+self.soft + " as module"
         exec modulo
         cnf=cnf['conecta_ssh']
@@ -84,9 +113,9 @@ class objSoftWeb(objSi.objSi):
         return  self.dic_Web <> None
     
     
-    def actualizaInstancia(self, id_si,conn):
+    def _actualizaInstancia(self, id_si,conn):
         
-        modificado = super(objSoftWeb,self).actualizaInstancia(id_si, conn)
+        modificado = super(objSoftWeb,self)._actualizaInstancia(id_si, conn)
         dsw,id_Web = conn.retInstanciaWeb(id_si)
         data =(self.dic_Web['urladmin'],)
         if data <> dsw :
@@ -96,7 +125,7 @@ class objSoftWeb(objSi.objSi):
             
         return modificado, id_Web
     
-    def actualizaVirtualHost(self,vh,conn,id_web):
+    def _actualizaVirtualHost(self,vh,conn,id_web):
         
         modificado= False
         dvh,id_vh = conn.retInstanciaVH(id_web,vh['dns'],vh['puerto'])
@@ -114,7 +143,7 @@ class objSoftWeb(objSi.objSi):
             
         return modificado, id_vh
     
-    def actualizaUrl(self,url,conn,id_vh):
+    def _actualizaUrl(self,url,conn,id_vh):
         
         modificado= False
         durl,id_url = conn.existeInstanciaUrl(id_vh,url['nombre'])
@@ -132,18 +161,18 @@ class objSoftWeb(objSi.objSi):
             
         return modificado, id_vh
     
-    def marcarVHBorrados(self,conn,id_valor):
+    def _marcarVHBorrados(self,conn,id_valor):
         
         sql = "update tb_Vhost set deleted = 'True', fsync='"+time.strftime("%c")+"' where id_vh="+str(id_valor) 
         conn.actualizaTabla(sql)
         sql = "select id_url from tb_url where id_vh="+str(id_valor)
         lurl =conn.consulta(sql)
         for url in lurl :
-            self.marcarUrlBorrados(conn,url[0])
+            self._marcarUrlBorrados(conn,url[0])
         
         return
     
-    def gestionaVHBorrados(self, conn,dic, id_valor):
+    def _gestionaVHBorrados(self, conn,dic, id_valor):
         
         modificado =False
         sql= "select id_vh,dns,puerto from TB_vhost where id_web=" + str(id_valor)
@@ -155,19 +184,19 @@ class objSoftWeb(objSi.objSi):
                     encontrado =True
                     break
             if not encontrado :
-                self.marcarVHBorrados(conn,item[0])
+                self._marcarVHBorrados(conn,item[0])
                 modificado =True
                 
         return modificado
     
-    def marcarUrlBorrados(self,conn,id_valor):
+    def _marcarUrlBorrados(self,conn,id_valor):
         
         sql = "update tb_url set deleted = 'True', fsync='"+time.strftime("%c")+"' where id_url="+str(id_valor) 
         conn.actualizaTabla(sql)
         
         return
     
-    def gestionaUrlBorrados(self, conn,dic, id_valor):
+    def _gestionaUrlBorrados(self, conn,dic, id_valor):
         
         modificado =False
         sql= "select nombre,id_url from TB_url where id_vh=" + str(id_valor)
@@ -179,12 +208,22 @@ class objSoftWeb(objSi.objSi):
                     encontrado =True
                     break
             if not encontrado :
-                self.marcarUrlBorrados(conn,item[1])
+                self._marcarUrlBorrados(conn,item[1])
                 modificado =True
                 
         return modificado
     
     def grabaBBDD(self,conn):
+        
+        '''
+        Graba un objeto instancia de software en la BD SDA_DB
+        Parametro
+        
+        conn :Conexión con BD
+        
+        Salida
+        port: Puertos de la instancia procesados
+        '''
         
         modificado = False
         puertos =[]
@@ -210,26 +249,26 @@ class objSoftWeb(objSi.objSi):
             else:
                 print (time.strftime("%c")+"-- Error al insertar la instancia de Servidor web "+self.dic_Web['version'])
         else:
-            mod_web,self.id_web = self.actualizaInstancia(self.id_si,conn)
+            mod_web,self.id_web = self._actualizaInstancia(self.id_si,conn)
             for vh in self.dic_Web['vh']: 
-                mod, id_vh = self.actualizaVirtualHost(vh,conn,self.id_web)
+                mod, id_vh = self._actualizaVirtualHost(vh,conn,self.id_web)
                 mod_web = mod or mod_web
                 mod_url=False
                 for url in vh['url']:
-                    mod, id_vh = self.actualizaUrl(url,conn,id_vh)
+                    mod, id_vh = self._actualizaUrl(url,conn,id_vh)
                     mod_url = mod or mod_url
-                mod_url = self.gestionaUrlBorrados(conn,vh['url'],id_vh) or mod_url
+                mod_url = self._gestionaUrlBorrados(conn,vh['url'],id_vh) or mod_url
                 if mod_url :
                     modificado = True
                     conn.apuntaModificado('tb_vhost','id_vh',id_vh)
-            mod_web = self.gestionaVHBorrados(conn,self.dic_Web['vh'],self.id_web) or mod_web
+            mod_web = self._gestionaVHBorrados(conn,self.dic_Web['vh'],self.id_web) or mod_web
             if mod_web == True:
                 conn.apuntaModificado( "tb_servweb","id_web",self.id_web)
                 modificado = False
                 
         return modificado,puertos
     
-    def BorraSoftWeb(self, clase, id_valor, api):
+    def _borraSoftWeb(self, clase, id_valor, api):
 
         ok = True
         if id_valor <> '' :
@@ -238,7 +277,7 @@ class objSoftWeb(objSi.objSi):
 
         return id_Class
     
-    def sincronizaUrl(self,api, url,conn):
+    def _sincronizaUrl(self,api, url,conn):
         
         
         data= {}
@@ -255,11 +294,11 @@ class objSoftWeb(objSi.objSi):
             else :
                 id_class = api.actualizaClase('url',data,url['_id'])
         else:
-            id_class = self.BorraSoftWeb('url',url['_id'],api)
+            id_class = self._borraSoftWeb('url',url['_id'],api)
             
         return id_class
     
-    def sincronizaVH(self,api,vh,conn):
+    def _sincronizaVH(self,api,vh,conn):
         
        
         data = {'Code': "VH"+str(vh['id_vh'])}
@@ -277,7 +316,7 @@ class objSoftWeb(objSi.objSi):
             else :
                 id_Class = api.actualizaClase('VirtualHost',data,vh['_id'])
         else:
-            id_Class = self.BorraSoftWeb('VirtualHost',vh['_id'],api)
+            id_Class = self._borraSoftWeb('VirtualHost',vh['_id'],api)
     
         return id_Class
     
@@ -308,7 +347,7 @@ class objSoftWeb(objSi.objSi):
                 data['_destinationType'] = "ServWeb"
                 api.creaRelacion('SItoSoftInstancia',data)
                 for vh in self.dic_Web['vh']:
-                    id_class_vh = self.sincronizaVH(api, vh,conn)
+                    id_class_vh = self._sincronizaVH(api, vh,conn)
                     if id_class_vh <> None:
                         conn.apuntaId('tb_vhost',id_class_vh,'id_vh',vh['id_vh'])
                         data = {}
@@ -318,7 +357,7 @@ class objSoftWeb(objSi.objSi):
                         data['_destinationType'] = "VirtualHost"
                         api.creaRelacion('ServWebToVH',data)
                         for url in vh['url']:
-                            id_class_url = self.sincronizaUrl(api, url,conn)
+                            id_class_url = self._sincronizaUrl(api, url,conn)
                             if id_class_url <> None:
                                 conn.apuntaId('tb_url',id_class_url,'id_url',url['id_url'])
                                 data = {}
@@ -328,7 +367,7 @@ class objSoftWeb(objSi.objSi):
                                 data['_destinationType'] = "VirtualHost"
                                 api.creaRelacion('urlToVH',data)   
         else:
-            self.BorraSoftWeb('ServWeb',self.dic_Web['_id'],api)
+            self._borraSoftWeb('ServWeb',self.dic_Web['_id'],api)
         return
     
     
