@@ -12,6 +12,17 @@ from objetos import objApl
 
 
 def descubreAplicacion(n_proceso,ip,cnf,puerto):
+    
+    '''
+    Descubre la aplicacion desplegada en un servidor de aplicaciones
+    
+    Parametros
+    
+    n_proceso: Cadena identificativa del software
+    ip: IP donde escucha
+    cnf: Configuración de acceso a la consola del servidor de aplicaciones
+    puerto : Puerto de la consola de aplciaciones
+    '''
  
     modulo = "from plugins import "+n_proceso + " as module"
     try :
@@ -25,7 +36,7 @@ def descubreAplicacion(n_proceso,ip,cnf,puerto):
         
     return lapl
 
-def marcarAplBorrados(conn,id_valor):
+def _marcarAplBorrados(conn,id_valor):
         
         sql = "update tb_aplicacion set deleted = 'True', fsync='"+time.strftime("%c")+"' where id_apl="+str(id_valor) 
         conn.actualizaTabla(sql)
@@ -33,7 +44,19 @@ def marcarAplBorrados(conn,id_valor):
     
     
 def gestionaAplBorrados(conn, apls,id_sa):
+    '''
+    Marca como borrados las apl inaccesibles
     
+    Parametros
+    
+    conn: Conexión con SDA_DB
+    apls: Lista de aplicaciones instaladas
+    id_sa :Identidicador de la aplicacion a borrar
+    
+    Salida
+    
+    True si se ha modificado 
+    '''
     modificado =False
     sql= "select id_apl from tb_map_sa_ap where id_sa ="+ str(id_sa)
     litem = conn.consulta(sql)
@@ -44,12 +67,19 @@ def gestionaAplBorrados(conn, apls,id_sa):
                 encontrado =True
                 break
         if not encontrado :
-            marcarAplBorrados(conn,item[0])
+            _marcarAplBorrados(conn,item[0])
             modificado = True         
             
     return modificado
 
 def descubreApl(arg,cnf):
+    '''
+    descubre aplicaciones desplegadas en servidor de aplicaciones
+    
+    Parametros
+       cnf : Diccionario con los parametros de configuracion
+       args: Objeto con los pararámetros que se pasan al script  
+    '''
     
     conf=cnf['BaseDatos']
     conn=bbdd.bbdd(bd=conf['bd'],u=conf['user'],pw=conf['password'],h=conf['host'],p=conf['port'])
@@ -98,6 +128,16 @@ def descubreApl(arg,cnf):
     return
 
 def parametros():
+    
+    '''
+    Procesa la linea de comandos del script y construye un objeto argparse. Tambien carga los ficheros de configuracion
+     
+    Salida 
+     
+       cnf : Diccionario con los parametros de configuracion
+       args: Objeto con los pararámetros que se pasan al script  
+    '''
+    
     parser = argparse.ArgumentParser()
     parser.add_argument("-i", "--ip" ,help="Inventaría aplicaciones de un servidor" )
     parser.add_argument("-c","--conf",help="ruta del fichero de configuración",default='./conf/config.json')

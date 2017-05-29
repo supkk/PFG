@@ -14,7 +14,15 @@ import simplejson as json
 
 
 def sincronizaRed(con,api):
+    '''
+    Sincroniza las redes  con CMDBuild
     
+    Parametros
+    
+    con: Conexión con la BD de SDA_DB
+    api: Conexión con CMDBuild
+    
+    '''
     print (time.strftime("%c")+"-- Comienza la sincronización del las redes")
     sql = 'select * from tb_net where _id is null'
     redes = con.consulta(sql)
@@ -32,6 +40,15 @@ def sincronizaRed(con,api):
     return
 
 def sincronizaCatalogoSw(con,api):
+    '''
+    Sincroniza el catálogo de software con CMDBuild
+    
+    Parametros
+    
+    con: Conexión con la BD de SDA_DB
+    api: Conexión con CMDBuild
+    
+    '''
     
     print (time.strftime("%c")+"-- Comienza la sincronización del catálogo de software")
     sql = 'select id_sw,Descripcion,id_cat,n_proceso,_id from tb_inv_software where _id is null'
@@ -49,19 +66,28 @@ def sincronizaCatalogoSw(con,api):
             
     return
 
-def recuperaConfig(conn):
+def _recuperaConfig(conn):
     
     sql = 'select * from tb_sda_config'
     config = conn.consulta(sql)
     return config
 
-def actualizaFSync(conn):
+def _actualizaFSync(conn):
     
     sql = "update tb_sda_config set fsync = '"+time.strftime("%c")+"'"
     conn.actualizaTabla(sql)
     return
 
 def parametros():
+   
+    '''
+    Procesa la linea de comandos del script y construye un objeto argparse. Tambien carga los ficheros de configuracion
+     
+    Salida 
+     
+       cnf : Diccionario con los parametros de configuracion
+       args: Objeto con los pararámetros que se pasan al script  
+    '''
     parser = argparse.ArgumentParser()
     parser.add_argument("-n", "--nombre" ,help="Sincroniza solo un servidor" )
     parser.add_argument("-c","--conf",help="ruta del fichero de configuración",default='./conf/config.json')
@@ -74,7 +100,7 @@ def main ():
     cnf,arg = parametros()
     conf=cnf['BaseDatos']
     conn=bbdd.bbdd(bd=conf['bd'],u=conf['user'],pw=conf['password'],h=conf['host'],p=conf['port'])
-    config = recuperaConfig(conn)
+    config = _recuperaConfig(conn)
     ultimaSync = config[0][1]
     conf=cnf['CMDBuild']
     api = cmdbuild.cmdbuild(conf["host"],conf["port"],conf["user"],conf["password"])
@@ -92,7 +118,7 @@ def main ():
         print (time.strftime("%c")+"-- Iniciando la sincronizacion del servidor  "+ serv.nombre)
         serv.sincroniza(api,conn,config[0][1])
         print (time.strftime("%c")+"-- Terminada la sincronizacion del servidor  "+ serv.nombre)
-    actualizaFSync(conn)
+    _actualizaFSync(conn)
     print (time.strftime("%c")+"-- Fin del proceso de sincronización")
     return
     

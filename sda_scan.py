@@ -14,6 +14,15 @@ import simplejson as json
 
 
 def parametros():
+    '''
+    Procesa la linea de comandos del script y construye un objeto argparse. Tambien carga los ficheros de configuracion
+     
+    Salida 
+     
+       cnf : Diccionario con los parametros de configuracion
+       args: Objeto con los pararámetros que se pasan al script  
+    '''
+    
     parser = argparse.ArgumentParser()
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument("-i", "--ip" ,help="Descubre solo una IP" )
@@ -24,6 +33,15 @@ def parametros():
     return cnf,args;
 
 def obtener_dispositivo(d):
+    '''
+    Carga en el objeto ObjDispositivo una Ip descubierta por nmap
+    
+    Parametro
+        d : Objeto descubierto por nmap
+        s : Objeto Dispositivo
+        
+    
+    '''
     
     os="NO DESCUBIERTO"
     if 'tcp' in d.keys():
@@ -36,6 +54,16 @@ def obtener_dispositivo(d):
     return s
 
 def scan_NMAP(param,conf):
+    '''
+    Realiza un escaneo de la red para descubrir las IP que están activas
+    
+    Parametros
+    
+    param: Objeto con los pararámetros que se pasan al script
+    conf: diccionario con la  configuración de BBDD
+    
+    '''
+    
     print (time.strftime("%c")+"--"+"Inicio de  descubrimiento por nmap")
     try:
         

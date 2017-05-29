@@ -12,18 +12,25 @@ from objetos import objApl
 from objetos import cmdbuild
 
 
-def recuperaConfig(conn):
+def _recuperaConfig(conn):
     
     sql = 'select fsync_apl from tb_sda_config'
     config = conn.consulta(sql)
     return config
 
 def importaAplicacion(arg,cnf):
+    '''
+    Importa aplicaciones en CMDBuild
     
+    Parametros
+       cnf : Diccionario con los parametros de configuracion
+       args: Objeto con los pararámetros que se pasan al script   
+    
+    '''
     
     conf=cnf['BaseDatos']
     conn=bbdd.bbdd(bd=conf['bd'],u=conf['user'],pw=conf['password'],h=conf['host'],p=conf['port'])
-    config = recuperaConfig(conn)
+    config = _recuperaConfig(conn)
     ultimaSync = config[0][0]
     conf=cnf['CMDBuild']
     api = cmdbuild.cmdbuild(conf["host"],conf["port"],conf["user"],conf["password"])
@@ -40,6 +47,14 @@ def importaAplicacion(arg,cnf):
     return
 
 def parametros():
+    '''
+    Procesa la linea de comandos del script y construye un objeto argparse. Tambien carga los ficheros de configuracion
+     
+    Salida 
+     
+       cnf : Diccionario con los parametros de configuracion
+       args: Objeto con los pararámetros que se pasan al script  
+    '''
     parser = argparse.ArgumentParser()
     parser.add_argument("-n", "--nombre" ,help="Sincroniza solo una aplicacion" )
     parser.add_argument("-c","--conf",help="ruta del fichero de configuración",default='./conf/config.json')

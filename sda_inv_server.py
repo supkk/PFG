@@ -20,6 +20,19 @@ import simplejson as json
 
 def procesaFS_SSH(c,dctC):
     
+    '''
+    Carga los sistemas de ficheros de un servidor descubierto en una lista
+    
+    Parametros
+    
+    c : Conexión SSH
+    dctC : Diccionario con el comando a enviar al servidor 
+    
+    salida
+    
+    Lista de FS encontrado
+    '''
+    
     if 'saltar' in dctC['fileSystem'].keys():
         saltar = dctC['fileSystem']['saltar']
     else :
@@ -32,6 +45,19 @@ def procesaFS_SSH(c,dctC):
     return listafs
 
 def procesaIP_SSH(c,dctC):
+    
+    '''
+    Carga las interfaces de red descubiertas en una lista
+    
+    Parametros
+    
+    c : Conexión SSH
+    dctC : Diccionario con el comando a enviar al servidor 
+    
+    salida
+    
+    Lista de Interfaces encontrado
+    '''
     
     if 'saltar' in dctC['fileSystem'].keys():
         saltar = dctC['net']['saltar']
@@ -46,6 +72,19 @@ def procesaIP_SSH(c,dctC):
 
 def procesaSW_SSH(c,dctC,lsoft):
     
+    '''
+    Carga el software descubierto en una lista
+    
+    Parametros
+    
+    c : Conexión SSH
+    dctC : Diccionario con el comando a enviar al servidor 
+    lsoft: Lista de software soportado
+    
+    salida
+    
+    Lista de software encontrado
+    '''
     if 'saltar' in dctC['fileSystem'].keys():
         saltar = dctC['net']['saltar']
     else :
@@ -67,6 +106,20 @@ def procesaSW_SSH(c,dctC,lsoft):
     return listaSw  
 
 def descubreSSH(ip,lsoft,con,config):
+    '''
+    Descubre la configuración de un servidor UNIX por SSH
+    
+    Parametros
+    
+    ip: Ip que se va a procesar
+    lSoft: Lista de software aprobada para inventariar
+    con: Conexion a la BD SDA
+    config : Parametros de configuracion para conexion ssh
+    
+    Salida
+    
+    Objeto Servidor con los datos de este
+    '''
     
     try:
         conexSSH = objssh.objssh(ip,config['user'],config['password'])
@@ -98,12 +151,26 @@ def descubreSSH(ip,lsoft,con,config):
     
     return serv
 
-def procesaUname(un):
+def _procesaUname(un):
     s = un.split(' ')
     return s[0], s[1]
 
 def procesaCPU (c):
+    '''
+    Recoge información de CPU's  y CORES de un servidor
     
+    Parametros
+    
+    c: Conexión SNMP
+    
+    Salida
+    
+    procesor: Modelo /Marca de procesador
+    ncpu: Numero de CPUs
+    cores: Cores por CPU's
+    
+     
+    '''
     cpu = c.walk('hrDeviceType')
     cores = 0
     ncpu=0
@@ -124,6 +191,19 @@ def procesaCPU (c):
 
 
 def procesaFS(c,serv):
+    
+    '''
+    Carga los sistemas de ficheros descubiertos en un objeto servidor
+    
+    Parametros
+    
+    c: Conexión SNMP
+    serv: Objeto Servidor
+   
+    Salida
+    
+    Objeto servidor
+    '''        
     
     primero =True
     fileSystem = c.walk('hrStorageIndex')
@@ -159,7 +239,19 @@ def procesaFS(c,serv):
     return serv
 
 def procesaInterfaz(c,serv):
-        
+    
+    '''
+    Carga las interfaces de red descubiertas en un objeto servidor
+    
+    Parametros
+    
+    c: Conexión SNMP
+    serv: Objeto Servidor
+   
+    Salida
+    
+    Objeto servidor
+    '''        
     inter=c.walk('ifIndex')
     dic={}
     for i in inter :
@@ -182,6 +274,20 @@ def procesaInterfaz(c,serv):
 
 def procesaSW(c,serv,lsoft):
     
+    '''
+    Carga el software descubierto en un objeto servidor
+    
+    Parametros
+    
+    c: Conexión SNMP
+    serv: Objeto Servidor
+    lsoft: Lista de software soportado
+    
+    salida
+    
+    Objeto servidor
+    '''
+    
     sws=c.walk('hrSWRunPath')
     dic={}
     for ls in lsoft:
@@ -199,13 +305,26 @@ def procesaSW(c,serv,lsoft):
     return serv
 
 def descubreIPLinux(ip,lsoft,con,config):
-
+    '''
+    Descubre la configuración de un servidor Unix/Linux
+    
+    Parametros
+    
+    ip: Ip que se va a procesar
+    lSoft: Lista de software aprobada para inventariar
+    con: Conexion a la BD SDA
+    config : Parametros de configuracion para conexion ssh
+    
+    Salida
+    
+    Objeto Servidor con los datos de este
+    '''
     
     try:
         serv=objServidor.objServidor()
         c = Session(hostname=ip, community='public', version=2)
         serv.v_os = c.get('SNMPv2-MIB::sysDescr.0').value
-        serv.so,serv.nombre = procesaUname(serv.v_os)
+        serv.so,serv.nombre = _procesaUname(serv.v_os)
         serv.entorno = serv.recEntorno()
         ram = c.get ('HOST-RESOURCES-MIB::hrMemorySize.0').value
         serv.ram = int(ram.encode('ascii'))/1000
@@ -221,11 +340,19 @@ def descubreIPLinux(ip,lsoft,con,config):
     
     return serv
 
-def descubreWMI(ip):
-    serv=None
-    return serv
-
 def descubreWindows(ip,listaSoftware):
+    '''
+    Descubre la configuración de un servidor windows
+    
+    Parametros
+    
+    ip: Ip que se va a procesar
+    listaSoftware: Lista de software aprobada para inventariar
+    
+    Salida
+    
+    Objeto Servidor con los datos de este
+    '''
     try:
         serv=objServidor.objServidor()
         c = Session(hostname=ip, community='public', version=2)
@@ -244,13 +371,19 @@ def descubreWindows(ip,listaSoftware):
     except Exception,  error:
         print (time.strftime("%c")+"--"+"Error al conectar por SNMP. Lo intento por WMI --> "+ip)
         print (time.strftime("%c")+"--", Exception, error)
-        serv=descubreWMI(ip)
+
     return serv
 
-def descubreOtros(ip):
-    return None
 
 def parametros():
+    '''
+    Procesa la linea de comandos del script y construye un objeto argparse. Tambien carga los ficheros de configuracion
+     
+    Salida 
+     
+       cnf : Diccionario con los parametros de configuracion
+       args: Objeto con los pararámetros que se pasan al script  
+    '''
     parser = argparse.ArgumentParser()
 
     parser.add_argument("-i", "--ip" ,help="Descubre solo una IP" )
@@ -279,8 +412,6 @@ def main():
             serv=descubreIPLinux(reg[0],lsoft,conn,cnf['conecta_ssh'])
         elif reg[1]=='WS' :
             serv=descubreWindows(reg[0],lsoft)
-        else:
-            serv=descubreOtros(reg[0])
         if serv <> None :
             serv.grabaBBDD(conn,reg[0])
             conn.apuntaProcesado(reg[0],serv.id_disp)

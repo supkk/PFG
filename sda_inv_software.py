@@ -15,6 +15,19 @@ from easysnmp import Session
 
 def compruebaConexionPuerto(n_proceso,ip,puerto):
     
+    '''
+    Comprueba que el software especificado escucha en el puerto indicado
+    
+    Parametros
+    n_proceso : Cadena que se utiliza para detectar un software 
+    ip : IP del servidor en proceso
+    
+    Salida
+    
+    True si correcto
+     
+    '''
+    
     Correcto = False
     modulo = "from plugins import "+n_proceso + " as module"
     try :
@@ -28,6 +41,15 @@ def compruebaConexionPuerto(n_proceso,ip,puerto):
 
 
 def descubreInstanciaSSH(n_proceso,ip,config):
+    '''
+    Realiza un escaneo por SSH para descubrir el software de un servidor
+    
+    Parametros
+    
+    n_proceso : Cadena que se utiliza para detectar un software 
+    ip : IP del servidor en proceso
+    config : parametros de configuracion
+    '''
     try:
         datos_instancia = []
         conexSSH = objssh.objssh(ip,config['user'],config['password'])
@@ -47,20 +69,35 @@ def descubreInstanciaSSH(n_proceso,ip,config):
     
     return datos_instancia
 
-def descubreInstanciaSNMP(n_proceso,ip,config):
-    datos_Instancia=None
-    return datos_Instancia
-
-
 def descubreInstancia(n_proceso,ip,config):
+    '''
+    Intenta descubrir atributos básicos de una instancia de software
+    
+    Parametros
+    
+    n_proceso : Cadena que se utiliza para detectar un software 
+    ip : IP del servidor en proceso
+    config : parametros de configuracion
+    
+    '''
     
     datos_base = descubreInstanciaSSH(n_proceso,ip,config)
-    if datos_base == None:
-        datos_base = descubreInstanciaSNMP(n_proceso,ip,config)
         
     return datos_base
 
 def marcarSIBorrados (conn,cs, id_si):
+    
+    '''
+    Marca como borrados las instancias de software
+    
+    Parametros
+    
+    conn   : Conexión con la BD de SDA_DB
+    cs     : Identificador de categoria de software 
+    id_si  : Identificador de instancia de software
+    
+    '''
+    
     Correcto = False
     sql = "update tb_softwareInstancia set deleted = 'True', fsync='"+time.strftime("%c")+"' where id_si="+str(id_si)
     conn.actualizaTabla(sql,confirma=False)
@@ -81,6 +118,21 @@ def marcarSIBorrados (conn,cs, id_si):
     return
 
 def gestionaSIBorrados(conn,lsi,idserv):
+    
+    '''
+    Marca como borrados las instancias de software
+    
+    Parametros
+    
+    conn   : Conexión con la BD de SDA_DB
+    lsi    : Lista de Instancias de software descubiertas 
+    idserv : Servidor en proceso
+    
+    Salida
+    
+    Indica si se ha modificado el item
+    
+    '''
     modificado =False
     sql= "select s.id_si,i.id_cat from tb_softwareinstancia s inner join tb_inv_software i on i.id_sw=s.id_sw where s.id_serv=" + str(idserv)
     litem = conn.consulta(sql)
@@ -97,6 +149,16 @@ def gestionaSIBorrados(conn,lsi,idserv):
     return modificado
 
 def descubreSoftware(arg,cnf):
+    
+    '''
+    Realiza el inventario de Software que se ejecuta en un servidor
+    
+    Parametros
+    
+    cnf : Diccionario con los parametros de configuracion
+    args: Objeto con los pararámetros que se pasan al script  
+    
+    '''
     
     conf=cnf['BaseDatos']
     conn=bbdd.bbdd(bd=conf['bd'],u=conf['user'],pw=conf['password'],h=conf['host'],p=conf['port'])
@@ -142,6 +204,16 @@ def descubreSoftware(arg,cnf):
     return
 
 def parametros():
+    
+    '''
+    Procesa la linea de comandos del script y construye un objeto argparse. Tambien carga los ficheros de configuracion
+     
+    Salida 
+     
+       cnf : Diccionario con los parametros de configuracion
+       args: Objeto con los pararámetros que se pasan al script  
+    '''
+    
     parser = argparse.ArgumentParser()
     parser.add_argument("-i", "--ip" ,help="Inventaria el software de un servidor" )
     parser.add_argument("-c","--conf",help="ruta del fichero de configuración",default='./conf/config.json')
