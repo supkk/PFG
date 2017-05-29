@@ -25,12 +25,12 @@ def procesaFS_SSH(c,dctC):
     
     Parametros
     
-    c : Conexión SSH
-    dctC : Diccionario con el comando a enviar al servidor 
+        c : Conexión SSH
+        dctC : Diccionario con el comando a enviar al servidor 
     
     salida
     
-    Lista de FS encontrado
+        Lista de FS encontrado
     '''
     
     if 'saltar' in dctC['fileSystem'].keys():
@@ -51,12 +51,12 @@ def procesaIP_SSH(c,dctC):
     
     Parametros
     
-    c : Conexión SSH
-    dctC : Diccionario con el comando a enviar al servidor 
+        c : Conexión SSH
+        dctC : Diccionario con el comando a enviar al servidor 
     
     salida
     
-    Lista de Interfaces encontrado
+        Lista de Interfaces encontrado
     '''
     
     if 'saltar' in dctC['fileSystem'].keys():
@@ -77,13 +77,13 @@ def procesaSW_SSH(c,dctC,lsoft):
     
     Parametros
     
-    c : Conexión SSH
-    dctC : Diccionario con el comando a enviar al servidor 
-    lsoft: Lista de software soportado
+        c : Conexión SSH
+        dctC : Diccionario con el comando a enviar al servidor 
+        lsoft: Lista de software soportado
     
     salida
     
-    Lista de software encontrado
+        Lista de software encontrado
     '''
     if 'saltar' in dctC['fileSystem'].keys():
         saltar = dctC['net']['saltar']
@@ -111,14 +111,14 @@ def descubreSSH(ip,lsoft,con,config):
     
     Parametros
     
-    ip: Ip que se va a procesar
-    lSoft: Lista de software aprobada para inventariar
-    con: Conexion a la BD SDA
-    config : Parametros de configuracion para conexion ssh
+        ip: Ip que se va a procesar
+        lSoft: Lista de software aprobada para inventariar
+        con: Conexion a la BD SDA
+        config : Parametros de configuracion para conexion ssh
     
     Salida
     
-    Objeto Servidor con los datos de este
+        Objeto Servidor con los datos de este
     '''
     
     try:
@@ -161,13 +161,13 @@ def procesaCPU (c):
     
     Parametros
     
-    c: Conexión SNMP
+        c: Conexión SNMP
     
     Salida
     
-    procesor: Modelo /Marca de procesador
-    ncpu: Numero de CPUs
-    cores: Cores por CPU's
+        procesor: Modelo /Marca de procesador
+        ncpu: Numero de CPUs
+        cores: Cores por CPU's
     
      
     '''
@@ -197,12 +197,12 @@ def procesaFS(c,serv):
     
     Parametros
     
-    c: Conexión SNMP
-    serv: Objeto Servidor
+        c: Conexión SNMP
+        serv: Objeto Servidor
    
     Salida
     
-    Objeto servidor
+        Objeto servidor
     '''        
     
     primero =True
@@ -245,12 +245,12 @@ def procesaInterfaz(c,serv):
     
     Parametros
     
-    c: Conexión SNMP
-    serv: Objeto Servidor
+        c: Conexión SNMP
+        serv: Objeto Servidor
    
     Salida
     
-    Objeto servidor
+        Objeto servidor
     '''        
     inter=c.walk('ifIndex')
     dic={}
@@ -279,13 +279,13 @@ def procesaSW(c,serv,lsoft):
     
     Parametros
     
-    c: Conexión SNMP
-    serv: Objeto Servidor
-    lsoft: Lista de software soportado
+        c: Conexión SNMP
+        serv: Objeto Servidor
+        lsoft: Lista de software soportado
     
     salida
     
-    Objeto servidor
+        Objeto servidor
     '''
     
     sws=c.walk('hrSWRunPath')
@@ -310,14 +310,14 @@ def descubreIPLinux(ip,lsoft,con,config):
     
     Parametros
     
-    ip: Ip que se va a procesar
-    lSoft: Lista de software aprobada para inventariar
-    con: Conexion a la BD SDA
-    config : Parametros de configuracion para conexion ssh
+        ip: Ip que se va a procesar
+        lSoft: Lista de software aprobada para inventariar
+        con: Conexion a la BD SDA
+        config : Parametros de configuracion para conexion ssh
     
     Salida
     
-    Objeto Servidor con los datos de este
+        Objeto Servidor con los datos de este
     '''
     
     try:
@@ -346,12 +346,12 @@ def descubreWindows(ip,listaSoftware):
     
     Parametros
     
-    ip: Ip que se va a procesar
-    listaSoftware: Lista de software aprobada para inventariar
+        ip: Ip que se va a procesar
+        listaSoftware: Lista de software aprobada para inventariar
     
     Salida
     
-    Objeto Servidor con los datos de este
+        Objeto Servidor con los datos de este
     '''
     try:
         serv=objServidor.objServidor()

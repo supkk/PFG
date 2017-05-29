@@ -6,7 +6,6 @@ Created on 7 may. 2017
 '''
 
 from objetos import objSi
-from objetos import bbdd
 import time
 
 
@@ -22,17 +21,17 @@ class objSoftWeb(objSi.objSi):
         '''
         Constructor
         
-        idserv: identificador del servidor
-        sw: identificador del software
-        ent: Entorno donde se ha instalado
-        ip: Ip donde ha sido descubierto
-        soft: Cadena de software
-        user:Usuario propietario del proceso
-        port: Puerto de escucha
-        home: Directorio de instalacion del software
-        id_si: Identificador de Instancia software
-        conn: Conexión a la BD SDA_DB
-        fsync: Fecha de la última sincronizacion
+            idserv: identificador del servidor
+            sw: identificador del software
+            ent: Entorno donde se ha instalado
+            ip: Ip donde ha sido descubierto
+            soft: Cadena de software
+            user:Usuario propietario del proceso
+            port: Puerto de escucha
+            home: Directorio de instalacion del software
+            id_si: Identificador de Instancia software
+            conn: Conexión a la BD SDA_DB
+            fsync: Fecha de la última sincronizacion
         '''
         super(objSoftWeb,self).__init__(id_serv=idserv,id_sw=sw,id_entorno=ent,ip=ip,user=user,home=home,id_si=0)
         self.soft=soft
@@ -95,12 +94,12 @@ class objSoftWeb(objSi.objSi):
         
         Parametro
         
-        cnf: Diccionario de configuración
-        param: Parametros del script
+            cnf: Diccionario de configuración
+            param: Parametros del script
         
         Salida 
         
-        Indica si el descubrimiento ha ido bien
+            Indica si el descubrimiento ha ido bien
         '''
         
         modulo = "from plugins import "+self.soft + " as module"
@@ -217,12 +216,13 @@ class objSoftWeb(objSi.objSi):
         
         '''
         Graba un objeto instancia de software en la BD SDA_DB
+        
         Parametro
         
-        conn :Conexión con BD
+            conn :Conexión con BD
         
         Salida
-        port: Puertos de la instancia procesados
+            port: Puertos de la instancia procesados
         '''
         
         modificado = False
@@ -322,6 +322,14 @@ class objSoftWeb(objSi.objSi):
     
     
     def sincroniza(self,conn,api,_idsw):
+        '''
+        Sincroniza un CI con CMDBuild
+        
+        Parametro
+            conn:  Objeto de conexion con la BD SDA_DB
+            api:  Objeto de conexion con CMDBuild
+            _idws: Identificador en CMDBuild de la instancia de software
+        '''  
         
         if not self.dic_Web['deleted']:    
             data = {'Code': "WEB"+str(self.dic_Web['id_web'])}          

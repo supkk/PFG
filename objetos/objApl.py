@@ -9,7 +9,7 @@ import time
 
 class objApl(object):
     '''
-    classdocs
+    Representa una aplicacion J2EE
     '''
 
 

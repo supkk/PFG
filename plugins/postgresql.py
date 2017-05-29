@@ -7,7 +7,7 @@ Created on 9 may. 2017
 import psycopg2
 import time
 
-def consulta (conn,sql):
+def _consulta (conn,sql):
     
     cur=conn.cursor()
     cur.execute(sql)
@@ -15,7 +15,7 @@ def consulta (conn,sql):
     
     return rows
 
-def ObtieneTipoTabla (tipo):
+def _ObtieneTipoTabla (tipo):
     
     if tipo=='r':
         cod='TBL'
@@ -24,17 +24,17 @@ def ObtieneTipoTabla (tipo):
         
     return cod
 
-def obtenerPrincipal(ip,user,password,port):
+def _obtenerPrincipal(ip,user,password,port):
     
     dic={}
     try :
         conn = psycopg2.connect( user=user, password=password, host=ip, port=port)
-        buf=consulta(conn,"select version()")
+        buf=_consulta(conn,"select version()")
         dic['version']=buf[0][0].split(',')[0]
-        buf=consulta(conn,"SELECT user from pg_shadow where usesuper='t';")
+        buf=_consulta(conn,"SELECT user from pg_shadow where usesuper='t';")
         dic['admin']=buf[0][0]
         dic['Esquema']=[]
-        lbd = consulta (conn, "select d.datname,u.usename from pg_database d,pg_user u where u.usesysid=d.datdba")
+        lbd = _consulta (conn, "select d.datname,u.usename from pg_database d,pg_user u where u.usesysid=d.datdba")
         conn.close()
     except :
         print (time.strftime("%c")+"-- Error al conectar a la instancia de BBDD en la IP "+ ip)      
@@ -42,6 +42,17 @@ def obtenerPrincipal(ip,user,password,port):
     return dic,lbd
 
 def compruebaConexion(ip,puerto):
+    '''
+    Comprueba que el software especificado escucha en el puerto indicado
+    
+    Parametros
+        ip : IP del servidor en proceso
+        puerto: Puerto de escucha
+    
+    Salida
+        True si correcto
+     
+    '''
     try :
         conn = psycopg2.connect( user="u", password="p", host=ip, port=puerto)
         
@@ -53,8 +64,23 @@ def compruebaConexion(ip,puerto):
     return Correcto
 
 def descubre(ip,user,password,port):
+    '''
+    Prueba a descubrir un Servidor de BD postgres
     
-    dic,lbd=obtenerPrincipal(ip,user,password,port)
+    Parametro
+    
+        host:Ip del servidor
+        user: Usuario con permisos de administracion
+        password: password del usuario
+        port:puerto de escucha de la consola
+        c_ps:Salida del comando ps 
+    
+    Salida 
+    
+        Indica si el descubrimiento ha ido bien
+    '''
+    
+    dic,lbd=_obtenerPrincipal(ip,user,password,port)
     dic['Esquema']=[]
     
     for bd in lbd:
@@ -66,7 +92,7 @@ def descubre(ip,user,password,port):
             continue
         
         sql = "select distinct  table_schema from information_schema.columns WHERE table_schema not in ( 'pg_catalog', 'information_schema')"
-        leqm= consulta(conn, sql)
+        leqm= _consulta(conn, sql)
 
         for eqm in leqm :
             d['nombre_db']=bd[0]
@@ -74,13 +100,13 @@ def descubre(ip,user,password,port):
             d['propietario']=bd[1]
             d['Tablas']=[]
             sql= "SELECT  c.relname, (c.relkind ) FROM pg_class c LEFT JOIN pg_namespace n ON n.oid = c.relnamespace where c.relkind not in ('i','t','S') and n.nspname='" +eqm[0]+"'"
-            l_tb=consulta(conn,sql)
+            l_tb=_consulta(conn,sql)
             for tb in l_tb:
                 t={}
                 t['nombre']=tb[0]
-                t['tipo']= ObtieneTipoTabla(tb[1])
+                t['tipo']= _ObtieneTipoTabla(tb[1])
                 sql="SELECT DISTINCT column_name, data_type from information_schema.columns where table_schema ='"+eqm[0]+"' and table_name='"+tb[0]+"'"
-                l_at=consulta(conn,sql)
+                l_at=_consulta(conn,sql)
                 t['attTabla']=[]
                 for at in l_at:
                     a={}

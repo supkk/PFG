@@ -10,6 +10,18 @@ import simplejson as json
 
 
 def compruebaConexion(ip,puerto):
+    '''
+    Comprueba que el software especificado escucha en el puerto indicado
+    
+    Parametros
+        ip : IP del servidor en proceso
+        puerto: Puerto de escucha
+    
+    Salida
+    
+        True si correcto
+     
+    '''
     try :
         url="http://"+ip.strip()+":"+puerto
         conn = requests.get(url,data="HEAD")
@@ -22,7 +34,7 @@ def compruebaConexion(ip,puerto):
     return Correcto
 
 
-def retBDyEqm(cad_conex):
+def _retBDyEqm(cad_conex):
     bd=''
     eqm=''
     
@@ -30,7 +42,21 @@ def retBDyEqm(cad_conex):
 
 
 def descubre(host, user, password,puerto):
+    '''
+    Prueba a descubrir un Servidor tomcat
     
+    Parametro
+    
+        host:Ip del servidor
+        user: Usuario con permisos de administracion
+        password: password del usuario
+        port:puerto de escucha de la consola
+        c_ps:Salida del comando ps 
+    
+    Salida 
+    
+        Diccionario con los datos del servidor
+    '''
     dic= {}
     host=host.strip()
     cabeceras = { 'Accept': '*/*','Content-Type': 'application/html' }
@@ -50,7 +76,7 @@ def descubre(host, user, password,puerto):
             for datasource in t_datasource:
                 dic_data={}
                 columna=datasource.find_all('td')
-                dic_data['nombre_bd'],dic_data['esquema'] = retBDyEqm(columna[7].text)
+                dic_data['nombre_bd'],dic_data['esquema'] = _retBDyEqm(columna[7].text)
                 dic_data['usuario'] = columna[6].text
                 dic_data['nombre'] = columna[1].text
                 dic['jdbc'].append(dic_data.copy())
@@ -73,6 +99,21 @@ def descubre(host, user, password,puerto):
     return dic
 
 def descubreAplicacion(host,user, password,puerto):
+    '''
+    Prueba a descubrir aplicaciones en un Servidor tomcat
+    
+    Parametro
+    
+        host:Ip del servidor
+        user: Usuario con permisos de administracion
+        password: password del usuario
+        port:puerto de escucha de la consola
+        c_ps:Salida del comando ps 
+    
+    Salida 
+    
+        Diccionario con los datos de las aplicaciones
+    '''
     
     f= open('/home/jose/workspace/PFG/plugins/apl.json')
     contenido=f.read()

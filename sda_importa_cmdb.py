@@ -19,8 +19,8 @@ def sincronizaRed(con,api):
     
     Parametros
     
-    con: Conexión con la BD de SDA_DB
-    api: Conexión con CMDBuild
+        con: Conexión con la BD de SDA_DB
+        api: Conexión con CMDBuild
     
     '''
     print (time.strftime("%c")+"-- Comienza la sincronización del las redes")
@@ -45,8 +45,8 @@ def sincronizaCatalogoSw(con,api):
     
     Parametros
     
-    con: Conexión con la BD de SDA_DB
-    api: Conexión con CMDBuild
+        con: Conexión con la BD de SDA_DB
+        api: Conexión con CMDBuild
     
     '''
     

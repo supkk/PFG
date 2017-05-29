@@ -59,8 +59,8 @@ def scan_NMAP(param,conf):
     
     Parametros
     
-    param: Objeto con los pararámetros que se pasan al script
-    conf: diccionario con la  configuración de BBDD
+        param: Objeto con los pararámetros que se pasan al script
+        conf: diccionario con la  configuración de BBDD
     
     '''
     

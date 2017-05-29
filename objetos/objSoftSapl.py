@@ -20,17 +20,17 @@ class objSoftSapl(objSi.objSi):
         '''
         Constructor
         
-        idserv: identificador del servidor
-        sw: identificador del software
-        ent: Entorno donde se ha instalado
-        ip: Ip donde ha sido descubierto
-        soft: Cadena de software
-        user:Usuario propietario del proceso
-        port: Puerto de escucha
-        home: Directorio de instalacion del software
-        id_si: Identificador de Instancia software
-        conn: Conexión a la BD SDA_DB
-        fsync: Fecha de la última sincronizacion
+            idserv: identificador del servidor
+            sw: identificador del software
+            ent: Entorno donde se ha instalado
+            ip: Ip donde ha sido descubierto
+            soft: Cadena de software
+            user:Usuario propietario del proceso
+            port: Puerto de escucha
+            home: Directorio de instalacion del software
+            id_si: Identificador de Instancia software
+            conn: Conexión a la BD SDA_DB
+            fsync: Fecha de la última sincronizacion
         '''
         super(objSoftSapl,self).__init__(id_serv=idserv,id_sw=sw,id_entorno=ent,ip=ip,user=user,home=home,id_si=id_si)
         self.soft=soft
@@ -81,12 +81,12 @@ class objSoftSapl(objSi.objSi):
         
         Parametro
         
-        cnf: Diccionario de configuración
-        param: Parametros del script
+            cnf: Diccionario de configuración
+            param: Parametros del script
         
         Salida 
         
-        Indica si el descubrimiento ha ido bien
+            Indica si el descubrimiento ha ido bien
         '''
         
         cnf=cnf['conecta_probe']
@@ -161,12 +161,13 @@ class objSoftSapl(objSi.objSi):
       
         '''
         Graba un objeto instancia de software en la BD SDA_DB
+        
         Parametro
         
-        conn :Conexión con BD
+            conn :Conexión con BD
         
         Salida
-        port: Puertos de la instancia procesados
+            port: Puertos de la instancia procesados
         '''
         
         mod_cdb = False
@@ -227,6 +228,14 @@ class objSoftSapl(objSi.objSi):
         return id_Class
     
     def sincroniza(self,conn,api,_idsw):
+        '''
+        Sincroniza un CI con CMDBuild
+        
+        Parametro
+            conn:  Objeto de conexion con la BD SDA_DB
+            api:  Objeto de conexion con CMDBuild
+            _idws: Identificador en CMDBuild de la instancia de software
+        '''       
         
         if not self.dic_SA['deleted']:    
             data = {'Code': "SA_"+str(self.dic_SA['id_SA'])}          

@@ -11,19 +11,30 @@ import time
 
 class objIp(object):
     '''
-    classdocs
+    Representa un interface de red
     '''
 
 
     def __init__(self,ip='',mac='',mascara='',nombre='',tipoRed='OTR',net=0,_id=None,deleted=False,fsync=''):
         '''
         Constructor
+        
+        Parametros:
+            ip: Ip del Interface
+            mac: Dirección MAC del Interface
+            mascara: Mascara condifurada
+            nombre: Nombre del interface
+            tipoRed: Tipo de red 
+            net: idenficador de la red
+            _id: Identificador de la Red en CMDBuild
+            deleted: Indica si la red ha sido borrada
+            fsync: Fecha de la última sincronización del CI
         '''
         self._id=_id
         self.nombre = nombre
         self.ip = ip
         self.mac = mac
-        self.mascara = self.convertirIP(mascara) 
+        self.mascara = self._convertirIP(mascara) 
         self.tipoRed = tipoRed
         self.net = net
         self.deleted = deleted
@@ -31,7 +42,7 @@ class objIp(object):
 
 
   
-    def convertirIP(self,m):
+    def _convertirIP(self,m):
         
         if "." in m :
             mask= m 
@@ -40,11 +51,23 @@ class objIp(object):
             
         return mask
     
-    def estaCargado(self):
+    def _estaCargado(self):
         
         return self._id <> None
 
     def borraIntCMDB(self,api,conn,id_disp):
+        '''
+        Marca como borrado un Interfaz en CMDBuild
+        
+        Parametros:
+        
+            api: Conexión con CMDBuild
+            conn: Conexión con la BD SDA_DB
+            id_disp: Identificador del dispositivo
+            
+        Salida
+            Indica si la tarea ha terminado correctamente
+        '''
         
         ok = True
         if self._id <> None :
@@ -56,12 +79,34 @@ class objIp(object):
         return ok
      
     def grabaBBDD(self,conn,id_disp):
+        '''
+        Graba el objeto en la BD SDA_DB
+        
+        Parametros
+        
+            conn: Conexión con la BD SDA_DB
+            id_disp: Identificador del servidor
+        
+        Salida 
+        
+            Indica si se ha modificado
+        '''
         modificado = conn.grabaIPS(self,id_disp)
 
         return modificado
     
     def sincroniza (self,api,conn, id_disp,_id_Disp,ultimaSync):
+        '''
+        Sincroniza un Interfaz con CMDBuild
         
+        Parametros:
+        
+            api: Conexión con CMDBuild
+            conn: Conexión con la BD SDA_DB
+            id_disp: Identificador del Dispositivo
+            _id_Disp: Identificacion del Dispositivo en CMDBuild
+            ultimaSync : Fecha de la última sincronización del CI
+        '''
         
         if not self.deleted :
             data = {}
@@ -74,7 +119,7 @@ class objIp(object):
             data['IP'] = self.ip
             data['Mascara'] = self.mascara
             data['Carga'] = api.retIdLookup('CI-TipoCarga',"AU")
-            if self.estaCargado()==False:
+            if self._estaCargado()==False:
                 id_class = api.creaClase('Interface',data)
                 if  id_class > 0:
                     data = {}

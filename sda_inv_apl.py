@@ -18,10 +18,10 @@ def descubreAplicacion(n_proceso,ip,cnf,puerto):
     
     Parametros
     
-    n_proceso: Cadena identificativa del software
-    ip: IP donde escucha
-    cnf: Configuración de acceso a la consola del servidor de aplicaciones
-    puerto : Puerto de la consola de aplciaciones
+        n_proceso: Cadena identificativa del software
+        ip: IP donde escucha
+        cnf: Configuración de acceso a la consola del servidor de aplicaciones
+        puerto : Puerto de la consola de aplicaciones
     '''
  
     modulo = "from plugins import "+n_proceso + " as module"
@@ -49,13 +49,13 @@ def gestionaAplBorrados(conn, apls,id_sa):
     
     Parametros
     
-    conn: Conexión con SDA_DB
-    apls: Lista de aplicaciones instaladas
-    id_sa :Identidicador de la aplicacion a borrar
+        conn: Conexión con SDA_DB
+        apls: Lista de aplicaciones instaladas
+        id_sa :Identidicador de la aplicacion a borrar
     
     Salida
     
-    True si se ha modificado 
+        True si se ha modificado 
     '''
     modificado =False
     sql= "select id_apl from tb_map_sa_ap where id_sa ="+ str(id_sa)

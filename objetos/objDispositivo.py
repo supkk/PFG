@@ -7,12 +7,20 @@ import socket
 
 class ObjDispositivo(object):
     '''
-    classdocs
+    Representa un dispositivo, servidor, router o electronica de red
     '''
     
     def __init__(self, ip,fd,td,nombre,os):
         '''
         Constructor
+        
+        Parametros
+        
+        ip: Ip del dispositivo
+        fd: Fecha de descubrimiento
+        td: Tipo de descubrimiento empleado
+        nombre: Nombre del dispositivo
+        os: Código de Sistema Operativo
         '''
         self.ip=ip
         self.fd=fd
@@ -23,8 +31,16 @@ class ObjDispositivo(object):
         self.apagado = 0
         
         return
-        
+     
     def update(self,s):
+        
+        '''
+        Actualiza los atributos  del objeto 
+        
+        Parametro:
+        s: datos a actualizar
+        
+        '''
         if self.fd =='' :
             self.fd=s.fd 
         if self.td =='' :

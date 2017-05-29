@@ -19,11 +19,11 @@ class bbdd():
         Constructor
         
         Parametros
-        bd_: nombre de BD
-        u : Usuario de BD
-        pw: Password del usuario de BD
-        h: Ip donde escucha la BD
-        p: Puerto que escucha la BD
+            bd_: nombre de BD
+            u : Usuario de BD
+            pw: Password del usuario de BD
+            h: Ip donde escucha la BD
+            p: Puerto que escucha la BD
         '''
         self.cur = None
         try :
@@ -55,11 +55,11 @@ class bbdd():
         
         Parametros:
         
-        con: Consulta a ejecutar
-        data : parametros de la consulta
+            con: Consulta a ejecutar
+            data : parametros de la consulta
         
         Salida:
-        Lista de Tuplas con los valores de retorno
+            Lista de Tuplas con los valores de retorno
         '''
         
         self.cur=self.conn.cursor()
@@ -78,7 +78,7 @@ class bbdd():
         
         Parámetros
         
-        ip: IP escaneada
+            ip: IP escaneada
         
         '''
        
@@ -102,8 +102,8 @@ class bbdd():
         
         Parámetros
         
-        ip: IP escaneada
-        id_Disp : identificador de Dispositivo procesado
+            ip: IP escaneada
+            id_Disp : identificador de Dispositivo procesado
         
         '''
         
@@ -121,10 +121,10 @@ class bbdd():
         
         Parametros
         
-        tabla: Tabla deonde se guarda el objeto
-        id_nombre : Nombre del atributo identicador 
-        id_valor : Identificador del objeto
-        
+            tabla: Tabla deonde se guarda el objeto
+            id_nombre : Nombre del atributo identicador 
+            id_valor : Identificador del objeto
+            
         '''
         
         sql = "update "+ tabla+ " set fsync ='"+time.strftime("%c")+"' where "+ id_nombre +"="+str(id_valor)
@@ -138,11 +138,11 @@ class bbdd():
         
         Parámetros
         
-        desc : nombre del fabricante
+            desc : nombre del fabricante
         
         Salida
         
-        Código del fabricante
+            Código del fabricante
         
         '''
         
@@ -164,11 +164,11 @@ class bbdd():
         
         Parámetros
         
-        desc : nombre del tipo de fichero
+            desc : nombre del tipo de fichero
         
         Salida
         
-        Código del tipo de fichero
+            Código del tipo de fichero
         '''
         
         cur=self.conn.cursor()
@@ -188,11 +188,11 @@ class bbdd():
         
         Parámetros
         
-        desc : nombre del tipo de almacenamiento
+            desc : nombre del tipo de almacenamiento
         
         Salida
         
-        Código del tipo de almacenamiento
+            Código del tipo de almacenamiento
         '''       
         
         cur=self.conn.cursor()
@@ -211,11 +211,11 @@ class bbdd():
         
         Parámetros
         
-        desc : nombre del tipo de Descubrimiento
+            desc : nombre del tipo de Descubrimiento
         
         Salida
         
-        Código del tipo de Descubrimiento
+            Código del tipo de Descubrimiento
         '''
         
         cur=self.conn.cursor()
@@ -232,11 +232,11 @@ class bbdd():
         
         Parámetros
         
-        idServ : nombre del Dispositivo
+            idServ : nombre del Dispositivo
         
         Salida
         
-        Código del Dispositivo
+            Código del Dispositivo
         '''
         
         cur=self.conn.cursor()
@@ -251,11 +251,11 @@ class bbdd():
         
         Parámetros
         
-        idDisp : nombre del Servidor
+            idDisp : nombre del Servidor
         
         Salida
         
-        Código del Servidor
+            Código del Servidor
         '''
         
         cur=self.conn.cursor()
@@ -271,11 +271,11 @@ class bbdd():
         
         Parámetros
         
-        id_disp : Identificador del Servidor
+            id_disp : Identificador del Servidor
         
         Salida
         
-        Nombre del Servidor
+            Nombre del Servidor
         '''
         
         cur=self.conn.cursor()
@@ -290,11 +290,11 @@ class bbdd():
         
         Parámetros
         
-        desc : nombre del Sistema Operativo
+            desc : nombre del Sistema Operativo
         
         Salida
         
-        Código del Sistema Operativo
+            Código del Sistema Operativo
         '''
         
         cur=self.conn.cursor()
@@ -312,11 +312,11 @@ class bbdd():
         
         Parámetros
         
-        idw : Identificador del Software
+            idw : Identificador del Software
         
         Salida
         
-         Descipción del Software
+             Descipción del Software
         '''
         
         cur=self.conn.cursor()
@@ -333,11 +333,11 @@ class bbdd():
         
         Parámetros
         
-        idsw : Identificador del Software 
+            idsw : Identificador del Software 
         
         Salida
         
-        Descipción del Software en el catálogo
+            Descipción del Software en el catálogo
         '''
         
         cur=self.conn.cursor()
@@ -353,11 +353,11 @@ class bbdd():
         
         Parámetros
         
-        desc : Nombre de la red
+            desc : Nombre de la red
         
         Salida
         
-        Identificador de la red
+            Identificador de la red
         '''
         
         cur=self.conn.cursor()
@@ -374,11 +374,11 @@ class bbdd():
         
         Parámetros
         
-        idRed : Nombre de la red
+            idRed : Nombre de la red
         
         Salida
         
-        Identificador de la red
+            Identificador de la red
         '''
         
         cur=self.conn.cursor()
@@ -394,11 +394,11 @@ class bbdd():
         
         Parámetros
         
-        desc : Cadena de busqueda del software
+            desc : Cadena de busqueda del software
         
         Salida
         
-        Identificador del software
+            Identificador del software
         '''
         
         cur=self.conn.cursor()
@@ -414,11 +414,11 @@ class bbdd():
         
         Parámetros
         
-        desc : Identificador del software
+            desc : Identificador del software
         
         Salida
         
-        Cadena de busqueda del software
+            Cadena de busqueda del software
         '''
         
         cur=self.conn.cursor()
@@ -434,11 +434,11 @@ class bbdd():
         
         Parámetros
         
-        idsw : Identificador del software
+            idsw : Identificador del software
         
         Salida
         
-        Categoria del software
+            Categoria del software
         '''
         
         cur=self.conn.cursor()
@@ -454,11 +454,11 @@ class bbdd():
         
         Parámetros
         
-        idServ : Identificador del software
+            idServ : Identificador del software
         
         Salida
         
-        Entorno de ejecución
+            Entorno de ejecución
         '''
         
         cur=self.conn.cursor()
@@ -473,13 +473,13 @@ class bbdd():
         
         Parámetros
         
-        id_sw : Identidicador del software
-        id_serv : Identificador del servidor
+            id_sw : Identidicador del software
+            id_serv : Identificador del servidor
         
         Salida
         
-        data: Atributos de la instancia
-        id_si : Identificador de la instancia de software
+            data: Atributos de la instancia
+            id_si : Identificador de la instancia de software
         '''
         
         data= (id_sw,id_serv)
@@ -500,12 +500,12 @@ class bbdd():
         
         Parámetros
         
-        id_si : Identificador del software
+            id_si : Identificador del software
         
         
         Salida
         
-        data: Atributos de la instancia
+            data: Atributos de la instancia
         '''
         
         cur=self.conn.cursor()
@@ -521,11 +521,11 @@ class bbdd():
         
         Parámetro
         
-        id_si : Identificador de la instancia
+            id_si : Identificador de la instancia
         
         Salida
-        code_id[0]: Administrador de la BD
-        code_id[0]: Identificador de la BD
+            code_id[0]: Administrador de la BD
+            code_id[0]: Identificador de la BD
         
         '''
     
@@ -542,11 +542,11 @@ class bbdd():
         
         Parámetro
         
-        id_si : Identificador de la instancia
+            id_si : Identificador de la instancia
         
         Salida
-        code_id[0]: JVM
-        code_id[0]: Identificador del S.A.
+            code_id[0]: JVM
+            code_id[0]: Identificador del S.A.
         
         '''
         
@@ -563,11 +563,11 @@ class bbdd():
         
         Parámetro
         
-        id_si : Identificador de la instancia
+            id_si : Identificador de la instancia
         
         Salida
-        code_id[0]: Url de admnistración
-        code_id[0]: Identificador del Web.
+            code_id[0]: Url de admnistración
+            code_id[0]: Identificador del Web.
         
         '''
         
@@ -585,13 +585,13 @@ class bbdd():
         
         Parámetro
         
-        id_web : Identificador del Servidor Web
-        dns    : Nommbre DNS del VH
-        puerto : Puerto de escucha
+            id_web : Identificador del Servidor Web
+            dns    : Nommbre DNS del VH
+            puerto : Puerto de escucha
         
         Salida
-        result: Atributos del VH
-        id_vh: Identificador del VH.
+            result: Atributos del VH
+            id_vh: Identificador del VH.
         
         '''
     
@@ -614,12 +614,12 @@ class bbdd():
         
         Parámetro
         
-        id_vh : Identificador del VirtualHost
-        nombre    : Nombre del recurso URL
+            id_vh : Identificador del VirtualHost
+            nombre    : Nombre del recurso URL
         
         Salida
-        result: Atributos de la URL
-        id_url: Identificador de la URL.
+            result: Atributos de la URL
+            id_url: Identificador de la URL.
         '''
         
         cur=self.conn.cursor()
@@ -642,11 +642,11 @@ class bbdd():
 
         Parametro
         
-        data : Datos de la relación (aplicacion, url y tipo de url)
+            data : Datos de la relación (aplicacion, url y tipo de url)
         
         Salida
-         True --> Existe 
-         False --> No   
+             True --> Existe 
+             False --> No   
         '''
         
         dt =(data[0],data[1],data[2])
@@ -661,11 +661,11 @@ class bbdd():
 
         Parametro
         
-        data : Datos de la relación (aplicacion, JDBC)
+           data : Datos de la relación (aplicacion, JDBC)
         
         Salida
-         True --> Existe 
-         False --> No   
+             True --> Existe 
+             False --> No   
         '''
         
         sql="select id_cbd from tb_map_cbd_apl where id_apl=%s and id_cbd=%s"
@@ -679,11 +679,11 @@ class bbdd():
 
         Parametro
         
-        data : Datos de la relación (aplicacion, Servidor de aplicacion)
+            data : Datos de la relación (aplicacion, Servidor de aplicacion)
         
         Salida
-         True --> Existe 
-         False --> No   
+             True --> Existe 
+             False --> No   
         '''
         
         sql="select id_apl from tb_map_sa_ap where id_apl=%s and id_sa=%s"
@@ -698,11 +698,11 @@ class bbdd():
         
         Parametro
         
-        nombre: Nombre de  la url
+            nombre: Nombre de  la url
         
         Salida
         
-        Identificador de la url
+            Identificador de la url
         '''
         
         cur=self.conn.cursor()
@@ -718,11 +718,11 @@ class bbdd():
         
         Parametro
         
-        id_url: Identificador de  la url
+            id_url: Identificador de  la url
         
         Salida
         
-        Identificador CMDBuild de la url
+            Identificador CMDBuild de la url
         '''
         
         cur=self.conn.cursor()
@@ -739,11 +739,11 @@ class bbdd():
         
         Parametro
         
-        id_cbd: Identificador del Conector
+            id_cbd: Identificador del Conector
         
         Salida
         
-        Identificador CMDBuild del conector
+            Identificador CMDBuild del conector
         '''
         
         cur=self.conn.cursor()
@@ -760,11 +760,11 @@ class bbdd():
         
         Parametro
         
-        Id_SA: Identificador del Servidor de Aplicaciones 
+            Id_SA: Identificador del Servidor de Aplicaciones 
         
         Salida
         
-        Identificador CMDBuild del conector
+            Identificador CMDBuild del conector
         '''
         
         cur=self.conn.cursor()
@@ -781,12 +781,12 @@ class bbdd():
         
         Parámetro
         
-        nombre: Nombre de esquema de BD
-        nombre_db: nombre de BD
+            nombre: Nombre de esquema de BD
+            nombre_db: nombre de BD
         
         Salida
-        result: Atributos del Esquema de BD
-        id_edb: Identificador de Esquema de BD.
+            result: Atributos del Esquema de BD
+            id_edb: Identificador de Esquema de BD.
         
         '''
     
@@ -809,11 +809,11 @@ class bbdd():
         
         Parámetro
         
-        id_edb : Identificador de BD
+            id_edb : Identificador de BD
         
         Salida
         
-         Atributos del Esquema de BD (nombre y Nombre DB)
+             Atributos del Esquema de BD (nombre y Nombre DB)
         
         '''
         sql="select nombre,nombre_db from tb_esquemabd where id_edb="+str(id_edb)
@@ -828,12 +828,12 @@ class bbdd():
         
         Parámetro
         
-        nombre: Nombre de esquema de BD
-        nombre_db: nombre de BD
+            nombre: Nombre de esquema de BD
+            nombre_db: nombre de BD
         
         Salida
         
-        Identificador en CMDBUild 
+            Identificador en CMDBUild 
         '''
         
         data =(nombre,nombre_db)
@@ -849,10 +849,10 @@ class bbdd():
         
         Parametros
         
-        tabla : Tabla de SDA
-        Id_CLass:Identificador en CMDBuild
-        clave :Atributo primario en la tabla
-        clave_valor : Valor de la clave primaria
+            tabla : Tabla de SDA
+            Id_CLass:Identificador en CMDBuild
+            clave :Atributo primario en la tabla
+            clave_valor : Valor de la clave primaria
         
         '''
     
@@ -868,12 +868,12 @@ class bbdd():
         
         Parámetro
         
-        nombre: Nombre de tabla de BD
-        id_edb: Identificador de esquema 
+            nombre: Nombre de tabla de BD
+            id_edb: Identificador de esquema 
         
         Salida
-        result: Atributos de la tabla de BD
-        id_edb: Identificador de la tabla de BD.
+            result: Atributos de la tabla de BD
+            id_edb: Identificador de la tabla de BD.
         
         '''
     
@@ -897,12 +897,12 @@ class bbdd():
         
         Parámetro
         
-        nombre: Nombre de atributo
-        id_tb: Identificador de id_tb 
+            nombre: Nombre de atributo
+            id_tb: Identificador de id_tb 
         
         Salida
-        result: Atributos de campo de tabla de BD
-        id_attb: Identificador de la atributos de tabla de BD.
+            result: Atributos de campo de tabla de BD
+            id_attb: Identificador de la atributos de tabla de BD.
         
         '''
     
@@ -925,12 +925,12 @@ class bbdd():
         
         Parámetro
         
-        nombre: Nombre de conector
-        id_sa: Identificador del SA donde esta desplegado 
+            nombre: Nombre de conector
+            id_sa: Identificador del SA donde esta desplegado 
         
         Salida
-        result: Atributos del conector de BD
-        id_attb: Identificador del conector de BD.
+            result: Atributos del conector de BD
+            id_attb: Identificador del conector de BD.
         
         ''' 
         
@@ -954,11 +954,11 @@ class bbdd():
         
         Parámetro
         
-        id_apl: Identificador de aplicacion 
-        
+            id_apl: Identificador de aplicacion 
+            
         Salida
         
-        Identificador de la atributos de tabla de BD.
+            Identificador de la atributos de tabla de BD.
         
         '''
         
@@ -976,11 +976,11 @@ class bbdd():
         
         Parametros
         
-        nombre: Nombre del servidor
+            nombre: Nombre del servidor
         
         Salida
         
-        Identificador del servidor
+            Identificador del servidor
         
         '''
         
@@ -998,12 +998,12 @@ class bbdd():
         
         Parametros
         
-        ip: IP base de la red
-        mascara: mascara de la red
+            ip: IP base de la red
+            mascara: mascara de la red
         
         Salida
         
-        Identificador de la red
+            Identificador de la red
         
         '''
              
@@ -1023,12 +1023,12 @@ class bbdd():
         
         Parametros
         
-        nombre: Nombre del interfaz
-        id_disp: Identificador del dispositivo al que pertenece
-        
+            nombre: Nombre del interfaz
+            id_disp: Identificador del dispositivo al que pertenece
+            
         Salida
         
-        Atributos de la interfaz
+            Atributos de la interfaz
         
         '''
         cur=self.conn.cursor()
@@ -1045,12 +1045,12 @@ class bbdd():
         
         Parametros
         
-        montaje: Punto de montaje del FS
-        id_serv: Identificador del dispositivo donde está montado 
+            montaje: Punto de montaje del FS
+            id_serv: Identificador del dispositivo donde está montado 
         
         Salida
         
-        Atributos del FS
+            Atributos del FS
         
         '''
 
@@ -1078,12 +1078,12 @@ class bbdd():
         
         Parametros
         
-        nombre: nombre de  aplicacion
-        id_sa: Identificador del servidor de aplicaciones 
+            nombre: nombre de  aplicacion
+            id_sa: Identificador del servidor de aplicaciones 
         
         Salida
         
-        identificador de la aplicacion
+            identificador de la aplicacion
         
         '''
         cur=self.conn.cursor()
@@ -1113,14 +1113,14 @@ class bbdd():
         
         Parametros
         
-        id_serv : Identificador de servidor
-        id_sw: Identificador de software
-        puerto : Puerto en el que escucha
-        tabla : Tabla de SDA donde se almancena la instancia 
+            id_serv : Identificador de servidor
+            id_sw: Identificador de software
+            puerto : Puerto en el que escucha
+            tabla : Tabla de SDA donde se almancena la instancia 
         
         Salida
         
-        identificador de la instancia SW
+            identificador de la instancia SW
         
         '''
         
@@ -1168,11 +1168,11 @@ class bbdd():
         
         Parametro
         
-        s: Datos de la IP descubierta
+            s: Datos de la IP descubierta
         
         Salida
         
-        Indica si la operacion ha sido correcta
+            Indica si la operacion ha sido correcta
         '''
         
         idDes=self.retIdDesc(s.td)
@@ -1202,13 +1202,13 @@ class bbdd():
         
         parametro
         
-        s: servidor 
+            s: servidor 
         
         Salida
         
-        modificado : Indica si se han modificado los atributos en la ultima ejecucion
-        code_disp : Identificador del dispositivo
-        code_serv : Identificador del servidor
+            modificado : Indica si se han modificado los atributos en la ultima ejecucion
+            code_disp : Identificador del dispositivo
+            code_serv : Identificador del servidor
         '''
         
         idSO=self.retIdSO(s.so)
@@ -1257,8 +1257,8 @@ class bbdd():
         
         Parametro
         
-        ip :IP Base de la red
-        mask:Mascara de la red
+            ip :IP Base de la red
+            mask:Mascara de la red
         
         Salida 
         
@@ -1287,12 +1287,12 @@ class bbdd():
         
         Parametro
         
-        ip: Objeto IP a grabar
-        id_disp :Identificador del dispositivo donde se encontró
+            ip: Objeto IP a grabar
+            id_disp :Identificador del dispositivo donde se encontró
         
         Salida
         
-        modificado : Indica si se ha modificado
+            modificado : Indica si se ha modificado
         '''
         
         cambiado = False
@@ -1337,12 +1337,12 @@ class bbdd():
         
         Parametro
         
-        fs: Objeto fs a grabar
-        id_serv :Identificador del servidor donde se encontró
+            fs: Objeto fs a grabar
+            id_serv :Identificador del servidor donde se encontró
         
         Salida
         
-        modificado : Indica si se ha modificado
+            modificado : Indica si se ha modificado
         '''
 
         modificado = False
@@ -1380,14 +1380,14 @@ class bbdd():
         
         Parametros
         
-        sql: Sentencia a ejecutar
-        data: parametros de la sentencia
-        confirma : Indica si se realiza un commit posterior
-        lastval: Indica si se retorna el identificador del objeto insertado
-        
+            sql: Sentencia a ejecutar
+            data: parametros de la sentencia
+            confirma : Indica si se realiza un commit posterior
+            lastval: Indica si se retorna el identificador del objeto insertado
+            
         Salida 
         
-        Identificador del objeto insertado
+            Identificador del objeto insertado
         '''
         
         cur=self.conn.cursor()
@@ -1412,7 +1412,7 @@ class bbdd():
         Marca como Borrado el conector de la BD
         
         Parametro:
-        id_si : Identificador de la instancia de BD
+            id_si : Identificador de la instancia de BD
         '''
         
         sql='select c.id_cbd from tb_servaplicaciones s inner join tb_Conectorbd c on c.id_sa = s.id_sa where s.id_si = ' + str(id_si)
@@ -1429,7 +1429,7 @@ class bbdd():
         Marca como Borradouna instancia de BD
         
         Parametro:
-        id_si : Identificador de la instancia de BD
+            id_si : Identificador de la instancia de BD
         '''
         
         sql = 'select e.id_edb from tb_db d inner join tb_esquemabd e on e.id_db = d.id_db where d.id_si='+ str(id_si)
@@ -1451,7 +1451,7 @@ class bbdd():
         Marca como Borradouna instancia de Servidor WEB
         
         Parametro:
-        id_si : Identificador de la instancia de Servidor WEB
+            id_si : Identificador de la instancia de Servidor WEB
         '''
         sql = "select v.id_vh from tb_servweb s inner join tb_vhost v on v.id_web = s.id_web where s.id_si="+str(id_si)
         lvh=self.consulta(sql)
@@ -1471,12 +1471,12 @@ class bbdd():
         
         Parametro
         
-        sw: Objeto sw a grabar
-        id_serv :Identificador del servidor donde se encontró
+            sw: Objeto sw a grabar
+            id_serv :Identificador del servidor donde se encontró
         
         Salida
         
-        modificado : Indica si se ha modificado
+            modificado : Indica si se ha modificado
         '''
         
         modificado = False

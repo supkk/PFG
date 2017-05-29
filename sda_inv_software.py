@@ -19,12 +19,12 @@ def compruebaConexionPuerto(n_proceso,ip,puerto):
     Comprueba que el software especificado escucha en el puerto indicado
     
     Parametros
-    n_proceso : Cadena que se utiliza para detectar un software 
-    ip : IP del servidor en proceso
+        n_proceso : Cadena que se utiliza para detectar un software 
+        ip : IP del servidor en proceso
     
     Salida
     
-    True si correcto
+        True si correcto
      
     '''
     
@@ -46,9 +46,9 @@ def descubreInstanciaSSH(n_proceso,ip,config):
     
     Parametros
     
-    n_proceso : Cadena que se utiliza para detectar un software 
-    ip : IP del servidor en proceso
-    config : parametros de configuracion
+        n_proceso : Cadena que se utiliza para detectar un software 
+        ip : IP del servidor en proceso
+        config : parametros de configuracion
     '''
     try:
         datos_instancia = []
@@ -75,9 +75,9 @@ def descubreInstancia(n_proceso,ip,config):
     
     Parametros
     
-    n_proceso : Cadena que se utiliza para detectar un software 
-    ip : IP del servidor en proceso
-    config : parametros de configuracion
+        n_proceso : Cadena que se utiliza para detectar un software 
+        ip : IP del servidor en proceso
+        config : parametros de configuracion
     
     '''
     
@@ -92,9 +92,9 @@ def marcarSIBorrados (conn,cs, id_si):
     
     Parametros
     
-    conn   : Conexión con la BD de SDA_DB
-    cs     : Identificador de categoria de software 
-    id_si  : Identificador de instancia de software
+        conn   : Conexión con la BD de SDA_DB
+        cs     : Identificador de categoria de software 
+        id_si  : Identificador de instancia de software
     
     '''
     
@@ -124,13 +124,13 @@ def gestionaSIBorrados(conn,lsi,idserv):
     
     Parametros
     
-    conn   : Conexión con la BD de SDA_DB
-    lsi    : Lista de Instancias de software descubiertas 
-    idserv : Servidor en proceso
-    
+        conn   : Conexión con la BD de SDA_DB
+        lsi    : Lista de Instancias de software descubiertas 
+        idserv : Servidor en proceso
+        
     Salida
     
-    Indica si se ha modificado el item
+        Indica si se ha modificado el item
     
     '''
     modificado =False
@@ -155,8 +155,8 @@ def descubreSoftware(arg,cnf):
     
     Parametros
     
-    cnf : Diccionario con los parametros de configuracion
-    args: Objeto con los pararámetros que se pasan al script  
+        cnf : Diccionario con los parametros de configuracion
+        args: Objeto con los pararámetros que se pasan al script  
     
     '''
     

@@ -14,13 +14,29 @@ import time
 
 class objServidor(object):
     '''
-    classdocs
+    Representa un Servidor 
     '''
 
     
     def __init__(self, id_disp=0,id_serv=0,nombre='',so='',ram=0,cpu='',ncpu=0,cores=0,sn='',gw='',v_os='',id_marca='',id_entorno='',virtual=False,conn=None,ultimasync='01/01/01'):
         '''
         Constructor
+        
+        Parametros:
+            id_disp: Identificador del Dispositivo
+            id_serv: Identificador del servidor
+            nombre: Nombre del servidor
+            so: Identificador del SO
+            ram: Cantidad de RAm del servidor
+            cpu: Nº de CPU
+            cores: Numero de cores por procesador
+            sn: Numero de Serie
+            gw: puerta de enlace
+            v_os: Version del sistema operativo
+            id_marca: Identificador de marca
+            id_entorno: indica el entorno al que está destinado el servidor
+            virtual: Indica si es una máquina virtual
+            fsync : Fecha de última sincronización
         '''
         _id = None
         self._idDisp = None
@@ -45,9 +61,18 @@ class objServidor(object):
         self.virtual=virtual
         
         if id_serv <> 0 :
-            self.cargaServidor(id_disp,id_serv,conn,ultimasync)
+            self._cargaServidor(id_disp,id_serv,conn,ultimasync)
+    
+        return
+    
             
     def recEntorno(self):
+        '''
+        Indica en que entorno se utilzia el servidor
+        
+        Salida
+            Código de entorno
+        '''
         nombre= self.nombre.lower()
         if "des" in nombre:
             id_entorno = 'DES'
@@ -60,6 +85,15 @@ class objServidor(object):
         return id_entorno
         
     def retIdDisp(self,id_disp):
+        '''
+        Recupera el identificador en CMDBuild asociado a un dispositivo
+        
+        Parametros
+            id_disp : Identificador de dispositivo en SDA_DB
+            
+        Salida
+            Identificador de dispositivo en CMDBuild
+        '''
         
         conn = psycopg2.connect(database="cmdbuild", user="postgres", password="postgres", host="192.168.1.20", port="5432")
         cur=conn.cursor()
@@ -70,11 +104,11 @@ class objServidor(object):
             code_id = code_id[0]
         return code_id
     
-    def estaCargado(self):
+    def _estaCargado(self):
         
         return self._id <> None
     
-    def cargaServidor(self,id_disp,id_serv,c,ultimasync):
+    def _cargaServidor(self,id_disp,id_serv,c,ultimasync):
         
         sql = 'select s._id,d.nombre, s.ram, s.tipo_cpu, s.n_cpu, s.n_cores, d.sn, s.gw, s.version_os, s.id_so, d._id, s.deleted,s.fsync,d.id_marca,s.id_entorno,s.virtual from tb_disp d inner join tb_servidor s on d.id_disp=s.id_disp where id_serv=' + str(id_serv)
         s=c.consulta(sql)
@@ -112,18 +146,36 @@ class objServidor(object):
         return 
     
     def anade_FS(self,fs):
+        '''
+        Añade un FS al servidor
+        
+        Parametros
+            fs : Sistema de Ficheros a añadir
+        '''
         self.sfs.append(fs)
         return
         
     def anade_IP(self,ip):
+        '''
+        Añade un interfaz al servidor
+        
+        Parametros
+            ip : Interfaz de red a añadir
+        '''
         self.ips.append(ip)
         return
     
     def anade_SW(self,soft):
+        '''
+        Añade un software al servidor
+        
+        Parametros
+            soft : Software a añadir
+        '''
         self.sws.append(soft)
         return
 
-    def retPuntoMontaje(self):
+    def _retPuntoMontaje(self):
     
         lpm =[]
         for fs in self.sfs:
@@ -131,14 +183,14 @@ class objServidor(object):
             
         return lpm 
     
-    def retNombreInterface(self):
+    def _retNombreInterface(self):
         lint=[]
         for i in self.ips:
             lint.append(i.nombre)
             
         return lint
     
-    def retListaSoftware(self):
+    def _retListaSoftware(self):
         
         lsws = []
         for sw in self.sws :
@@ -146,19 +198,19 @@ class objServidor(object):
         
         return lsws
     
-    def apuntaModificado(self,conn):
+    def _apuntaModificado(self,conn):
 
         sql="update tb_Servidor set fsync ='"+time.strftime("%c")+"' where id_serv=" + str(self.id_serv)
         conn.actualizaTabla(sql)
 
         return
     
-    def apuntafsBorrados(self,conn):
+    def _apuntafsBorrados(self,conn):
         
         cambiado = False
         sql = "select montaje from tb_fs where id_serv= " +str(self.id_serv) + " and deleted <> 'True'"
         lfs= conn.consulta(sql)
-        lmontaje = self.retPuntoMontaje()
+        lmontaje = self._retPuntoMontaje()
         for fs in lfs:
             if fs[0] not in lmontaje:
                 sql = "update tb_fs set deleted = 'True', fsync='"+time.strftime("%c")+"' where id_serv="+str(self.id_serv)+ " and montaje = '"+fs[0] + "'"
@@ -167,12 +219,12 @@ class objServidor(object):
         
         return cambiado
     
-    def apuntaInterfacesBorrados(self,conn):
+    def _apuntaInterfacesBorrados(self,conn):
         
         cambiado =False
         sql = "select nombre from tb_Interface where id_disp= " +str(self.id_disp)+ " and deleted <> 'True'"
         lInter= conn.consulta(sql)
-        lnomInt = self.retNombreInterface()
+        lnomInt = self._retNombreInterface()
         for i in lInter:
             if i[0] not in lnomInt:
                 sql = "update tb_Interface set deleted = 'True', fsync='"+time.strftime("%c")+"' where id_disp="+str(self.id_disp)+ " and nombre = '"+ i[0] + "'"
@@ -180,12 +232,12 @@ class objServidor(object):
                 cambiado = cambiado or True
         return cambiado
     
-    def apuntaSwBorrado(self,conn):
+    def _apuntaSwBorrado(self,conn):
         
         cambiado=False
         sql = "select id_sw from tb_soft_running where id_serv= " +str(self.id_serv) + " and deleted <> 'True'"
         lsws= conn.consulta(sql)
-        lnomSoft = self.retListaSoftware()
+        lnomSoft = self._retListaSoftware()
         for s in lsws:
             if s[0] not in lnomSoft:
                 sql = "update tb_soft_running set deleted = 'True', fsync='"+time.strftime("%c")+"' where id_serv="+str(self.id_serv)+ " and id_sw = "+ str(s[0]) + ""
@@ -194,30 +246,41 @@ class objServidor(object):
                 
         return cambiado
     
-    def grabaBBDD(self,conn,ip):
+    def grabaBBDD(self,conn):
+        '''
+        Graba el objeto en la BD SDA_DB
+        
+        Parametros
+        
+            conn: Conexión con la BD SDA_DB
+        
+        Salida 
+        
+            Indica si se ha modificado
+        '''
 
         try :
             self.modificado,self.id_disp, self.id_serv = conn.grabaServidor(self)
             for sf in self.sfs :
                 cambiado = sf.grabaBBDD(conn,self.id_serv)
                 self.modificado = self.modificado or cambiado
-            cambiado=self.apuntafsBorrados(conn) 
+            cambiado=self._apuntafsBorrados(conn) 
             self.modificado = self.modificado or cambiado
             
             for ip in self.ips:
                 cambiado=ip.grabaBBDD(conn,self.id_disp)
                 self.modificado = self.modificado or cambiado
-            cambiado=self.apuntaInterfacesBorrados(conn) 
+            cambiado=self._apuntaInterfacesBorrados(conn) 
             self.modificado = self.modificado or cambiado
  
             for sw in self.sws :
                 self.cambiado = sw.grabaBBDD(conn,self.id_serv)
                 self.modificado = self.modificado or cambiado
-            cambiado=self.apuntaSwBorrado(conn) 
+            cambiado=self._apuntaSwBorrado(conn) 
             self.modificado = self.modificado or cambiado
             
             if self.modificado == True :
-                self.apuntaModificado(conn)
+                self._apuntaModificado(conn)
 
            
         except Exception, error :
@@ -226,7 +289,8 @@ class objServidor(object):
         
         return
     
-    def borraServidor(self,api,conn):
+    def _borraServidor(self,api,conn):
+        
         
         Correcto = True
         data = {'deleted':'True'}
@@ -257,6 +321,15 @@ class objServidor(object):
     
     def sincroniza(self,api,conn,ultimaSync):
         
+        '''
+        Sincroniza un Servidor con CMDBuild
+        
+        Parametros:
+        
+            api: Conexión con CMDBuild
+            conn: Conexión con la BD SDA_DB
+            ultimaSync : Fecha de la última sincronización del CI
+        '''
         
         if not self.deleted :
             data = {'Code': str(self.id_disp)}
@@ -277,7 +350,7 @@ class objServidor(object):
             data['Carga'] =api.retIdLookup('CI-TipoCarga',"AU")
             data['Virtual'] = str(self.virtual).lower()
             
-            if not self.estaCargado():
+            if not self._estaCargado():
      
                 id_class = api.creaClase('Servidor',data)
                 if  id_class > 0:
@@ -303,7 +376,7 @@ class objServidor(object):
             for sw in self.sws:
                 sw.sincroniza(api,conn,self.id_serv,self._id,ultimaSync)
         else :
-            self.borraServidor(api,conn)
+            self._borraServidor(api,conn)
  
         return
 

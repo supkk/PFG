@@ -6,18 +6,27 @@ Created on 1 abr. 2017
 '''
 import time
 from objetos import intSoft
-from objetos import bbdd
- 
 
 class objSoft(object):
     '''
-    classdocs
+    Representa una instancia de software corriendo en un servidor
     '''
 
 
     def __init__(self,idsw='',cadRunning='',_id=None, deleted=False,fsync='01/01/01',idserv=0,conn=None,ultimasync):
         '''
         Constructor
+        
+        Parametros
+            idsw: Identificador del software
+            cadRunning : Cadena de busqueda del software
+            _id: Identificador de software en CMDBUild
+            deleted : Indica si está borrado
+            fsync : Fecha de la última sincronización
+            idserv: Identificador del Servidor
+            conn: Conexion con SDA_DB
+            ultimasync: Ultima sincronización que se realizó
+            
         '''
         self._id = _id
         self.idsw = idsw
@@ -35,11 +44,34 @@ class objSoft(object):
     
     
     def grabaBBDD(self,conn,id_serv):
+        
+        '''
+        Graba un objeto instancia de software en la BD SDA_DB
+        Parametro
+        
+            conn :Conexión con BD
+            id_serv: Identificador del Servidor
+        
+        Salida
+            modificado: Indica si se ha modificado
+        '''
         modificado = conn.grabaSw(self,id_serv)
 
         return modificado
     
     def borraSwCMDB(self,api,conn,id_serv):
+        '''
+        Marca como borrado el software en CMDBuild
+        
+        Parametros:
+        
+            api: Conexión con CMDBuild
+            conn: Conexión con la BD SDA_DB
+            id_serv: Identificador del dispositivo
+            
+        Salida
+            Indica si la tarea ha terminado correctamente
+        '''
         
         ok = True
         if self._id <> '' :
@@ -50,11 +82,21 @@ class objSoft(object):
     
         return ok
       
-    def estaCargado(self):
+    def _estaCargado(self):
         return self._id <>  None
     
     def sincroniza(self,api,conn,id_serv,_idServ,ultimaSync):  
+        '''
+        Sincroniza un Interfaz con CMDBuild
         
+        Parametros:
+        
+            api: Conexión con CMDBuild
+            conn: Conexión con la BD SDA_DB
+            id_serv: Identificador del Servidor
+            _idServ: Identificacion del Servidor en CMDBuild
+            ultimaSync : Fecha de la última sincronización del CI
+        '''
 
         if not self.deleted :
             data = {'Code': str(self.idsw)}
@@ -63,7 +105,7 @@ class objSoft(object):
             data['Estado']=api.retIdLookup('CI-Estado','NV')
             data['Carga'] =api.retIdLookup('CI-TipoCarga',"AU")
 
-            if not self.estaCargado() :
+            if not self._estaCargado() :
                 id_class = api.creaClase('SoftwareInstalado',data)
                 if  id_class > 0:
                     self._id=id_class

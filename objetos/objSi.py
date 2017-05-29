@@ -17,15 +17,15 @@ class objSi(object):
     def __init__(self, _id='',id_si=0,id_sw=0,id_serv=0,id_entorno='PRO',version='',ip='',user='',home=''):
         '''
         Constructor
-        _id: Identificador del objeto en CMDBuild
-        id_serv: identificador del servidor
-        id_sw: identificador del software
-        entorno: Entorno donde se ha instalado
-        ip: Ip donde ha sido descubierto
-        user:Usuario propietario del proceso
-        home: Directorio de instalacion del software
-        id_si: Identificador de Instancia software
-        version: Version del software
+            _id: Identificador del objeto en CMDBuild
+            id_serv: identificador del servidor
+            id_sw: identificador del software
+            entorno: Entorno donde se ha instalado
+            ip: Ip donde ha sido descubierto
+            user:Usuario propietario del proceso
+            home: Directorio de instalacion del software
+            id_si: Identificador de Instancia software
+            version: Version del software
         '''
         self._id=_id
         self.id_si=id_si
@@ -48,11 +48,11 @@ class objSi(object):
         
         Parametro
         
-        conn : Conexion de BD
+            conn : Conexion de BD
         
         Salida
         
-        Diccionario con todos los atributos del objeto
+            Diccionario con todos los atributos del objeto
         '''
         
         dic={}
@@ -76,8 +76,8 @@ class objSi(object):
         
         Parametro
         
-        id_si :Identificador de la instancia de software
-        conn: conecxión a SDA_DB
+            id_si :Identificador de la instancia de software
+            conn: conexión a SDA_DB
         '''
         
         modificado=False
@@ -91,6 +91,17 @@ class objSi(object):
         return modificado
     
     def grabaBBDD(self,conn):
+        '''
+        Graba el objeto en la BD SDA_DB
+        
+        Parametros
+        
+            conn: Conexión con la BD SDA_DB
+        
+        Salida 
+        
+            Retorna el identificador del Software
+        '''
         
         data=(self.id_sw,self.id_serv,self.id_entorno,self.version,self.home,self.user,time.strftime("%c"))
         sql = 'insert into tb_softwareinstancia (id_sw,id_serv,id_entorno,version,home,usuario,fsync) values (%s,%s,%s,%s,%s,%s,%s)'

@@ -14,12 +14,17 @@ import re
 class objssh(object):
     '''
     classdocs
+    Representa una sesion de acceso a un servidor por ssh
     '''
 
 
     def __init__(self, ip,u,p):
         '''
         Constructor
+        
+            ip: IP del servidor 
+            u: Usuario
+            p: Contraseña
         '''
         self.ssh = paramiko.SSHClient()  # Iniciamos un cliente SSH
         self.ssh.load_system_host_keys()  # Agregamos el listado de host conocidos
@@ -37,6 +42,12 @@ class objssh(object):
         return
     
     def cargaPlantilla(self,tipo):
+        '''
+        Carga una plantilla de comandos para ejecutar en el servidor
+        
+        Parametro
+            tipo: Indica el tipo de la plantilla
+        '''
 
         fichero = "./conf/"+tipo+"/"+self.so+".json"
         dc = json.loads(open(fichero).read())
@@ -44,6 +55,14 @@ class objssh(object):
         return dc 
 
     def enviaComando(self,cmd,patron='',saltar = 0):
+        '''
+        Envia un comando al servidor y formatea la salida
+        
+        Parametros
+            cmd: Cadena con comando
+            patron: Expresion regular para el formateo de la salida
+            saltar: Indica si hay que saltar algún campo de salida
+        '''
 
             
         stdin, stdout, stderr = self.ssh.exec_command(cmd)

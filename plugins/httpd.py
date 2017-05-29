@@ -13,6 +13,18 @@ import requests
 
 
 def compruebaConexion(ip,puerto):
+    '''
+    Comprueba que el software especificado escucha en el puerto indicado
+    
+    Parametros
+        ip : IP del servidor en proceso
+        puerto: Puerto de escucha
+    
+    Salida
+    
+        True si correcto
+     
+    '''
     try :
         url="http://"+ip.strip()+":"+puerto
         conn = requests.get(url,data="HEAD")
@@ -24,13 +36,13 @@ def compruebaConexion(ip,puerto):
         
     return Correcto
 
-def cargaDefecto ():
+def _cargaDefecto ():
     f= open('/home/jose/workspace/PFG/plugins/apache.json')
     contenido=f.read()
     dic = json.loads(contenido)
     return dic
 
-def recDNS(dns,ip):
+def _recDNS(dns,ip):
     
     if dns == '*' :
         dns=ip
@@ -38,7 +50,7 @@ def recDNS(dns,ip):
         
     return cad_dns
 
-def obtenerRutaConfiguracion(c_ps):
+def _obtenerRutaConfiguracion(c_ps):
     
     if c_ps=='':
         conf = '/etc/httpd/conf/httpd.conf'
@@ -54,15 +66,31 @@ def obtenerRutaConfiguracion(c_ps):
     return conf
 
 def descubre(host,user,password,port, c_ps):
+    '''
+    Prueba a descubrir un Servidor web apache
+    
+    Parametro
+    
+        host:Ip del servidor
+        user: Usuario con permisos de administracion
+        password: password del usuario
+        port:puerto de escucha de la consola
+        c_ps:Salida del comando ps 
+    
+    Salida 
+    
+        Diccionario con los datos del servidor
+        
+    '''
     
     if port  <> 0:
-        dic = cargaDefecto()
+        dic = _cargaDefecto()
         return dic
     dic={}
     conexSSH = objssh.objssh(host,user,password)
     
     try :
-        conf_file = obtenerRutaConfiguracion(c_ps)   
+        conf_file = _obtenerRutaConfiguracion(c_ps)   
         cad_vh = " awk '!/#/  {print $0}' <<<file>>>> |  awk '/VirtualHost /  {printf $0\";\"} /SSL/ {printf($0)} /KeyFile/ {printf $0} /<\/VirtualHost>/ {print \"||\"}'"
         cad_vh=cad_vh.replace("<<<file>>>>",conf_file) 
         sal_vh = conexSSH.enviaComando(cad_vh, "(.*)")
@@ -77,7 +105,7 @@ def descubre(host,user,password,port, c_ps):
         for vh in sal_vh:
             dic_vh={}
             buff=re.findall('VirtualHost([^:]+):([^>]+)',sal_vh)
-            dic_vh['dns']=recDNS(buff[0],host)
+            dic_vh['dns']=_recDNS(buff[0],host)
             dic_vh['puerto'] = buff[1]
             if  "SSLENABLE" in vh.upper():
                 dic_vh['ssl'] = True
