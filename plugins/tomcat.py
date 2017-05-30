@@ -7,6 +7,7 @@ Created on 9 may. 2017
 from bs4 import BeautifulSoup
 import requests 
 import simplejson as json
+import re
 
 
 def compruebaConexion(ip,puerto):
@@ -34,9 +35,12 @@ def compruebaConexion(ip,puerto):
     return Correcto
 
 
-def _retBDyEqm(cad_conex):
-    bd=''
-    eqm=''
+def _retBDyEqm(cad_conex,user):
+    if 'oracle' in cad_conex:
+        patron='.*SERVICE_NAME=(.*?)\)'
+        res=re.findall(patron,cad_conex,re.DOTALL)
+        bd=res[0]
+        eqm=user
     
     return bd, eqm
 
@@ -65,7 +69,7 @@ def descubre(host, user, password,puerto):
         r = requests.get(url,headers = cabeceras ,auth=(user,password))
         html = BeautifulSoup(r.text, "html.parser")
         entradas = html.find_all('div',{'id':'contentBody'})
-        dic['jvm'] = html.find('a', {'href':'http://java.oracle.com/'}).contents[0].replace('\r\n','').replace('\t','')
+        dic['jvm'] = html.find('a', {'href':'http://java.sun.com/'}).contents[0].replace('\r\n','').replace('\t','')
         dic['version'] = entradas[0].contents[5].contents[4].strip()
         url = 'http://'+host+':'+puerto+'/probe/datasources.htm'
         r = requests.get(url,headers = cabeceras ,auth=(user,password))
@@ -76,9 +80,9 @@ def descubre(host, user, password,puerto):
             for datasource in t_datasource:
                 dic_data={}
                 columna=datasource.find_all('td')
-                dic_data['nombre_bd'],dic_data['esquema'] = _retBDyEqm(columna[7].text)
+                dic_data['nombre_bd'],dic_data['esquema'] = _retBDyEqm(columna[7].attrs['title'],columna[6].text)
                 dic_data['usuario'] = columna[6].text
-                dic_data['nombre'] = columna[1].text
+                dic_data['nombre'] = columna[1].text.strip()
                 dic['jdbc'].append(dic_data.copy())
         else :
     #           Solo para probar
@@ -114,10 +118,42 @@ def descubreAplicacion(host,user, password,puerto):
     
         Diccionario con los datos de las aplicaciones
     '''
-    
-    f= open('/home/jose/workspace/PFG/plugins/apl.json')
-    contenido=f.read()
-    dic = json.loads(contenido)
-    
+    if puerto == 0:
+        f= open('/home/jose/workspace/PFG/plugins/apl.json')
+        contenido=f.read()
+        dic = json.loads(contenido)
+    else :
+        dic ={'apl':[]}
+        dic_t={}
+        host = host.strip()
+        cabeceras = { 'Accept': '*/*','Content-Type': 'application/html' }
+        url = 'http://'+host+':'+puerto+'/probe/datasources.htm'
+        try :
+            r = requests.get(url,headers = cabeceras ,auth=(user,password))
+            html = BeautifulSoup(r.text, "html.parser")
+            tabla= html.find('table',{'id':'app_resources'}).tbody.find_all('tr')
+            
+            for entrada in tabla :
+                dic_apl={}
+                dic_url={}
+                dic_jdbc=[]
+                columna=entrada.find_all('td')
+                app = str(columna[1].text[1:].strip())
+                dic_apl['acronimo']=app
+                dic_apl['nombre']= app
+                dic_apl['version']=''
+                dic_url['valor']= app
+                dic_url['tipo']='AC'
+                dic_apl['url']=[dic_url.copy()]
+                jdbc=columna[2].text.strip()
+                dic_jdbc.append(jdbc[5:])
+                dic_apl['jdbc']=dic_jdbc
+                dic['apl'].append(dic_apl.copy())
+            
+        except Exception, error : 
+            print error
     return dic
 
+if __name__ == '__main__':
+    
+    descubreAplicacion('megadesa.munimadrid.es','administrator','megadesa','8080')
