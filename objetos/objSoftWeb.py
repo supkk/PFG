@@ -47,7 +47,7 @@ class objSoftWeb(objSi.objSi):
     
     def _cargaSoftware(self,id_si,conn):
         
-        dic=super(objSoftWeb,self)._cargaSoftware(conn)
+        dic=super(objSoftWeb,self).cargaSoftware(conn)
         data=(id_si,self.fsync)
         sql= "select sw.urladmin,si.version,sw.puerto, sw.id_web,sw._id from tb_softwareInstancia si inner join tb_servweb sw on si.id_si = sw.id_si where sw.id_si=%s and sw.fsync >=%s" 
         data = conn.consulta(sql,data)
@@ -114,7 +114,7 @@ class objSoftWeb(objSi.objSi):
     
     def _actualizaInstancia(self, id_si,conn):
         
-        modificado = super(objSoftWeb,self)._actualizaInstancia(id_si, conn)
+        modificado = super(objSoftWeb,self).actualizaInstancia(id_si, conn)
         dsw,id_Web = conn.retInstanciaWeb(id_si)
         data =(self.dic_Web['urladmin'],)
         if data <> dsw :

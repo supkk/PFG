@@ -122,7 +122,7 @@ class objSoftBBDD(objSi.objSi):
     
     def _actualizaInstancia(self,id_si,conn):
         
-        modificado = super(objSoftBBDD,self)._actualizaInstancia(id_si, conn)
+        modificado = super(objSoftBBDD,self).actualizaInstancia(id_si, conn)
         dbd,id_db= conn.retInstanciaBD(id_si)
         data =(self.dic_BD['admin'])
         if data <> dbd :

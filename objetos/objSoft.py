@@ -13,7 +13,7 @@ class objSoft(object):
     '''
 
 
-    def __init__(self,idsw='',cadRunning='',_id=None, deleted=False,fsync='01/01/01',idserv=0,conn=None,ultimasync):
+    def __init__(self,idsw='',cadRunning='',_id=None, deleted=False,fsync='01/01/01',idserv=0,conn=None,ultimasync='01/01/01'):
         '''
         Constructor
         

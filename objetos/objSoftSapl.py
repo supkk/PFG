@@ -48,7 +48,7 @@ class objSoftSapl(objSi.objSi):
     
     def _cargaSoftware(self,id_si,conn):
         
-        dic=super(objSoftSapl,self)._cargaSoftware(conn)
+        dic=super(objSoftSapl,self).cargaSoftware(conn)
         data=(id_si,self.fsync)
         sql= "select id_sa,jvm,puerto,_id from tb_servaplicaciones where id_si=%s and fsync >=%s" 
         data = conn.consulta(sql,data)
@@ -100,7 +100,7 @@ class objSoftSapl(objSi.objSi):
     
     def _actualizaInstancia(self, id_si,conn):
         
-        modificado = super(objSoftSapl,self)._actualizaInstancia(id_si, conn)
+        modificado = super(objSoftSapl,self).actualizaInstancia(id_si, conn)
         dsa,id_sa = conn.retInstanciaSA(id_si)
         dsa=unicode(dsa,'utf-8')
         data =(self.dic_SA['jvm'])

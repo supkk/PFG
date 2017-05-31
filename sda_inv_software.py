@@ -56,6 +56,7 @@ def descubreInstanciaSSH(n_proceso,ip,config):
         comando = "ps -ef | grep " + n_proceso + " | awk '!/grep/{print $1\";\"$2\";\"$8\";\"$0}'"
         sal_ps = conexSSH.enviaComando(comando, "([^;]+);([^;]+);([^;]+);([^\n]+)?", 0)
         for user,pid,home,param in sal_ps:
+            user=user.strip()
             comando= 'sudo -S netstat -puntl | grep ' + str(pid) +"| awk '{print $4}' "
             puertos = conexSSH.enviaComando(comando,".*:([^\n]+)",0)
             for port in puertos:

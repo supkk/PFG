@@ -413,7 +413,7 @@ def main():
         elif reg[1]=='WS' :
             serv=descubreWindows(reg[0],lsoft)
         if serv <> None :
-            serv.grabaBBDD(conn,reg[0])
+            serv.grabaBBDD(conn)
             conn.apuntaProcesado(reg[0],serv.id_disp)
         else :
             conn.apuntaApagado(reg[0])

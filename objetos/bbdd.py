@@ -1181,7 +1181,7 @@ class bbdd():
         
         cur=self.conn.cursor()
         try :
-            if self.ExisteIpNoSync(s.ip):
+            if self._ExisteIpNoSync(s.ip):
                 data=(s.fd,idDes,idSO,"N")
                 sql = "update tb_dispositivos set fecdes=%s,id_td=%s,id_so=%s,proc=%s where ip='" + s.ip + "'"
             else :
