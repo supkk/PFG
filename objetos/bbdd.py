@@ -775,7 +775,7 @@ class bbdd():
         return code_id[0]
         
     
-    def retEsquemaDB(self,nombre, nombre_db):
+    def retEsquemaDB(self,nombre, nombre_db,host):
         '''
         Retorna los atributos de un esquema de BBDD
         
@@ -783,6 +783,7 @@ class bbdd():
         
             nombre: Nombre de esquema de BD
             nombre_db: nombre de BD
+            host: IP donde reside la BD
         
         Salida
             result: Atributos del Esquema de BD
@@ -791,10 +792,13 @@ class bbdd():
         '''
     
         cur=self.conn.cursor()
-        data =(nombre,nombre_db)
-        cur.execute("select propietario,id_edb from  tb_esquemabd where nombre=%s and nombre_db=%s",data)
-        code_id = cur.fetchone()
-        cur.close()
+        sql="select id_serv from tb_interface i inner join tb_servidor s on s.id_disp=i.id_disp where i.ip = '"+host+"'"
+        id_serv=self.consulta(sql)
+        sql="select id_db  from tb_softwareinstancia si inner join tb_db d on d.id_si=si.id_si where si.id_serv="+str(id_serv[0])
+        id_db=self.consulta(sql)
+        sql="select propietario,id_edb from tb_esquemabd where id_db=%s and nombre=%s and nombre_db=%s"
+        data =(id_db[0],nombre,nombre_db)
+        code_id=self.consulta(sql,data)
         if code_id is None :
             result = None
             id_edb = None

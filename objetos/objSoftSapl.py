@@ -179,7 +179,7 @@ class objSoftSapl(objSi.objSi):
             self.id_sa=conn.actualizaTabla(sql,data)
             if self.id_sa <> None:
                 for ds in self.dic_SA['jdbc']:
-                    p,id_edb=conn.retEsquemaDB(ds['esquema'],ds['nombre_bd'])
+                    p,id_edb=conn.retEsquemaDB(ds['esquema'],ds['nombre_bd'],ds['host'])
                     if id_edb == None :
                         print (time.strftime("%c")+"-- Error el esquema al que apunta el conector no existe "+ds['esquema']+"  "+ds['nombre_bd'])
                     else:    

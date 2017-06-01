@@ -8,6 +8,7 @@ from bs4 import BeautifulSoup
 import requests 
 import simplejson as json
 import re
+import time
 
 
 def compruebaConexion(ip,puerto):
@@ -41,8 +42,9 @@ def _retBDyEqm(cad_conex,user):
         res=re.findall(patron,cad_conex,re.DOTALL)
         bd=res[0]
         eqm=user
+        host=''
     
-    return bd, eqm
+    return bd, eqm, host
 
 
 def descubre(host, user, password,puerto):
@@ -69,10 +71,11 @@ def descubre(host, user, password,puerto):
         r = requests.get(url,headers = cabeceras ,auth=(user,password))
         html = BeautifulSoup(r.text, "html.parser")
         entradas = html.find_all('div',{'id':'contentBody'})
-        dic['jvm'] = html.find('a', {'href':'http://java.sun.com/'}).contents[0].replace('\r\n','').replace('\t','')
+        dic['jvm'] = html.find('a', {'href':'http://java.oracle.com/'}).contents[0].replace('\r\n','').replace('\t','')
         dic['version'] = entradas[0].contents[5].contents[4].strip()
         url = 'http://'+host+':'+puerto+'/probe/datasources.htm'
         r = requests.get(url,headers = cabeceras ,auth=(user,password))
+        print (time.strftime("%c")+"--"+"Descubierto servidor Tomcat version "+dic['version'] )
         dic['jdbc']=[]
         if "There are no data sources" not in r.text:
             html = BeautifulSoup(r.text, "html.parser")  
@@ -80,10 +83,11 @@ def descubre(host, user, password,puerto):
             for datasource in t_datasource:
                 dic_data={}
                 columna=datasource.find_all('td')
-                dic_data['nombre_bd'],dic_data['esquema'] = _retBDyEqm(columna[7].attrs['title'],columna[6].text)
+                dic_data['nombre_bd'],dic_data['esquema'],dic_data['host']= _retBDyEqm(columna[7].attrs['title'],columna[6].text)
                 dic_data['usuario'] = columna[6].text
                 dic_data['nombre'] = columna[1].text.strip()
                 dic['jdbc'].append(dic_data.copy())
+                print (time.strftime("%c")+"--"+"Descubierto servidor DataSource "+ dic_data['nombre'])
         else :
     #           Solo para probar
             dic_data={}
@@ -91,11 +95,13 @@ def descubre(host, user, password,puerto):
             dic_data['esquema']='public'
             dic_data['usuario']='postgres'
             dic_data['nombre']='cmdbuild'
+            dic_data['host']='192.168.1.29'
             dic['jdbc'].append(dic_data.copy())
             dic_data['nombre_bd']='cmdbuild'
             dic_data['esquema']='shark'
             dic_data['usuario']='postgres'
             dic_data['nombre']='shark'
+            dic_data['host']='192.168.1.29'
             dic['jdbc'].append(dic_data.copy())
     except :
         dic = None

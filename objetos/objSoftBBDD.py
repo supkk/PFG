@@ -115,7 +115,7 @@ class objSoftBBDD(objSi.objSi):
         exec modulo
         cnf=cnf['conecta_bd']
         self.dic_BD = module.descubre(ip=self.ip,user=cnf['user'],password=cnf['password'],port=self.puerto)
-        if self.dic_BD <> None:
+        if self.dic_BD:
             self.version = self.dic_BD['version']
 
         return self.dic_BD <> None

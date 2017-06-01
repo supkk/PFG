@@ -28,16 +28,17 @@ def _obtenerPrincipal(ip,user,password,port):
     
     dic={}
     try :
-        conn = psycopg2.connect( user=user, password=password, host=ip, port=port)
+        conn = psycopg2.connect( database='postgres',user=user, password=password, host=ip, port=port)
         buf=_consulta(conn,"select version()")
         dic['version']=buf[0][0].split(',')[0]
-        buf=_consulta(conn,"SELECT user from pg_shadow where usesuper='t';")
+        buf=_consulta(conn,"SELECT user from pg_shadow where usesuper='t'")
         dic['admin']=buf[0][0]
         dic['Esquema']=[]
         lbd = _consulta (conn, "select d.datname,u.usename from pg_database d,pg_user u where u.usesysid=d.datdba")
         conn.close()
-    except :
-        print (time.strftime("%c")+"-- Error al conectar a la instancia de BBDD en la IP "+ ip)      
+    except Exception, error:
+        print (time.strftime("%c")+"-- Error al conectar a la instancia de BBDD en la IP "+ ip)    
+        lbd = []  
 
     return dic,lbd
 
@@ -82,7 +83,8 @@ def descubre(ip,user,password,port):
     
     dic,lbd=_obtenerPrincipal(ip,user,password,port)
     dic['Esquema']=[]
-    
+    if len(lbd)==0:
+        dic=None
     for bd in lbd:
         d={}
         try :
