@@ -95,13 +95,13 @@ def descubre(host, user, password,puerto):
             dic_data['esquema']='public'
             dic_data['usuario']='postgres'
             dic_data['nombre']='cmdbuild'
-            dic_data['host']='192.168.1.29'
+            dic_data['host']='192.168.1.20'
             dic['jdbc'].append(dic_data.copy())
             dic_data['nombre_bd']='cmdbuild'
             dic_data['esquema']='shark'
             dic_data['usuario']='postgres'
             dic_data['nombre']='shark'
-            dic_data['host']='192.168.1.29'
+            dic_data['host']='192.168.1.20'
             dic['jdbc'].append(dic_data.copy())
     except :
         dic = None
@@ -124,7 +124,7 @@ def descubreAplicacion(host,user, password,puerto):
     
         Diccionario con los datos de las aplicaciones
     '''
-    if puerto == 0:
+    if puerto <> 0:
         f= open('/home/jose/workspace/PFG/plugins/apl.json')
         contenido=f.read()
         dic = json.loads(contenido)
@@ -133,7 +133,7 @@ def descubreAplicacion(host,user, password,puerto):
         dic_t={}
         host = host.strip()
         cabeceras = { 'Accept': '*/*','Content-Type': 'application/html' }
-        url = 'http://'+host+':'+puerto+'/probe/datasources.htm'
+        url = 'http://'+host+':'+str(puerto)+'/probe/datasources.htm'
         try :
             r = requests.get(url,headers = cabeceras ,auth=(user,password))
             html = BeautifulSoup(r.text, "html.parser")
@@ -160,6 +160,4 @@ def descubreAplicacion(host,user, password,puerto):
             print error
     return dic
 
-if __name__ == '__main__':
-    
-    descubreAplicacion('megadesa.munimadrid.es','administrator','megadesa','8080')
+

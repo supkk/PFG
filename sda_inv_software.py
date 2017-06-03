@@ -173,10 +173,13 @@ def descubreSoftware(arg,cnf):
     for id_disp,ip in datos :
         lp=[]
         lsi=[]
-        if id_disp == None:
+        if id_disp == 0:
             print (time.strftime("%c")+"-- Debe inventariar primero el hardware ")
-            exit
+            continue
         idserv=conn.retIdserv(id_disp)
+        if idserv  is None:
+            print (time.strftime("%c")+"-- Debe inventariar primero el hardware ")
+            continue
         sql = 'select id_sw from tb_soft_running where id_serv='+str(idserv)
         lsr = conn.consulta(sql)
         nombreServ= conn.retNombreServ(id_disp)

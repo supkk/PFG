@@ -101,20 +101,21 @@ def main ():
     conf=cnf['BaseDatos']
     conn=bbdd.bbdd(bd=conf['bd'],u=conf['user'],pw=conf['password'],h=conf['host'],p=conf['port'])
     config = _recuperaConfig(conn)
-    ultimaSync = config[0][1]
     conf=cnf['CMDBuild']
     api = cmdbuild.cmdbuild(conf["host"],conf["port"],conf["user"],conf["password"])
     sincronizaRed(conn,api)
     sincronizaCatalogoSw(conn,api)
     if arg.nombre == None :
         sql = "select d.id_disp, s.id_serv from tb_disp d inner join tb_servidor s on d.id_disp = s.id_disp where  s.fsync >= '" +str(config[0][1])+ "'" 
+        fsync=str(config[0][1])
     else:
-        sql = "select d.id_disp, s.id_serv from tb_disp d inner join tb_servidor s on d.id_disp = s.id_disp where  s.fsync >= '" +str(config[0][1])+ "' and d.nombre ='"+arg.nombre +"'" 
-  
+        sql = "select d.id_disp, s.id_serv from tb_disp d inner join tb_servidor s on d.id_disp = s.id_disp where  d.nombre ='"+arg.nombre +"'" 
+        fsync='01/01/01'
+ 
     lServidores = conn.consulta(sql)
-    print (time.strftime("%c")+"-- Iniciando proceso de syncronización. La última fue   "+ str(config[0][1]))
+    print (time.strftime("%c")+"-- Iniciando proceso de syncronización. La última fue   "+ fsync)
     for s in lServidores:
-        serv = objServidor.objServidor(id_disp=s[0],id_serv=s[1],conn=conn,ultimasync=config[0][1])
+        serv = objServidor.objServidor(id_disp=s[0],id_serv=s[1],conn=conn,ultimasync=fsync)
         print (time.strftime("%c")+"-- Iniciando la sincronizacion del servidor  "+ serv.nombre)
         serv.sincroniza(api,conn,config[0][1])
         print (time.strftime("%c")+"-- Terminada la sincronizacion del servidor  "+ serv.nombre)

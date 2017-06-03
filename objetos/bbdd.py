@@ -305,6 +305,27 @@ class bbdd():
             code_id =["ND"]
         return code_id[0]
     
+    def retIdServByIP(self,ip):
+        
+        '''
+        Retorna el identificador  del servidor a partir una de sus IP's
+        
+        Parámetros
+        
+            ip : Ip buscada
+        
+        Salida
+        
+            Identificador del servidor
+        '''
+        
+        sql="select id_serv from tb_interface i inner join tb_servidor s on s.id_disp=i.id_disp where i.ip = '"+ip+"'"
+        id_serv=self.consulta(sql)
+        if  not id_serv is None:
+           id_serv = id_serv[0][0]
+           
+        return id_serv
+    
     def retDescSoftware (self,idw):
         
         '''
@@ -775,7 +796,7 @@ class bbdd():
         return code_id[0]
         
     
-    def retEsquemaDB(self,nombre, nombre_db,host):
+    def retEsquemaDB(self,nombre, nombre_db,id_serv):
         '''
         Retorna los atributos de un esquema de BBDD
         
@@ -790,21 +811,21 @@ class bbdd():
             id_edb: Identificador de Esquema de BD.
         
         '''
-    
-        cur=self.conn.cursor()
-        sql="select id_serv from tb_interface i inner join tb_servidor s on s.id_disp=i.id_disp where i.ip = '"+host+"'"
-        id_serv=self.consulta(sql)
-        sql="select id_db  from tb_softwareinstancia si inner join tb_db d on d.id_si=si.id_si where si.id_serv="+str(id_serv[0])
+        sql="select id_db  from tb_softwareinstancia si inner join tb_db d on d.id_si=si.id_si where si.id_serv="+str(id_serv)
         id_db=self.consulta(sql)
-        sql="select propietario,id_edb from tb_esquemabd where id_db=%s and nombre=%s and nombre_db=%s"
-        data =(id_db[0],nombre,nombre_db)
-        code_id=self.consulta(sql,data)
+        if len(id_db)>0 :
+            sql="select propietario,id_edb from tb_esquemabd where id_db=%s and nombre=%s and nombre_db=%s"
+            data =(id_db[0][0],nombre,nombre_db)
+            code_id=self.consulta(sql,data)
+        else:
+            code_id= None
+        
         if code_id is None :
             result = None
             id_edb = None
         else :       
-            result = (code_id[0])  
-            id_edb = code_id[1]
+            result = (code_id[0][0])  
+            id_edb = code_id[0][1]
         return result, id_edb
     
     def retidsEsquemaBD(self,id_edb):
@@ -825,25 +846,22 @@ class bbdd():
         
         return result
     
-    def ret_IdEsquemaBD(self,nombre,nombre_db):
+    def ret_IdEsquemaBD(self, id_edb):
         
         '''
         Retorna el identificador en CMDBUild del Esquema de BD
         
         Parámetro
         
-            nombre: Nombre de esquema de BD
-            nombre_db: nombre de BD
+             id_edb : Identificador de BD
         
         Salida
         
             Identificador en CMDBUild 
         '''
         
-        data =(nombre,nombre_db)
-        
-        sql="select _id from tb_esquemabd where nombre= %s and nombre_db=%s"
-        result=self.consulta(sql,data)
+        sql="select _id from tb_esquemabd where id_edb="+str(id_edb)
+        result=self.consulta(sql)
         
         return result[0][0]
     

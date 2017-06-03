@@ -64,6 +64,7 @@ class objSoftSapl(objSi.objSi):
             d_cdb={}
             d_cdb['usuario']=cdb[1]
             d_cdb['nombre']=cdb[2]
+            d_cdb['id_edb']=cdb[0]
             ddb=conn.retidsEsquemaBD(cdb[0])
             d_cdb['nombre_db']=ddb[0][1]
             d_cdb['esquema']=ddb[0][0]
@@ -116,7 +117,8 @@ class objSoftSapl(objSi.objSi):
         modificado= False
         dcbd,id_cdb = conn.retInstanciaCDB(id_sa,ds['nombre'])
         if id_cdb == None :
-            p,id_edb=conn.retEsquemaDB(ds['esquema'],ds['nombre_bd'])
+            id_serv = conn.retIdServByIP(ds['host'])
+            p,id_edb=conn.retEsquemaDB(ds['esquema'],ds['nombre_bd'],id_serv)
             if id_edb == None :
                 print (time.strftime("%c")+"-- Error el esquema al que apunta el conector no existe "+ds['esquema']+"  "+ds['nombre_bd'])
             else :
@@ -179,7 +181,8 @@ class objSoftSapl(objSi.objSi):
             self.id_sa=conn.actualizaTabla(sql,data)
             if self.id_sa <> None:
                 for ds in self.dic_SA['jdbc']:
-                    p,id_edb=conn.retEsquemaDB(ds['esquema'],ds['nombre_bd'],ds['host'])
+                    id_serv = conn.retIdServByIP(ds['host'])
+                    p,id_edb=conn.retEsquemaDB(ds['esquema'],ds['nombre_bd'],id_serv)
                     if id_edb == None :
                         print (time.strftime("%c")+"-- Error el esquema al que apunta el conector no existe "+ds['esquema']+"  "+ds['nombre_bd'])
                     else:    
@@ -270,14 +273,14 @@ class objSoftSapl(objSi.objSi):
                         data['_destinationId'] = id_Class
                         data['_destinationType'] = "ServAplicaciones"
                         api.creaRelacion('ConJDBCToSA',data)
-                        id_Class_eqm=conn.ret_IdEsquemaBD(jdbc['esquema'],jdbc['nombre_db'])
+                        id_Class_eqm=conn.ret_IdEsquemaBD(jdbc['id_edb'])
                         if id_Class_eqm <> None:
                             data = {}
-                            data['_sourceType'] = "EsquemaDB"
-                            data['_sourceId'] = id_Class_eqm
-                            data['_destinationId'] = id_class_jdbc
-                            data['_destinationType'] = "ConectorJDBC"
-                            api.creaRelacion('ConJDBCToSA',data)
+                            data['_sourceType'] = "ConectorJDBC"
+                            data['_sourceId'] = id_class_jdbc
+                            data['_destinationId'] = id_Class_eqm
+                            data['_destinationType'] = "EsquemaBD"
+                            api.creaRelacion('JDBCToEsqBD',data)
         else:
             id_Class=self._borraSoftSA('BD',data,self.dic_SA['_id'],api)
             

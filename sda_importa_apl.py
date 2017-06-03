@@ -6,6 +6,7 @@ Created on 21 may. 2017
 '''
 import argparse
 import time
+from datetime import datetime
 import simplejson as json
 from objetos import bbdd
 from objetos import objApl
@@ -37,7 +38,8 @@ def importaAplicacion(arg,cnf):
     if type(arg.nombre) <> str:
         sql = "select  id_apl,nombre from tb_aplicacion where fsync >= '" + str(ultimaSync) +"'"
     else :
-        sql = "select  id_apl,nombre from tb_aplicacion where fsync >= '" + str(ultimaSync) +"' and nombre ='" + arg.nombre    
+        sql = "select  id_apl,nombre from tb_aplicacion where  nombre ='" + arg.nombre +"'"
+        ultimaSync=datetime.strptime('01/01/01','%d/%m/%y').date()   
     datos=conn.consulta(sql)
     print (time.strftime("%c")+"-- Inicio del inventario de aplicaciones ")
     for apl in datos:

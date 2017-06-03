@@ -135,7 +135,7 @@ class objSoftBBDD(objSi.objSi):
     def _actualizaEsquema(self,eqm,conn,id_db):
         
         modificado =False
-        de,id_edb = conn.retEsquemaDB(eqm['nombre'],eqm['nombre_db'])
+        de,id_edb = conn.retEsquemaDB(eqm['nombre'],eqm['nombre_db'],self.id_serv)
         data = (eqm['propietario'])
         if not id_edb is None :
             if de <> data :
@@ -383,7 +383,7 @@ class objSoftBBDD(objSi.objSi):
             data['Carga'] =api.retIdLookup('CI-TipoCarga',"AU")
             data['Entorno']= api.retIdLookup('CI-Entorno',self.dic_BD['entorno'])
             data['nombre']= at['nombre']
-            data['Indice']= at['indice']
+            data['Indice']= str(at['indice']).lower()
             if at['_id']==None:
                 id_Class_at = api.creaClase('CamposTabla',data)
             else :
@@ -449,7 +449,7 @@ class objSoftBBDD(objSi.objSi):
                                 api.creaRelacion('EsquemaDBToTabla',data)
                                 for at in tb['campos']:
                                     id_Class_at=self._sincronizaAtributo(at,api)
-                                    if id_Class > 0 :
+                                    if id_Class_at > 0 :
                                         conn.apuntaId('tb_AtributoTabla',id_Class_at,'id_att',at['id_at'])
                                         data = {}
                                         data['_sourceType'] = "Tabla"
