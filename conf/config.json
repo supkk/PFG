@@ -13,8 +13,8 @@
 	  "port":"5432"  
   },
   "conecta_ssh":{
-	   "user":"jose",
-	   "password":"juanito"
+	   "user":"joselito",
+	   "password":"pepito"
   },
   "conecta_bd":{
 	   "user":"postgres",
